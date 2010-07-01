@@ -1,0 +1,8 @@
+CREATE TABLE `wp_x_subscriptions` (
+  `subscription_ID` bigint(20) unsigned NOT NULL auto_increment,
+  `subscription_email` TEXT NOT NULL,
+  `subscription_type` varchar(200) NOT NULL,
+  `subscription_created` bigint(20) NOT NULL,
+  `subscription_note` varchar(200) NOT NULL,
+  PRIMARY KEY  (`subscription_ID`)
+) ENGINE=MyISAM;
