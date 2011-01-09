@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Subscribe by Email
-Plugin URI: 
-Description:
-Author: Andrew Billits (Incsub)
-Version: 1.0.1
-Author URI:
+Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
+Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
+Author: S H Mohanjith (Incsub), Andrew Billits (Incsub)
+Version: 1.0.2
+Author URI: http://premium.wpmudev.org
 WDP ID: 127
 */
 
@@ -26,11 +26,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$subscribe_by_email_current_version = '1.0.1';
+$subscribe_by_email_current_version = '1.0.2';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
-$subscribe_by_email_instant_notification_content = __("Dear Subscriber,
+$subscribe_by_email_instant_notification_content = "Dear Subscriber,
 
 BLOGNAME has posted a new item: POST_TITLE
 
@@ -41,7 +41,7 @@ EXCERPT
 Thanks,
 BLOGNAME
 
-Cancel subscription: CANCEL_URL");
+Cancel subscription: CANCEL_URL";
 //------------------------------------------------------------------------//
 //---Hook-----------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -55,15 +55,10 @@ add_action('widgets_init', 'subscribe_by_email_widget_init');
 add_action('transition_post_status', 'subscribe_by_email_process_instant_subscriptions', $priority = 2, $accepted_args = 3);
 add_action('add_user_to_blog', 'subscribe_by_email_add_user_to_blog', 3, 3);
 add_action('admin_footer', 'subscribe_by_email_check_blog_users');
-if ( $_GET['action'] == 'cancel-subscription' ) {
-	add_action('wp_footer', 'subscribe_by_email_cancel_process');
-}
-if ( $_POST['action'] == 'internal-cancel-subscription' ) {
-	add_action('wp_footer', 'subscribe_by_email_internal_cancel_subscription');
-}
-if ( $_POST['action'] == 'internal-create-subscription' ) {
-	add_action('wp_footer', 'subscribe_by_email_internal_create_subscription');
-}
+add_action('init', 'subscribe_by_email_cancel_process');
+add_action('init', 'subscribe_by_email_internal_cancel_subscription');
+add_action('init', 'subscribe_by_email_internal_create_subscription');
+
 //------------------------------------------------------------------------//
 //---Functions------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -81,6 +76,8 @@ function subscribe_by_email_make_current() {
 		subscribe_by_email_blog_install();
 		subscribe_by_email_s2_import();
 	}
+	
+	load_plugin_textdomain('subscribe_by_email', false, dirname(plugin_basename(__FILE__)).'/languages');
 }
 
 function subscribe_by_email_blog_install() {
@@ -107,17 +104,13 @@ function subscribe_by_email_blog_install() {
 		$subscribe_by_email_table5 = "";
 
 		$wpdb->query( $subscribe_by_email_table1 );
-		//$wpdb->query( $subscribe_by_email_table2 );
-		//$wpdb->query( $subscribe_by_email_table3 );
-		//$wpdb->query( $subscribe_by_email_table4 );
-		//$wpdb->query( $subscribe_by_email_table5 );
 		update_option( "subscribe_by_email_installed", "yes" );
 	}
 }
 
 function subscribe_by_email_plug_pages() {
-	add_menu_page(__('Subscriptions'), __('Subscriptions'), 10, 'subscriptions.php');
-	add_submenu_page('subscriptions.php', __('Settings'), __('Settings'), 10, 'settings', 'subscribe_by_email_settings_output' );
+	add_menu_page(__('Subscriptions', 'subscribe_by_email'), __('Subscriptions', 'subscribe_by_email'), 10, 'subscription', 'subscribe_by_email_manage_output');
+	add_submenu_page('subscription', __('Settings', 'subscribe_by_email'), __('Settings', 'subscribe_by_email'), 10, 'subscription_settings', 'subscribe_by_email_settings_output' );
 }
 
 function subscribe_by_email_s2_import() {
@@ -167,10 +160,7 @@ class subscribe_by_email extends WP_Widget {
                 <form>
                 <input id="subscription_email" name="subscription_email" style="width:97%;" maxlength="50" value="ex: john@hotmail.com" onfocus="this.value='';" type="text">
                 <center>
-                    <input type="button" class="button" name="create_subscription" value="<?php _e('Create Subscription') ?>" style="width:99%;" onclick="SubscribeByEmailCreate();" />
-                    <!---
-                    <input type="button" class="button" name="cancel_subscription" value="<?php _e('Cancel Subscription') ?>" style="width:99%;" onclick="SubscribeByEmailCancel();" />
-                    --->
+                    <input type="button" class="button" name="create_subscription" value="<?php _e('Create Subscription', 'subscribe_by_email') ?>" style="width:99%;" onclick="SubscribeByEmailCreate();" />
                 </center>
                 </form>
                 <br />
@@ -207,11 +197,11 @@ class subscribe_by_email extends WP_Widget {
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
 
 		<p>
-			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title:', 'hybrid'); ?></label>
+			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title:', 'hybrid', 'subscribe_by_email'); ?></label>
 			<input id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo $instance['title']; ?>" style="width:75%;" />
 		</p>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'text' ); ?>"><?php _e('Text:', 'example'); ?></label>
+			<label for="<?php echo $this->get_field_id( 'text' ); ?>"><?php _e('Text:', 'example', 'subscribe_by_email'); ?></label>
 			<input id="<?php echo $this->get_field_id( 'text' ); ?>" name="<?php echo $this->get_field_name( 'text' ); ?>" value="<?php echo $instance['text']; ?>" style="width:75%;" />
 		</p>
 	<?php
@@ -249,20 +239,26 @@ function subscribe_by_email_cancel_subscription_by_email($email) {
 }
 
 function subscribe_by_email_cancel_process() {
+	if ( $_GET['action'] == 'cancel-subscription' ) {
 	subscribe_by_email_cancel_subscription($_GET['sid']);
 	?>
 	<SCRIPT LANGUAGE='JavaScript'>
-	Modalbox.show('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled'); ?>!</strong></ceneter></p></div>',{title: '', width: 600});
+	Modalbox.show('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>',{title: '', width: 600});
 	</script>
 	<?php
+	}
 }
 
 function subscribe_by_email_internal_create_subscription() {
-	subscribe_by_email_create_subscription(str_replace("PLUS", "+", $_POST['email']),"Visitor Subscription");
+	if ( $_POST['action'] == 'internal-create-subscription' ) {
+		subscribe_by_email_create_subscription(str_replace("PLUS", "+", $_POST['email']),"Visitor Subscription");
+	}
 }
 
 function subscribe_by_email_internal_cancel_subscription() {
-	subscribe_by_email_cancel_subscription_by_email(str_replace("PLUS", "+", $_POST['email']));
+	if ( $_POST['action'] == 'internal-cancel-subscription' ) {
+		subscribe_by_email_cancel_subscription_by_email(str_replace("PLUS", "+", $_POST['email']));
+	}
 }
 
 function subscribe_by_email_process_instant_subscriptions($new_status, $old_status = '', $post) {
@@ -318,7 +314,7 @@ function subscribe_by_email_send_instant_notifications($post) {
 		$loop_notification_content = $subscribe_by_email_instant_notification_content;
 		//format notification text
 		$loop_notification_content = str_replace("CANCEL_URL",$cancel_url . $subscription_email['subscription_ID'],$loop_notification_content);
-		$subject_content = $blog_name . ': ' . __('New Post');
+		$subject_content = $blog_name . ': ' . __('New Post', 'subscribe_by_email');
 		$from_email = $admin_email;
 		$message_headers = "MIME-Version: 1.0\n" . "From: " . $blog_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
 		wp_mail($subscription_email['subscription_email'], $subject_content, $loop_notification_content, $message_headers);
@@ -371,7 +367,7 @@ function subscribe_by_email_output_js() {
 		var SubscriptionEmail = document.getElementById('subscription_email').value;
 		var http = new XMLHttpRequest();
 		if ( SubscriptionEmail != '' && SubscriptionEmail != 'ex: john@hotmail.com' ) {
-			var url = "<?php echo get_option('siteurl'); ?>";
+			var url = "<?php echo get_option('siteurl'); ?>/";
 			var params = "action=internal-create-subscription&email=" + SubscriptionEmail.replace("+","PLUS");
 			http.open("POST", url, true);
 
@@ -381,7 +377,7 @@ function subscribe_by_email_output_js() {
 			
 			http.onreadystatechange = function() {
 				if(http.readyState == 4 && http.status == 200) {
-					Modalbox.show('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully created'); ?>!</strong></ceneter></p></div>',{title: '', width: 600});
+					Modalbox.show('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully created', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>',{title: '', width: 600});
 					document.getElementById('subscription_email').value = '';
 				}
 			}
@@ -402,7 +398,7 @@ function subscribe_by_email_output_js() {
 			
 			http.onreadystatechange = function() {
 				if(http.readyState == 4 && http.status == 200) {
-					Modalbox.show('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled'); ?>!</strong></ceneter></p></div>',{title: '', width: 600});
+					Modalbox.show('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>',{title: '', width: 600});
 					document.getElementById('subscription_email').value = '';
 				}
 			}
@@ -1020,12 +1016,12 @@ function subscribe_by_email_manage_output() {
 	global $wpdb;
 
 	if(!current_user_can('manage_options')) {
-		echo "<p>" . __('Nice Try...') . "</p>";  //If accessed properly, this message doesn't appear.
+		echo "<p>" . __('Nice Try...', 'subscribe_by_email') . "</p>";  //If accessed properly, this message doesn't appear.
 		return;
 	}
 
 	if (isset($_GET['updated'])) {
-		?><div id="message" class="updated fade"><p><?php _e('' . urldecode($_GET['updatedmsg']) . '') ?></p></div><?php
+		?><div id="message" class="updated fade"><p><?php _e( urldecode($_GET['updatedmsg']), 'subscribe_by_email') ?></p></div><?php
 	}
 
 	echo '<div class="wrap" style="position:relative;">';
@@ -1075,14 +1071,14 @@ function subscribe_by_email_manage_output() {
 				'current' => $apage
 			));
 			?>
-			<h2><?php _e('Subscriptions') ?></h2>
-			<form id="form-subscriptions-list" action="subscriptions.php?action=cancel_subscriptions" method="post">
+			<h2><?php _e('Subscriptions', 'subscribe_by_email') ?></h2>
+			<form id="form-subscriptions-list" action="admin.php?page=subscription&action=cancel_subscriptions" method="post">
 	
 			<div class="tablenav">
 				<?php if ( $navigation ) echo "<div class='tablenav-pages'>" . $navigation . "</div>"; ?>
 	
 				<div class="alignleft">
-					<input type="submit" value="<?php _e('Cancel Subscription(s)') ?>" name="cancel" class="button-secondary delete" />
+					<input type="submit" value="<?php _e('Cancel Subscription(s)', 'subscribe_by_email') ?>" name="cancel" class="button-secondary delete" />
 					<br class="clear" />
 				</div>
 			</div>
@@ -1092,9 +1088,9 @@ function subscribe_by_email_manage_output() {
 			<?php
 			// define the columns to display, the syntax is 'internal name' => 'display name'
 			$list_columns = array(
-				'email'    => __('Email'),
-				'created' => __('Created'),
-				'note'   => __('Note')
+				'email'    => __('Email', 'subscribe_by_email'),
+				'created' => __('Created', 'subscribe_by_email'),
+				'note'   => __('Note', 'subscribe_by_email')
 			);
 	
 			$sortby_url = "s=";
@@ -1145,7 +1141,7 @@ function subscribe_by_email_manage_output() {
 								
 								case 'note': ?>
 									<th scope="row">
-										<?php echo __($subscription['subscription_note']); ?>
+										<?php echo __($subscription['subscription_note'], 'subscribe_by_email'); ?>
 									</th>
 								<?php
 								break;
@@ -1157,7 +1153,7 @@ function subscribe_by_email_manage_output() {
 					}
 				} else { ?>
 					<tr> 
-						<td colspan="8"><?php _e('No subscriptions found.') ?></td> 
+						<td colspan="8"><?php _e('No subscriptions found.', 'subscribe_by_email') ?></td> 
 					</tr> 
 				<?php
 				}
@@ -1168,34 +1164,34 @@ function subscribe_by_email_manage_output() {
 			</div>
 	
 			<div class="wrap">
-				<h2><?php _e('Search Subscriptions') ?></h2>
-				<form method="get" action="subscriptions.php">
+				<h2><?php _e('Search Subscriptions', 'subscribe_by_email') ?></h2>
+				<form method="get" action="admin.php?page=subscription">
 					<table class="form-table">
 						<tr class="form-field form-required">
-							<th style="text-align:center;" scope='row'><?php _e('Email') ?></th>
-							<td><input name="s" type="text" value="<?php if (isset($_GET['s'])) echo stripslashes( wp_specialchars( $s, 1 ) ); ?>" size="20" title="<?php _e('Email') ?>"/></td>
+							<th style="text-align:center;" scope='row'><?php _e('Email', 'subscribe_by_email') ?></th>
+							<td><input name="s" type="text" value="<?php if (isset($_GET['s'])) echo stripslashes( wp_specialchars( $s, 1 ) ); ?>" size="20" title="<?php _e('Email', 'subscribe_by_email') ?>"/></td>
 						</tr>
 					</table>
 					<p class="submit">
-						<input class="button" type="submit" name="go" value="<?php _e('Search Subscriptions') ?>" /></p>
+						<input class="button" type="submit" name="go" value="<?php _e('Search Subscriptions', 'subscribe_by_email') ?>" /></p>
 				</form>
 			</div>
 	
 			<div class="wrap">
-				<h2><?php _e('Add Subscription') ?></h2>
-				<form method="post" action="subscriptions.php?action=create_subscription">
+				<h2><?php _e('Add Subscription', 'subscribe_by_email') ?></h2>
+				<form method="post" action="admin.php?page=subscription&action=create_subscription">
 					<table class="form-table">
 						<tr class="form-field form-required">
-							<th style="text-align:center;" scope='row'><?php _e('Email') ?></th>
-							<td><input name="email" type="text" size="20" title="<?php _e('Email') ?>"/></td>
+							<th style="text-align:center;" scope='row'><?php _e('Email', 'subscribe_by_email') ?></th>
+							<td><input name="email" type="text" size="20" title="<?php _e('Email', 'subscribe_by_email') ?>"/></td>
 	
 						</tr>
 						<tr class="form-field">
-							<td colspan='2'><?php _e('A new subscription will be created for the above email address.') ?></td>
+							<td colspan='2'><?php _e('A new subscription will be created for the above email address.', 'subscribe_by_email') ?></td>
 						</tr>
 					</table>
 					<p class="submit">
-						<input class="button" type="submit" name="go" value="<?php _e('Create Subscription') ?>" /></p>
+						<input class="button" type="submit" name="go" value="<?php _e('Create Subscription', 'subscribe_by_email') ?>" /></p>
 				</form>
 			<?php
 		break;
@@ -1205,13 +1201,13 @@ function subscribe_by_email_manage_output() {
 				subscribe_by_email_create_subscription($_POST['email'],"Manual Subscription");
 				echo "
 				<SCRIPT LANGUAGE='JavaScript'>
-				window.location='subscriptions.php?updated=true&updatedmsg=" . urlencode(__('Subscription created.')) . "';
+				window.location='admin.php?page=subscription&updated=true&updatedmsg=" . urlencode(__('Subscription created.', 'subscribe_by_email')) . "';
 				</script>
 				";
 			} else {
 				echo "
 				<SCRIPT LANGUAGE='JavaScript'>
-				window.location='subscriptions.php';
+				window.location='admin.php?page=subscription';
 				</script>
 				";
 			}
@@ -1229,13 +1225,13 @@ function subscribe_by_email_manage_output() {
 				}
 				echo "
 				<SCRIPT LANGUAGE='JavaScript'>
-				window.location='subscriptions.php?updated=true&updatedmsg=" . urlencode(__('Subscription(s) canceled.')) . "';
+				window.location='admin.php?page=subscription&updated=true&updatedmsg=" . urlencode(__('Subscription(s) canceled.', 'subscribe_by_email')) . "';
 				</script>
 				";
 			} else {
 				echo "
 				<SCRIPT LANGUAGE='JavaScript'>
-				window.location='subscriptions.php';
+				window.location='admin.php?page=subscription';
 				</script>
 				";
 			}
@@ -1251,11 +1247,11 @@ function subscribe_by_email_settings_output() {
 	global $wpdb, $wp_roles, $current_user;
 	
 	if(!current_user_can('manage_options')) {
-		echo "<p>" . __('Nice Try...') . "</p>";  //If accessed properly, this message doesn't appear.
+		echo "<p>" . __('Nice Try...', 'subscribe_by_email') . "</p>";  //If accessed properly, this message doesn't appear.
 		return;
 	}
 	if (isset($_GET['updated'])) {
-		?><div id="message" class="updated fade"><p><?php _e('' . urldecode($_GET['updatedmsg']) . '') ?></p></div><?php
+		?><div id="message" class="updated fade"><p><?php _e( urldecode($_GET['updatedmsg']) , 'subscribe_by_email') ?></p></div><?php
 	}
 	echo '<div class="wrap">';
 	switch( $_GET[ 'action' ] ) {
@@ -1264,27 +1260,27 @@ function subscribe_by_email_settings_output() {
 			$subscribe_by_email_auto_subscribe = get_option('subscribe_by_email_auto_subscribe', 'no');
 			$subscribe_by_email_excerpts = get_option('subscribe_by_email_excerpts', 'no');
 			?>
-			<h2><?php _e('Settings') ?></h2>
-            <form method="post" action="subscriptions.php?page=settings&action=process">
+			<h2><?php _e('Settings', 'subscribe_by_email') ?></h2>
+            <form method="post" action="admin.php?page=subscription_settings&action=process">
             <table class="form-table">
             <tr valign="top">
-            <th scope="row"><?php _e('Auto-subscribe Enabled') ?></th>
+            <th scope="row"><?php _e('Auto-subscribe Enabled', 'subscribe_by_email') ?></th>
             <td>
-            <input name="subscribe_by_email_auto_subscribe" id="subscribe_by_email_auto_subscribe" value="yes" <?php if ( $subscribe_by_email_auto_subscribe == 'yes' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('Yes'); ?><br />
-            <input name="subscribe_by_email_auto_subscribe" id="subscribe_by_email_auto_subscribe" value="no" <?php if ( $subscribe_by_email_auto_subscribe == 'no' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('No'); ?>
-            <br /><?php _e('Automatically subscribe all users on this blog.') ?></td>
+            <input name="subscribe_by_email_auto_subscribe" id="subscribe_by_email_auto_subscribe" value="yes" <?php if ( $subscribe_by_email_auto_subscribe == 'yes' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('Yes', 'subscribe_by_email'); ?><br />
+            <input name="subscribe_by_email_auto_subscribe" id="subscribe_by_email_auto_subscribe" value="no" <?php if ( $subscribe_by_email_auto_subscribe == 'no' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('No', 'subscribe_by_email'); ?>
+            <br /><?php _e('Automatically subscribe all users on this blog.', 'subscribe_by_email') ?></td>
             </tr>
             <tr valign="top">
-            <th scope="row"><?php _e('Excerpt Enabled') ?></th>
+            <th scope="row"><?php _e('Excerpt Enabled', 'subscribe_by_email') ?></th>
             <td>
-            <input name="subscribe_by_email_excerpts" id="subscribe_by_email_excerpts" value="yes" <?php if ( $subscribe_by_email_excerpts == 'yes' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('Yes'); ?><br />
-            <input name="subscribe_by_email_excerpts" id="subscribe_by_email_excerpts" value="no" <?php if ( $subscribe_by_email_excerpts == 'no' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('No'); ?>
-            <br /><?php _e('Include post excerpts in notification emails.') ?></td>
+            <input name="subscribe_by_email_excerpts" id="subscribe_by_email_excerpts" value="yes" <?php if ( $subscribe_by_email_excerpts == 'yes' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('Yes', 'subscribe_by_email'); ?><br />
+            <input name="subscribe_by_email_excerpts" id="subscribe_by_email_excerpts" value="no" <?php if ( $subscribe_by_email_excerpts == 'no' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('No', 'subscribe_by_email'); ?>
+            <br /><?php _e('Include post excerpts in notification emails.', 'subscribe_by_email') ?></td>
             </tr>
             </table>
             
             <p class="submit">
-            <input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
+            <input type="submit" name="Submit" value="<?php _e('Save Changes', 'subscribe_by_email') ?>" />
             </p>
             </form>
 			<?php
@@ -1295,7 +1291,7 @@ function subscribe_by_email_settings_output() {
 			update_option( "subscribe_by_email_excerpts", $_POST[ 'subscribe_by_email_excerpts' ] );
 			echo "
 			<SCRIPT LANGUAGE='JavaScript'>
-			window.location='subscriptions.php?page=settings&updated=true&updatedmsg=" . urlencode(__('Settings saved.')) . "';
+			window.location='admin.php?page=subscription_settings&updated=true&updatedmsg=" . urlencode(__('Settings saved.', 'subscribe_by_email')) . "';
 			</script>
 			";
 		break;
