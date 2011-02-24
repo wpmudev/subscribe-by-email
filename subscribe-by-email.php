@@ -9,7 +9,7 @@ Author URI: http://premium.wpmudev.org
 WDP ID: 127
 */
 
-/* 
+/*
 Copyright 2007-2010 Incsub (http://incsub.com)
 
 This program is free software; you can redistribute it and/or modify
@@ -67,7 +67,7 @@ function subscribe_by_email_make_current() {
 	if (get_option( "subscribe_by_email_version" ) == '') {
 		add_option( 'subscribe_by_email_version', '0.0.0' );
 	}
-	
+
 	if (get_option( "subscribe_by_email_version" ) == $subscribe_by_email_current_version) {
 		// do nothing
 	} else {
@@ -76,7 +76,7 @@ function subscribe_by_email_make_current() {
 		subscribe_by_email_blog_install();
 		subscribe_by_email_s2_import();
 	}
-	
+
 	load_plugin_textdomain('subscribe_by_email', false, dirname(plugin_basename(__FILE__)).'/languages');
 }
 
@@ -85,11 +85,11 @@ function subscribe_by_email_blog_install() {
 	if (get_option( "subscribe_by_email_installed" ) == '') {
 		add_option( 'subscribe_by_email_installed', 'no' );
 	}
-	
+
 	if (get_option( "subscribe_by_email_installed" ) == "yes") {
 		// do nothing
 	} else {
-	
+
 		$subscribe_by_email_table1 = "CREATE TABLE `" . $wpdb->prefix . "subscriptions` (
   `subscription_ID` bigint(20) unsigned NOT NULL auto_increment,
   `subscription_email` TEXT NOT NULL,
@@ -125,7 +125,7 @@ function subscribe_by_email_s2_import() {
 			}
 		}
 	}
-	
+
 }
 
 class subscribe_by_email extends WP_Widget {
@@ -220,9 +220,9 @@ function subscribe_by_email_enqueue_js() {
 
 function subscribe_by_email_create_subscription($email,$note) {
 	global $wpdb;
-	
+
 	$count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->prefix . "subscriptions WHERE subscription_email = '" . $email . "'");
-	
+
 	if ( $count < 1 ) {
 		$wpdb->query( "INSERT INTO " . $wpdb->prefix . "subscriptions (subscription_email, subscription_note, subscription_created, subscription_type) VALUES ( '" . $email . "', '" . $note . "', '" . time() . "', 'instant')" );
 	}
@@ -274,9 +274,9 @@ function subscribe_by_email_process_instant_subscriptions($new_status, $old_stat
 
 function subscribe_by_email_send_instant_notifications($post) {
 	global $wpdb, $subscribe_by_email_instant_notification_content;
-	
+
 	$subscribe_by_email_excerpts = get_option('subscribe_by_email_excerpts', 'no');
-	
+
 	$cancel_url = get_option('siteurl') . '?action=cancel-subscription&sid=';
 	$admin_email = get_option('admin_email');
 	$post_id = $post->ID;
@@ -304,10 +304,10 @@ function subscribe_by_email_send_instant_notifications($post) {
 	}
 	$subscribe_by_email_instant_notification_content = str_replace("POST_URL",$post_url,$subscribe_by_email_instant_notification_content);
 	$subscribe_by_email_instant_notification_content = str_replace("\'","'",$subscribe_by_email_instant_notification_content);
-	
+
 	$query = "SELECT * FROM " . $wpdb->prefix . "subscriptions WHERE subscription_type = 'instant'";
 	$subscription_emails = $wpdb->get_results( $query, ARRAY_A );
-	
+
 	if (count($subscription_emails) > 0){
 		foreach ($subscription_emails as $subscription_email){
 		//=========================================================//
@@ -331,14 +331,14 @@ function subscribe_by_email_add_user_to_blog($user_id, $role, $blog_id) {
 			if ( is_numeric($count) ) {
 				if ( $count > 0 ) {
 					$email = $wpdb->get_var( "SELECT user_email FROM " . $wpdb->users . " WHERE ID = '" . $user_id . "'");
-					$email_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->prefix . "subscriptions WHERE subscription_email = '" . $email . "'");					
+					$email_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->prefix . "subscriptions WHERE subscription_email = '" . $email . "'");
 					if ( $email_count < 1 ) {
 						$wpdb->query( "INSERT INTO " . $wpdb->prefix . "subscriptions (subscription_email, subscription_note, subscription_created, subscription_type) VALUES ( '" . $email . "', 'Auto Subscription', '" . time() . "', 'instant')" );
 					}
 				}
 			}
 		}
-	restore_current_blog();	
+	restore_current_blog();
 }
 
 function subscribe_by_email_check_blog_users() {
@@ -346,7 +346,7 @@ function subscribe_by_email_check_blog_users() {
 	if ( get_option('subscribe_by_email_auto_subscribe', 'no') != 'no' && get_option( "subscribe_by_email_installed" ) == 'yes' ) {
 		$query = "SELECT user_id FROM " . $wpdb->usermeta . " WHERE meta_key = '" . $wpdb->prefix . "capabilities'";
 		$users = $wpdb->get_results( $query, ARRAY_A );
-		
+
 		if ( count( $users ) > 0 ) {
 			foreach ( $users as $user ) {
 				$email = $wpdb->get_var( "SELECT user_email FROM " . $wpdb->users . " WHERE ID = '" . $user['user_id'] . "'");
@@ -374,7 +374,7 @@ function subscribe_by_email_output_js() {
 			http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			http.setRequestHeader("Content-length", params.length);
 			http.setRequestHeader("Connection", "close");
-			
+
 			http.onreadystatechange = function() {
 				if(http.readyState == 4 && http.status == 200) {
 					Modalbox.show('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully created', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>',{title: '', width: 600});
@@ -395,7 +395,7 @@ function subscribe_by_email_output_js() {
 			http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			http.setRequestHeader("Content-length", params.length);
 			http.setRequestHeader("Connection", "close");
-			
+
 			http.onreadystatechange = function() {
 				if(http.readyState == 4 && http.status == 200) {
 					Modalbox.show('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>',{title: '', width: 600});
@@ -414,7 +414,7 @@ function subscribe_by_email_output_modalbox_js() {
     <SCRIPT LANGUAGE='JavaScript'>
 	if (!window.Modalbox)
 		var Modalbox = new Object();
-	
+
 	Modalbox.Methods = {
 		overrideAlert: false, // Override standard browser alert message with ModalBox
 		focusableElements: new Array,
@@ -436,11 +436,11 @@ function subscribe_by_email_output_modalbox_js() {
 			method: 'get' // Default Ajax request method
 		},
 		_options: new Object,
-		
+
 		setOptions: function(options) {
 			Object.extend(this.options, options || {});
 		},
-		
+
 		_init: function(options) {
 			// Setting up original options with default options
 			Object.extend(this._options, this.options);
@@ -464,30 +464,30 @@ function subscribe_by_email_output_modalbox_js() {
 			// Inserting into DOM
 			document.body.insertBefore(this.MBwindow, document.body.childNodes[0]);
 			document.body.insertBefore(this.MBoverlay, document.body.childNodes[0]);
-			
+
 			// Initial scrolling position of the window. To be used for remove scrolling effect during ModalBox appearing
 			this.initScrollX = window.pageXOffset || document.body.scrollLeft || document.documentElement.scrollLeft;
 			this.initScrollY = window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop;
-			
+
 			//Adding event observers
 			this.hide = this.hide.bindAsEventListener(this);
 			this.close = this._hide.bindAsEventListener(this);
 			this.kbdHandler = this.kbdHandler.bindAsEventListener(this);
 			this._initObservers();
-	
+
 			this.initialized = true; // Mark as initialized
 			this.active = true; // Mark as active
 			this.currFocused = 0;
 		},
-		
+
 		show: function(content, options) {
 			if(!this.initialized) this._init(options); // Check for is already initialized
-			
+
 			this.content = content;
 			this.setOptions(options);
-			
+
 			Element.update(this.MBcaption, this.options.title); // Updating title of the MB
-			
+
 			if(this.MBwindow.style.display == "none") { // First modal box appearing
 				this._appear();
 				this.event("onShow"); // Passing onShow callback
@@ -495,9 +495,9 @@ function subscribe_by_email_output_modalbox_js() {
 			else { // If MB already on the screen, update it
 				this._update();
 				this.event("onUpdate"); // Passing onUpdate callback
-			} 
+			}
 		},
-		
+
 		hide: function(options) { // External hide method to use from external HTML and JS
 			if(this.initialized) {
 				if(options) Object.extend(this.options, options); // Passing callbacks
@@ -509,17 +509,17 @@ function subscribe_by_email_output_modalbox_js() {
 				}
 			} else throw("Modalbox isn't initialized");
 		},
-		
+
 		alert: function(message){
 			var html = '<div class="MB_alert"><p>' + message + '</p><input type="button" onclick="Modalbox.hide()" value="OK" /></div>';
 			Modalbox.show(html, {title: 'Alert: ' + document.title, width: 300});
 		},
-			
+
 		_hide: function(event) { // Internal hide method to use inside MB class
 			if(event) Event.stop(event);
 			this.hide();
 		},
-		
+
 		_appear: function() { // First appearing of MB
 			if (navigator.appVersion.match(/\bMSIE\b/))
 				this._toggleSelects();
@@ -529,14 +529,14 @@ function subscribe_by_email_output_modalbox_js() {
 			if(this.options.transitions) {
 				Element.setStyle(this.MBoverlay, {opacity: 0});
 				new Effect.Fade(this.MBoverlay, {
-						from: 0, 
-						to: this.options.overlayOpacity, 
-						duration: this.options.overlayDuration, 
+						from: 0,
+						to: this.options.overlayOpacity,
+						duration: this.options.overlayDuration,
 						afterFinish: function() {
 							new Effect.SlideDown(this.MBwindow, {
-								duration: this.options.slideDownDuration, 
-								afterFinish: function(){ 
-									this._setPosition(); 
+								duration: this.options.slideDownDuration,
+								afterFinish: function(){
+									this._setPosition();
 									this.loadContent();
 								}.bind(this)
 							});
@@ -545,13 +545,13 @@ function subscribe_by_email_output_modalbox_js() {
 			} else {
 				Element.setStyle(this.MBoverlay, {opacity: this.options.overlayOpacity});
 				Element.show(this.MBwindow);
-				this._setPosition(); 
+				this._setPosition();
 				this.loadContent();
 			}
 			this._setWidthAndPosition = this._setWidthAndPosition.bindAsEventListener(this);
 			Event.observe(window, "resize", this._setWidthAndPosition);
 		},
-		
+
 		resize: function(byWidth, byHeight, options) { // Change size of MB without loading content
 			var wHeight = Element.getHeight(this.MBwindow);
 			var wWidth = Element.getWidth(this.MBwindow);
@@ -561,8 +561,8 @@ function subscribe_by_email_output_modalbox_js() {
 			this.setOptions(options); // Passing callbacks
 			if(this.options.transitions) {
 				new Effect.ScaleBy(this.MBwindow, byWidth, newHeight, {
-						duration: this.options.resizeDuration, 
-						afterFinish: function() { 
+						duration: this.options.resizeDuration,
+						afterFinish: function() {
 							this.event("_afterResize"); // Passing internal callback
 							this.event("afterResize"); // Passing callback
 						}.bind(this)
@@ -573,11 +573,11 @@ function subscribe_by_email_output_modalbox_js() {
 					this.event("_afterResize"); // Passing internal callback
 					this.event("afterResize"); // Passing callback
 				}.bind(this), 1);
-				
+
 			}
-			
+
 		},
-		
+
 		_update: function() { // Updating MB in case of wizards
 			Element.update(this.MBcontent, "");
 			this.MBcontent.appendChild(this.MBloading);
@@ -585,27 +585,27 @@ function subscribe_by_email_output_modalbox_js() {
 			this.currentDims = [this.MBwindow.offsetWidth, this.MBwindow.offsetHeight];
 			Modalbox.resize((this.options.width - this.currentDims[0]), (this.options.height - this.currentDims[1]), {_afterResize: this._loadAfterResize.bind(this) });
 		},
-		
+
 		loadContent: function () {
 			if(this.event("beforeLoad") != false) { // If callback passed false, skip loading of the content
 				if(typeof this.content == 'string') {
-					
+
 					var htmlRegExp = new RegExp(/<\/?[^>]+>/gi);
 					if(htmlRegExp.test(this.content)) { // Plain HTML given as a parameter
 						this._insertContent(this.content);
 						this._putContent();
-					} else 
-						new Ajax.Request( this.content, { method: this.options.method.toLowerCase(), parameters: this.options.params, 
+					} else
+						new Ajax.Request( this.content, { method: this.options.method.toLowerCase(), parameters: this.options.params,
 							onComplete: function(transport) {
 								var response = new String(transport.responseText);
 								this._insertContent(transport.responseText.stripScripts());
-								response.extractScripts().map(function(script) { 
+								response.extractScripts().map(function(script) {
 									return eval(script.replace("<!--", "").replace("// -->", ""));
 								}.bind(window));
 								this._putContent();
 							}.bind(this)
 						});
-						
+
 				} else if (typeof this.content == 'object') {// HTML Object is given
 					this._insertContent(this.content);
 					this._putContent();
@@ -615,7 +615,7 @@ function subscribe_by_email_output_modalbox_js() {
 				}
 			}
 		},
-		
+
 		_insertContent: function(content){
 			Element.extend(this.MBcontent);
 			this.MBcontent.update("");
@@ -631,7 +631,7 @@ function subscribe_by_email_output_modalbox_js() {
 				this.MBcontent.down().show(); // Toggle visibility for hidden nodes
 			}
 		},
-		
+
 		_putContent: function(){
 			// Prepare and resize modal box for content
 			if(this.options.height == this._options.height)
@@ -652,7 +652,7 @@ function subscribe_by_email_output_modalbox_js() {
 				this.event("afterLoad"); // Passing callback
 			}
 		},
-		
+
 		activate: function(options){
 			this.setOptions(options);
 			this.active = true;
@@ -661,7 +661,7 @@ function subscribe_by_email_output_modalbox_js() {
 			Element.show(this.MBclose);
 			if(this.options.transitions && this.options.inactiveFade) new Effect.Appear(this.MBwindow, {duration: this.options.slideUpDuration});
 		},
-		
+
 		deactivate: function(options) {
 			this.setOptions(options);
 			this.active = false;
@@ -670,25 +670,25 @@ function subscribe_by_email_output_modalbox_js() {
 			Element.hide(this.MBclose);
 			if(this.options.transitions && this.options.inactiveFade) new Effect.Fade(this.MBwindow, {duration: this.options.slideUpDuration, to: .75});
 		},
-		
+
 		_initObservers: function(){
 			Event.observe(this.MBclose, "click", this.close);
 			if(this.options.overlayClose) Event.observe(this.MBoverlay, "click", this.hide);
 			Event.observe(document, "keypress", Modalbox.kbdHandler );
 		},
-		
+
 		_removeObservers: function(){
 			Event.stopObserving(this.MBclose, "click", this.close);
 			if(this.options.overlayClose) Event.stopObserving(this.MBoverlay, "click", this.hide);
 			Event.stopObserving(document, "keypress", Modalbox.kbdHandler );
 		},
-		
+
 		_loadAfterResize: function() {
 			this._setWidth();
 			this._setPosition();
 			this.loadContent();
 		},
-		
+
 		_setFocus: function() { // Setting focus to be looped inside current MB
 			if(this.focusableElements.length > 0) {
 				var i = 0;
@@ -701,13 +701,13 @@ function subscribe_by_email_output_modalbox_js() {
 			} else
 				$("MB_close").focus(); // If no focusable elements exist focus on close button
 		},
-		
+
 		_findFocusableElements: function(){ // Collect form elements or links from MB content
 			var els = this.MBcontent.getElementsBySelector('input:not([type~=hidden]), select, textarea, button, a[href]');
 			els.invoke('addClassName', 'MB_focusable');
 			return this.MBcontent.getElementsByClassName('MB_focusable');
 		},
-		
+
 		kbdHandler: function(e) {
 			var node = Event.element(e);
 			switch(e.keyCode) {
@@ -730,7 +730,7 @@ function subscribe_by_email_output_modalbox_js() {
 							this.focusableElements[this.currFocused].focus();
 						}
 					}
-					break;			
+					break;
 				case Event.KEY_ESC:
 					if(this.active) this._hide(e);
 					break;
@@ -754,14 +754,14 @@ function subscribe_by_email_output_modalbox_js() {
 					break;
 			}
 		},
-		
+
 		_preventScroll: function(event) { // Disabling scrolling by "space" key
-			if(!["input", "textarea", "select", "button"].include(Event.element(event).tagName.toLowerCase())) 
+			if(!["input", "textarea", "select", "button"].include(Event.element(event).tagName.toLowerCase()))
 				Event.stop(event);
 		},
-		
+
 		_deinit: function()
-		{	
+		{
 			this._removeObservers();
 			Event.stopObserving(window, "resize", this._setWidthAndPosition );
 			if(this.options.transitions) {
@@ -772,7 +772,7 @@ function subscribe_by_email_output_modalbox_js() {
 			}
 			Element.setStyle(this.MBcontent, {overflow: '', height: ''});
 		},
-		
+
 		_removeElements: function () {
 			if (navigator.appVersion.match(/\bMSIE\b/)) {
 				this._prepareIE("", ""); // If set to auto MSIE will show horizontal scrolling
@@ -780,7 +780,7 @@ function subscribe_by_email_output_modalbox_js() {
 			}
 			Element.remove(this.MBoverlay);
 			Element.remove(this.MBwindow);
-			
+
 			/* Replacing prefixes 'MB_' in IDs for the original content */
 			if(typeof this.content == 'object' && this.content.id && this.content.id.match(/MB_/)) {
 				this.content.getElementsBySelector('*[id]').each(function(el){ el.id = el.id.replace(/MB_/, ""); });
@@ -788,33 +788,33 @@ function subscribe_by_email_output_modalbox_js() {
 			}
 			/* Initialized will be set to false */
 			this.initialized = false;
-			
+
 			if (navigator.appVersion.match(/\bMSIE\b/))
 				this._toggleSelects(); // Toggle back 'select' elements in IE
 			this.event("afterHide"); // Passing afterHide callback
 			this.setOptions(this._options); //Settings options object into intial state
 		},
-		
+
 		_setOverlay: function () {
 			if (navigator.appVersion.match(/\bMSIE\b/)) {
 				this._prepareIE("100%", "hidden");
 				if (!navigator.appVersion.match(/\b7.0\b/)) window.scrollTo(0,0); // Disable scrolling on top for IE7
 			}
 		},
-		
+
 		_setWidth: function () { //Set size
 			Element.setStyle(this.MBwindow, {width: this.options.width + "px", height: this.options.height + "px"});
 		},
-		
+
 		_setPosition: function () {
 			Element.setStyle(this.MBwindow, {left: Math.round((Element.getWidth(document.body) - Element.getWidth(this.MBwindow)) / 2 ) + "px"});
 		},
-		
+
 		_setWidthAndPosition: function () {
 			Element.setStyle(this.MBwindow, {width: this.options.width + "px"});
 			this._setPosition();
 		},
-		
+
 		_getScrollTop: function () { //From: http://www.quirksmode.org/js/doctypes.html
 			var theTop;
 			if (document.documentElement && document.documentElement.scrollTop)
@@ -828,10 +828,10 @@ function subscribe_by_email_output_modalbox_js() {
 			var body = document.getElementsByTagName('body')[0];
 			body.style.height = height;
 			body.style.overflow = overflow;
-	  
+
 			var html = document.getElementsByTagName('html')[0];
 			html.style.height = height;
-			html.style.overflow = overflow; 
+			html.style.overflow = overflow;
 		},
 		// For IE browsers -- hiding all SELECT elements
 		_toggleSelects: function() {
@@ -841,25 +841,25 @@ function subscribe_by_email_output_modalbox_js() {
 			} else {
 				selects.invoke('setStyle', {'visibility': ''});
 			}
-				
+
 		},
 		event: function(eventName) {
 			if(this.options[eventName]) {
 				var returnValue = this.options[eventName](); // Executing callback
 				this.options[eventName] = null; // Removing callback after execution
-				if(returnValue != undefined) 
+				if(returnValue != undefined)
 					return returnValue;
-				else 
+				else
 					return true;
 			}
 			return true;
 		}
 	}
-	
+
 	Object.extend(Modalbox, Modalbox.Methods);
-	
+
 	if(Modalbox.overrideAlert) window.alert = Modalbox.alert;
-	
+
 	Effect.ScaleBy = Class.create();
 	Object.extend(Object.extend(Effect.ScaleBy.prototype, Effect.Base.prototype), {
 	  initialize: function(element, byWidth, byHeight, options) {
@@ -874,10 +874,10 @@ function subscribe_by_email_output_modalbox_js() {
 	  },
 	  setup: function() {
 		this.elementPositioning = this.element.getStyle('position');
-		  
+
 		this.originalTop  = this.element.offsetTop;
 		this.originalLeft = this.element.offsetLeft;
-		
+
 		this.dims = null;
 		if(this.options.scaleMode=='box')
 		  this.dims = [this.element.offsetHeight, this.element.offsetWidth];
@@ -886,25 +886,25 @@ function subscribe_by_email_output_modalbox_js() {
 		if(!this.dims)
 		  this.dims = [this.options.scaleMode.originalHeight,
 					   this.options.scaleMode.originalWidth];
-		  
+
 		this.deltaY = this.options.scaleByHeight;
 		this.deltaX = this.options.scaleByWidth;
 	  },
 	  update: function(position) {
 		var currentHeight = this.dims[0] + (this.deltaY * position);
 		var currentWidth = this.dims[1] + (this.deltaX * position);
-		
+
 		currentHeight = (currentHeight > 0) ? currentHeight : 0;
 		currentWidth = (currentWidth > 0) ? currentWidth : 0;
-		
+
 		this.setDimensions(currentHeight, currentWidth);
 	  },
-	
+
 	  setDimensions: function(height, width) {
 		var d = {};
 		d.width = width + 'px';
 		d.height = height + 'px';
-		
+
 		var topd  = Math.round((height - this.dims[0])/2);
 		var leftd = Math.round((width  - this.dims[1])/2);
 		if(this.elementPositioning == 'absolute' || this.elementPositioning == 'fixed') {
@@ -932,7 +932,7 @@ function subscribe_by_email_output_modalbox_css() {
 		background-color: #000!important;
 	}
 	#MB_overlay[id] { position: fixed; }
-	
+
 	#MB_window {
 		position:absolute;
 		top: 0;
@@ -941,23 +941,23 @@ function subscribe_by_email_output_modalbox_css() {
 		z-index:10000;
 	}
 	#MB_window[id] { position: fixed!important; }
-	
+
 	#MB_frame {
 		position:relative;
 		background-color: #EFEFEF;
 		height:100%;
 	}
-	
+
 	#MB_header {
 		margin:0;
 		height: 28px;
 	}
-	
+
 	#MB_content {
 		padding: 6px .75em;
 		overflow:auto;
 	}
-	
+
 	#MB_caption {
 		font: bold 85% "Lucida Grande", Arial, sans-serif;
 		text-shadow: #FFF 0 1px 0;
@@ -965,7 +965,7 @@ function subscribe_by_email_output_modalbox_css() {
 		margin: 0;
 		text-align: left;
 	}
-	
+
 	#MB_close {
 		display:block;
 		position:absolute;
@@ -978,13 +978,13 @@ function subscribe_by_email_output_modalbox_css() {
 	#MB_close:hover {
 		background:transparent;
 	}
-	
+
 	#MB_loading {
 		padding: 1.5em;
 		text-indent: -10000px;
 		background: transparent url(spinner.gif) 50% 0 no-repeat;
 	}
-	
+
 	/* Color scheme */
 	#MB_window {
 		background-color:#EFEFEF;
@@ -998,8 +998,8 @@ function subscribe_by_email_output_modalbox_css() {
 	#MB_caption { color:#000 }
 	#MB_close { color:#777 }
 	#MB_close:hover { color:#000 }
-	
-	
+
+
 	/* Alert message */
 	.MB_alert {
 		margin: 10px 0;
@@ -1031,34 +1031,34 @@ function subscribe_by_email_manage_output() {
 			$apage = isset( $_GET['apage'] ) ? intval( $_GET['apage'] ) : 1;
 			$num = isset( $_GET['num'] ) ? intval( $_GET['num'] ) : 15;
 			$s = wp_specialchars( trim( $_GET[ 's' ] ) );
-	
+
 			$query = "SELECT * FROM " . $wpdb->prefix . "subscriptions ";
-	
+
 			if( isset($_GET['s']) ) {
 				$query .= " WHERE subscription_email LIKE '%" . $s . "%' ";
 			}
-	
+
 			if( isset( $_GET['sortby'] ) == false ) {
 				$_GET['sortby'] = 'id';
 			}
-	
+
 			if( $_GET['sortby'] == 'created' ) {
 				$query .= ' ORDER BY subscription_created ';
 			} elseif( $_GET['sortby'] == 'id' ) {
 				$query .= ' ORDER BY subscription_ID ';
 			}
-	
+
 			$query .= ( $_GET['order'] == 'DESC' ) ? 'ASC' : 'DESC';
-	
+
 			if( !empty($s) ) {
 				$total = $wpdb->get_var( str_replace('SELECT *', 'SELECT COUNT(*)', $query) );
 			} else {
 				$total = $wpdb->get_var( "SELECT COUNT(*) FROM " . $wpdb->prefix . "subscriptions ");
 			}
-	
+
 			$query .= " LIMIT " . intval( ( $apage - 1 ) * $num) . ", " . intval( $num );
 			$subscriptions = $wpdb->get_results( $query, ARRAY_A );
-	
+
 			// Pagination
 			$url2 = "&amp;order=" . $_GET['order'] . "&amp;sortby=" . $_GET['sortby'] . "&amp;s=";
 			if( isset($_GET['s']) ) {
@@ -1073,18 +1073,18 @@ function subscribe_by_email_manage_output() {
 			?>
 			<h2><?php _e('Subscriptions', 'subscribe_by_email') ?></h2>
 			<form id="form-subscriptions-list" action="admin.php?page=subscription&action=cancel_subscriptions" method="post">
-	
+
 			<div class="tablenav">
 				<?php if ( $navigation ) echo "<div class='tablenav-pages'>" . $navigation . "</div>"; ?>
-	
+
 				<div class="alignleft">
 					<input type="submit" value="<?php _e('Cancel Subscription(s)', 'subscribe_by_email') ?>" name="cancel" class="button-secondary delete" />
 					<br class="clear" />
 				</div>
 			</div>
-	
+
 			<br class="clear" />
-	
+
 			<?php
 			// define the columns to display, the syntax is 'internal name' => 'display name'
 			$list_columns = array(
@@ -1092,7 +1092,7 @@ function subscribe_by_email_manage_output() {
 				'created' => __('Created', 'subscribe_by_email'),
 				'note'   => __('Note', 'subscribe_by_email')
 			);
-	
+
 			$sortby_url = "s=";
 			if( $_GET[ 'blog_ip' ] ) {
 				$sortby_url .= "&ip_address=" . urlencode( $s );
@@ -1100,7 +1100,7 @@ function subscribe_by_email_manage_output() {
 				$sortby_url .= urlencode( $s ) . "&ip_address=" . urlencode( $s );
 			}
 			?>
-	
+
 			<table width="100%" cellpadding="3" cellspacing="3" class="widefat">
 				<thead>
 					<tr>
@@ -1115,11 +1115,11 @@ function subscribe_by_email_manage_output() {
 				<?php
 				if ($subscriptions) {
 					$bgcolor = $class = '';
-					foreach ($subscriptions as $subscription) { 
+					foreach ($subscriptions as $subscription) {
 						$class = ('alternate' == $class) ? '' : 'alternate';
-	
+
 						echo "<tr class='$class'>";
-	
+
 						foreach( $list_columns as $column_name=>$column_display_name ) {
 							switch($column_name) {
 								case 'email': ?>
@@ -1131,14 +1131,14 @@ function subscribe_by_email_manage_output() {
 									</th>
 								<?php
 								break;
-								
+
 								case 'created': ?>
 									<th scope="row">
 										<?php echo date(get_option('date_format'),$subscription['subscription_created']); ?>
 									</th>
 								<?php
 								break;
-								
+
 								case 'note': ?>
 									<th scope="row">
 										<?php echo __($subscription['subscription_note'], 'subscribe_by_email'); ?>
@@ -1152,9 +1152,9 @@ function subscribe_by_email_manage_output() {
 						<?php
 					}
 				} else { ?>
-					<tr> 
-						<td colspan="8"><?php _e('No subscriptions found.', 'subscribe_by_email') ?></td> 
-					</tr> 
+					<tr>
+						<td colspan="8"><?php _e('No subscriptions found.', 'subscribe_by_email') ?></td>
+					</tr>
 				<?php
 				}
 				?>
@@ -1162,7 +1162,7 @@ function subscribe_by_email_manage_output() {
 			</table>
 			</form>
 			</div>
-	
+
 			<div class="wrap">
 				<h2><?php _e('Search Subscriptions', 'subscribe_by_email') ?></h2>
 				<form method="get" action="admin.php?page=subscription">
@@ -1176,7 +1176,7 @@ function subscribe_by_email_manage_output() {
 						<input class="button" type="submit" name="go" value="<?php _e('Search Subscriptions', 'subscribe_by_email') ?>" /></p>
 				</form>
 			</div>
-	
+
 			<div class="wrap">
 				<h2><?php _e('Add Subscription', 'subscribe_by_email') ?></h2>
 				<form method="post" action="admin.php?page=subscription&action=create_subscription">
@@ -1184,7 +1184,7 @@ function subscribe_by_email_manage_output() {
 						<tr class="form-field form-required">
 							<th style="text-align:center;" scope='row'><?php _e('Email', 'subscribe_by_email') ?></th>
 							<td><input name="email" type="text" size="20" title="<?php _e('Email', 'subscribe_by_email') ?>"/></td>
-	
+
 						</tr>
 						<tr class="form-field">
 							<td colspan='2'><?php _e('A new subscription will be created for the above email address.', 'subscribe_by_email') ?></td>
@@ -1245,7 +1245,7 @@ function subscribe_by_email_manage_output() {
 
 function subscribe_by_email_settings_output() {
 	global $wpdb, $wp_roles, $current_user;
-	
+
 	if(!current_user_can('manage_options')) {
 		echo "<p>" . __('Nice Try...', 'subscribe_by_email') . "</p>";  //If accessed properly, this message doesn't appear.
 		return;
@@ -1278,7 +1278,7 @@ function subscribe_by_email_settings_output() {
             <br /><?php _e('Include post excerpts in notification emails.', 'subscribe_by_email') ?></td>
             </tr>
             </table>
-            
+
             <p class="submit">
             <input type="submit" name="Submit" value="<?php _e('Save Changes', 'subscribe_by_email') ?>" />
             </p>
