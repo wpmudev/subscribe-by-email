@@ -131,6 +131,7 @@ function subscribe_by_email_s2_import() {
 function subscribe_by_email_form() {
 	$content = '';
 	$content .= '<form>';
+	$content .= '<div id="subscribe-by-email-msg"></div>';
         $content .= '<input id="subscription_email" name="subscription_email" style="width:97%;" maxlength="50" value="ex: john@hotmail.com" onfocus="this.value=\'\';" type="text">';
 	$content .= '<center>';
 	$content .= '<input type="button" class="button" name="create_subscription" value="'.__('Create Subscription', 'subscribe_by_email').'" style="width:99%;" onclick="SubscribeByEmailCreate();" />';
@@ -249,7 +250,7 @@ function subscribe_by_email_cancel_process() {
 	subscribe_by_email_cancel_subscription($_GET['sid']);
 	?>
 	<SCRIPT LANGUAGE='JavaScript'>
-	Modalbox.show('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>',{title: '', width: 600});
+	jQuery('#subscribe-by-email-msg').html('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>');
 	</script>
 	<?php
 	}
@@ -380,10 +381,9 @@ function subscribe_by_email_output_js() {
 			http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			http.setRequestHeader("Content-length", params.length);
 			http.setRequestHeader("Connection", "close");
-
 			http.onreadystatechange = function() {
 				if(http.readyState == 4 && http.status == 200) {
-					Modalbox.show('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully created', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>',{title: '', width: 600});
+					jQuery('#subscribe-by-email-msg').html('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully created', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>');
 					document.getElementById('subscription_email').value = '';
 				}
 			}
@@ -404,7 +404,7 @@ function subscribe_by_email_output_js() {
 
 			http.onreadystatechange = function() {
 				if(http.readyState == 4 && http.status == 200) {
-					Modalbox.show('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>',{title: '', width: 600});
+					jQuery('#subscribe-by-email-msg').html('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>');
 					document.getElementById('subscription_email').value = '';
 				}
 			}
@@ -517,8 +517,8 @@ function subscribe_by_email_output_modalbox_js() {
 		},
 
 		alert: function(message){
-			var html = '<div class="MB_alert"><p>' + message + '</p><input type="button" onclick="Modalbox.hide()" value="OK" /></div>';
-			Modalbox.show(html, {title: 'Alert: ' + document.title, width: 300});
+			var html = '<div class="MB_alert"><p>' + message + '</p><input type="button" onclick="jQuery(\'#subscribe-by-email-msg\').html();" value="OK" /></div>';
+			jQuery('#subscribe-by-email-msg').html(html);
 		},
 
 		_hide: function(event) { // Internal hide method to use inside MB class
