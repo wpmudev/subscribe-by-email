@@ -137,6 +137,7 @@ function subscribe_by_email_form() {
 	$content .= '<input type="button" class="button" name="create_subscription" value="'.__('Create Subscription', 'subscribe_by_email').'" style="width:99%;" onclick="SubscribeByEmailCreate();" />';
 	$content .= '</center>';
 	$content .= '</form>';
+
 	return $content;
 }
 
