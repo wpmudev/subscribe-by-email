@@ -128,6 +128,17 @@ function subscribe_by_email_s2_import() {
 
 }
 
+function subscribe_by_email_form() {
+	$content = '';
+	$content .= '<form>';
+        $content .= '<input id="subscription_email" name="subscription_email" style="width:97%;" maxlength="50" value="ex: john@hotmail.com" onfocus="this.value=\'\';" type="text">';
+	$content .= '<center>';
+	$content .= '<input type="button" class="button" name="create_subscription" value="'.__('Create Subscription', 'subscribe_by_email').'" style="width:99%;" onclick="SubscribeByEmailCreate();" />';
+	$content .= '</center>';
+	$content .= '</form>';
+	return $content;
+}
+
 class subscribe_by_email extends WP_Widget {
 
 	/**
@@ -157,12 +168,7 @@ class subscribe_by_email extends WP_Widget {
 			echo $before_title . $title . $after_title;
             ?>
             <ul>
-                <form>
-                <input id="subscription_email" name="subscription_email" style="width:97%;" maxlength="50" value="ex: john@hotmail.com" onfocus="this.value='';" type="text">
-                <center>
-                    <input type="button" class="button" name="create_subscription" value="<?php _e('Create Subscription', 'subscribe_by_email') ?>" style="width:99%;" onclick="SubscribeByEmailCreate();" />
-                </center>
-                </form>
+                <?php echo subscribe_by_email_form(); ?>
                 <br />
                 <p style="padding-top:10px;">
                 <?php echo $text; ?>
