@@ -1176,7 +1176,9 @@ function subscribe_by_email_manage_output() {
 
 			<div class="wrap">
 				<h2><?php _e('Search Subscriptions', 'subscribe_by_email') ?></h2>
-				<form method="get" action="admin.php?page=subscription">
+				<form method="get" action="admin.php">
+					<input type="hidden" name="page" value="subscription" />
+					<input type="hidden" name="action" value="search_subscription" />
 					<table class="form-table">
 						<tr class="form-field form-required">
 							<th style="text-align:center;" scope='row'><?php _e('Email', 'subscribe_by_email') ?></th>
