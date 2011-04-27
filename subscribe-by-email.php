@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Andrew Billits (Incsub)
-Version: 1.0.3
+Version: 1.0.4
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 */
@@ -26,7 +26,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$subscribe_by_email_current_version = '1.0.3';
+$subscribe_by_email_current_version = '1.0.4';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -250,7 +250,7 @@ function subscribe_by_email_cancel_process() {
 	if ( $_GET['action'] == 'cancel-subscription' ) {
 	subscribe_by_email_cancel_subscription($_GET['sid']);
 	?>
-	<SCRIPT LANGUAGE='JavaScript'>
+	<script type='text/javascript'>
 	jQuery('#subscribe-by-email-msg').html('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled', 'subscribe_by_email'); ?>!</strong></ceneter></p></div>');
 	</script>
 	<?php
@@ -374,7 +374,7 @@ function subscribe_by_email_check_blog_users() {
 
 function subscribe_by_email_output_js() {
 	?>
-    <SCRIPT LANGUAGE='JavaScript'>
+    <script type='text/javascript'>
 	function SubscribeByEmailCreate() {
 		var SubscriptionEmail = document.getElementById('subscription_email').value;
 		var http = new XMLHttpRequest();
@@ -422,7 +422,7 @@ function subscribe_by_email_output_js() {
 
 function subscribe_by_email_output_modalbox_js() {
 	?>
-    <SCRIPT LANGUAGE='JavaScript'>
+    <script type='text/javascript'>
 	if (!window.Modalbox)
 		var Modalbox = new Object();
 
@@ -1211,13 +1211,13 @@ function subscribe_by_email_manage_output() {
 			if  ( !empty( $_POST['email'] ) ) {
 				subscribe_by_email_create_subscription($_POST['email'],"Manual Subscription");
 				echo "
-				<SCRIPT LANGUAGE='JavaScript'>
+				<script type='text/javascript'>
 				window.location='admin.php?page=subscription&updated=true&updatedmsg=" . urlencode(__('Subscription created.', 'subscribe_by_email')) . "';
 				</script>
 				";
 			} else {
 				echo "
-				<SCRIPT LANGUAGE='JavaScript'>
+				<script type='text/javascript'>
 				window.location='admin.php?page=subscription';
 				</script>
 				";
@@ -1235,13 +1235,13 @@ function subscribe_by_email_manage_output() {
 					}
 				}
 				echo "
-				<SCRIPT LANGUAGE='JavaScript'>
+				<script type='text/javascript'>
 				window.location='admin.php?page=subscription&updated=true&updatedmsg=" . urlencode(__('Subscription(s) canceled.', 'subscribe_by_email')) . "';
 				</script>
 				";
 			} else {
 				echo "
-				<SCRIPT LANGUAGE='JavaScript'>
+				<script type='text/javascript'>
 				window.location='admin.php?page=subscription';
 				</script>
 				";
@@ -1301,7 +1301,7 @@ function subscribe_by_email_settings_output() {
 			update_option( "subscribe_by_email_auto_subscribe", $_POST[ 'subscribe_by_email_auto_subscribe' ] );
 			update_option( "subscribe_by_email_excerpts", $_POST[ 'subscribe_by_email_excerpts' ] );
 			echo "
-			<SCRIPT LANGUAGE='JavaScript'>
+			<script type='text/javascript'>
 			window.location='admin.php?page=subscription_settings&updated=true&updatedmsg=" . urlencode(__('Settings saved.', 'subscribe_by_email')) . "';
 			</script>
 			";
