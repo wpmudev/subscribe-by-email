@@ -1,9 +1,13 @@
 Plugin Name: Subscribe by Email
-Author: S H Mohanjith (Incsub), Andrew Billits (Incsub)
+Author: S H Mohanjith (Incsub)
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+1.0.5 - 05/08/2011 - Aaron Edwards
+----------------------------------------------------------------------
+- Fixed encoding for blog names that have quotes in them
 
 1.0.4 - 04/27/2011
 ----------------------------------------------------------------------

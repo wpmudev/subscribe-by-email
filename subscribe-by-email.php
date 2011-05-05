@@ -305,7 +305,10 @@ function subscribe_by_email_send_instant_notifications($post) {
 		}
 	}
 	//get blog name
-	$blog_name = get_option('blogname');
+ // The blogname option is escaped with esc_html on the way into the database in sanitize_option
+	// we want to reverse this for the plain text arena of emails.
+	$blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+	
 	//format notification text
 	$subscribe_by_email_instant_notification_content = str_replace("BLOGNAME",$blog_name,$subscribe_by_email_instant_notification_content);
 	$subscribe_by_email_instant_notification_content = str_replace("POST_TITLE",$post_title,$subscribe_by_email_instant_notification_content);
