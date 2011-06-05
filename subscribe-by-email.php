@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub)
-Version: 1.0.7
+Version: 1.0.8
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 */
@@ -26,11 +26,15 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$subscribe_by_email_current_version = '1.0.7';
+$subscribe_by_email_current_version = '1.0.8';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
-$subscribe_by_email_instant_notification_content = "Dear Subscriber,
+global $subscribe_by_email_instant_notification_content;
+
+$subscribe_by_email_instant_notification_content =
+	get_option('subscribe_by_email_instant_notification_content',
+"Dear Subscriber,
 
 BLOGNAME has posted a new item: POST_TITLE
 
@@ -41,7 +45,7 @@ EXCERPT
 Thanks,
 BLOGNAME
 
-Cancel subscription: CANCEL_URL";
+Cancel subscription: CANCEL_URL");
 //------------------------------------------------------------------------//
 //---Hook-----------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -1262,7 +1266,7 @@ function subscribe_by_email_manage_output() {
 }
 
 function subscribe_by_email_settings_output() {
-	global $wpdb, $wp_roles, $current_user;
+	global $wpdb, $wp_roles, $current_user, $subscribe_by_email_instant_notification_content;
 
 	if(!current_user_can('manage_options')) {
 		echo "<p>" . __('Nice Try...', 'subscribe_by_email') . "</p>";  //If accessed properly, this message doesn't appear.
@@ -1281,22 +1285,30 @@ function subscribe_by_email_settings_output() {
 			<h2><?php _e('Settings', 'subscribe_by_email') ?></h2>
             <form method="post" action="admin.php?page=subscription_settings&action=process">
             <table class="form-table">
-            <tr valign="top">
-            <th scope="row"><?php _e('Auto-subscribe Enabled', 'subscribe_by_email') ?></th>
-            <td>
-            <input name="subscribe_by_email_auto_subscribe" id="subscribe_by_email_auto_subscribe" value="yes" <?php if ( $subscribe_by_email_auto_subscribe == 'yes' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('Yes', 'subscribe_by_email'); ?><br />
-            <input name="subscribe_by_email_auto_subscribe" id="subscribe_by_email_auto_subscribe" value="no" <?php if ( $subscribe_by_email_auto_subscribe == 'no' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('No', 'subscribe_by_email'); ?>
-            <br /><?php _e('Automatically subscribe all users on this blog.', 'subscribe_by_email') ?></td>
-            </tr>
-            <tr valign="top">
-            <th scope="row"><?php _e('Excerpt Enabled', 'subscribe_by_email') ?></th>
-            <td>
-            <input name="subscribe_by_email_excerpts" id="subscribe_by_email_excerpts" value="yes" <?php if ( $subscribe_by_email_excerpts == 'yes' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('Yes', 'subscribe_by_email'); ?><br />
-            <input name="subscribe_by_email_excerpts" id="subscribe_by_email_excerpts" value="no" <?php if ( $subscribe_by_email_excerpts == 'no' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('No', 'subscribe_by_email'); ?>
-            <br /><?php _e('Include post excerpts in notification emails.', 'subscribe_by_email') ?></td>
-            </tr>
+		<tr valign="top">
+		    <th scope="row"><?php _e('Auto-subscribe Enabled', 'subscribe_by_email') ?></th>
+		    <td>
+		    <input name="subscribe_by_email_auto_subscribe" id="subscribe_by_email_auto_subscribe" value="yes" <?php if ( $subscribe_by_email_auto_subscribe == 'yes' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('Yes', 'subscribe_by_email'); ?><br />
+		    <input name="subscribe_by_email_auto_subscribe" id="subscribe_by_email_auto_subscribe" value="no" <?php if ( $subscribe_by_email_auto_subscribe == 'no' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('No', 'subscribe_by_email'); ?>
+		    <br /><?php _e('Automatically subscribe all users on this blog.', 'subscribe_by_email') ?></td>
+		</tr>
+		<tr valign="top">
+		    <th scope="row"><?php _e('Excerpt Enabled', 'subscribe_by_email') ?></th>
+		    <td>
+		    <input name="subscribe_by_email_excerpts" id="subscribe_by_email_excerpts" value="yes" <?php if ( $subscribe_by_email_excerpts == 'yes' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('Yes', 'subscribe_by_email'); ?><br />
+		    <input name="subscribe_by_email_excerpts" id="subscribe_by_email_excerpts" value="no" <?php if ( $subscribe_by_email_excerpts == 'no' ) { echo 'checked="checked"'; } ?> type="radio"> <?php _e('No', 'subscribe_by_email'); ?>
+		    <br /><?php _e('Include post excerpts in notification emails.', 'subscribe_by_email') ?></td>
+		</tr>
+		<tr valign="top">
+		    <th scope="row"><?php _e('Notification Content', 'subscribe_by_email') ?></th>
+		    <td>
+			<textarea name="subscribe_by_email_instant_notification_content"
+				id="subscribe_by_email_instant_notification_content"
+				rows="12" cols="35"><?php print $subscribe_by_email_instant_notification_content; ?></textarea>
+			<br /><?php _e('You can use following variables BLOGNAME, POST_TITLE, POST_URL, EXCERPT, BLOGNAME and CANCEL_URL', 'subscribe_by_email') ?>
+		    </td>
+		</tr>
             </table>
-
             <p class="submit">
             <input type="submit" name="Submit" value="<?php _e('Save Changes', 'subscribe_by_email') ?>" />
             </p>
@@ -1307,6 +1319,7 @@ function subscribe_by_email_settings_output() {
 		case "process":
 			update_option( "subscribe_by_email_auto_subscribe", $_POST[ 'subscribe_by_email_auto_subscribe' ] );
 			update_option( "subscribe_by_email_excerpts", $_POST[ 'subscribe_by_email_excerpts' ] );
+			update_option( "subscribe_by_email_instant_notification_content", $_POST['subscribe_by_email_instant_notification_content']);
 			echo "
 			<script type='text/javascript'>
 			window.location='admin.php?page=subscription_settings&updated=true&updatedmsg=" . urlencode(__('Settings saved.', 'subscribe_by_email')) . "';
