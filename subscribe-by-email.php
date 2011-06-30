@@ -51,7 +51,7 @@ Cancel subscription: CANCEL_URL");
 //------------------------------------------------------------------------//
 add_action('admin_head', 'subscribe_by_email_make_current');
 add_action('admin_menu', 'subscribe_by_email_plug_pages');
-add_action('init', 'subscribe_by_email_enqueue_js');
+add_action('wp_enqueue_scripts', 'subscribe_by_email_enqueue_js');
 add_action('wp_head', 'subscribe_by_email_output_modalbox_css');
 add_action('wp_head', 'subscribe_by_email_output_modalbox_js');
 add_action('wp_head', 'subscribe_by_email_output_js',99);
