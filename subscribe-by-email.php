@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub)
-Version: 1.0.9
+Version: 1.1.0
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 */
@@ -26,7 +26,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$subscribe_by_email_current_version = '1.0.9';
+$subscribe_by_email_current_version = '1.1.0';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -63,6 +63,7 @@ add_action('init', 'subscribe_by_email_init');
 add_action('init', 'subscribe_by_email_cancel_process');
 add_action('init', 'subscribe_by_email_internal_cancel_subscription');
 add_action('init', 'subscribe_by_email_internal_create_subscription');
+add_action('sbe_send_scheduled_notifications','subscribe_by_email_send_scheduled_notifications');
 
 //------------------------------------------------------------------------//
 //---Functions------------------------------------------------------------//
@@ -112,8 +113,8 @@ function subscribe_by_email_blog_install() {
 }
 
 function subscribe_by_email_plug_pages() {
-	add_menu_page(__('Subscriptions', 'subscribe-by-email'), __('Subscriptions', 'subscribe-by-email'), 10, 'subscription', 'subscribe_by_email_manage_output');
-	add_submenu_page('subscription', __('Settings', 'subscribe-by-email'), __('Settings', 'subscribe-by-email'), 10, 'subscription_settings', 'subscribe_by_email_settings_output' );
+	add_menu_page(__('Subscriptions', 'subscribe-by-email'), __('Subscriptions', 'subscribe-by-email'), 'manage_options', 'subscription', 'subscribe_by_email_manage_output');
+	add_submenu_page('subscription', __('Settings', 'subscribe-by-email'), __('Settings', 'subscribe-by-email'), 'manage_options', 'subscription_settings', 'subscribe_by_email_settings_output' );
 }
 
 function subscribe_by_email_s2_import() {
@@ -256,7 +257,7 @@ function subscribe_by_email_cancel_subscription_by_email($email) {
 
 function subscribe_by_email_cancel_process() {
 	wp_enqueue_script('jquery');
-	if ( $_GET['action'] == 'cancel-subscription' ) {
+	if ( isset($_GET['action']) && $_GET['action'] == 'cancel-subscription' ) {
 	subscribe_by_email_cancel_subscription($_GET['sid']);
 	?>
 	<script type='text/javascript'>
@@ -267,19 +268,19 @@ function subscribe_by_email_cancel_process() {
 }
 
 function subscribe_by_email_internal_create_subscription() {
-	if ( $_POST['action'] == 'internal-create-subscription' ) {
+	if ( isset($_POST['action']) && $_POST['action'] == 'internal-create-subscription' ) {
 		if (!subscribe_by_email_create_subscription(str_replace("PLUS", "+", $_POST['email']),"Visitor Subscription")) {
 			header("HTTP/1.1 405 Method Not Allowed");
 			echo "Not allowed";
 			exit();
 		}
-	} else if ( $_POST['action'] == 'external-create-subscription') {
+	} else if ( isset($_POST['action']) && $_POST['action'] == 'external-create-subscription') {
 		return subscribe_by_email_create_subscription($_POST['subscription_email'],"Visitor Subscription");
 	}
 }
 
 function subscribe_by_email_internal_cancel_subscription() {
-	if ( $_POST['action'] == 'internal-cancel-subscription' ) {
+	if ( isset($_POST['action']) && $_POST['action'] == 'internal-cancel-subscription' ) {
 		subscribe_by_email_cancel_subscription_by_email(str_replace("PLUS", "+", $_POST['email']));
 	}
 }
@@ -293,6 +294,11 @@ function subscribe_by_email_process_instant_subscriptions($new_status, $old_stat
 			}
 		}
 	}
+}
+
+function subscribe_by_email_send_scheduled_notifications($post_id) {
+	$post = get_post($post_id);
+	subscribe_by_email_send_instant_notifications($post);
 }
 
 function subscribe_by_email_send_instant_notifications($post) {
@@ -339,18 +345,29 @@ function subscribe_by_email_send_instant_notifications($post) {
 	$query = "SELECT * FROM " . $wpdb->prefix . "subscriptions WHERE subscription_type = 'instant'";
 	$subscription_emails = $wpdb->get_results( $query, ARRAY_A );
 
-	if (count($subscription_emails) > 0){
+	if (count($subscription_emails) > 0 && get_post_meta($post->ID, 'sbe_notified', true) != 'yes') {
+		wp_schedule_single_event(time()+120, 'sbe_send_scheduled_notifications', array($post->ID));
+		
+		$i = 0;
 		foreach ($subscription_emails as $subscription_email){
-		//=========================================================//
-		$loop_notification_content = $subscribe_by_email_instant_notification_content;
-		//format notification text
-		$loop_notification_content = str_replace("CANCEL_URL",$cancel_url . $subscription_email['subscription_ID'],$loop_notification_content);
-		$subject_content = $blog_name . ': ' . __('New Post', 'subscribe-by-email');
-		$from_email = $admin_email;
-		$message_headers = "MIME-Version: 1.0\n" . "From: " . $blog_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
-		wp_mail($subscription_email['subscription_email'], $subject_content, $loop_notification_content, $message_headers);
-		//=========================================================//
+			$done_count = intval(get_post_meta($post->ID, 'sbe_notified', true));
+			if ($done_count > $i) {
+				$i++;
+				continue;
+			}
+			$i++;
+			//=========================================================//
+			$loop_notification_content = $subscribe_by_email_instant_notification_content;
+			//format notification text
+			$loop_notification_content = str_replace("CANCEL_URL",$cancel_url . $subscription_email['subscription_ID'],$loop_notification_content);
+			$subject_content = $blog_name . ': ' . __('New Post', 'subscribe-by-email');
+			$from_email = $admin_email;
+			$message_headers = "MIME-Version: 1.0\n" . "From: " . $blog_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
+			wp_mail($subscription_email['subscription_email'], $subject_content, $loop_notification_content, $message_headers);
+			update_post_meta($post->ID, 'sbe_notified', $i);
+			//=========================================================//
 		}
+		update_post_meta($post->ID, 'sbe_notified', 'yes');
 	}
 }
 
