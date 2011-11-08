@@ -7,6 +7,7 @@ Author: S H Mohanjith (Incsub), Philip John (Incsub)
 Version: 1.1.0
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
+Text Domain: subscribe-by-email
 */
 
 /*
