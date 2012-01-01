@@ -60,6 +60,7 @@ add_action('add_user_to_blog', 'subscribe_by_email_add_user_to_blog', 3, 3);
 add_action('admin_footer', 'subscribe_by_email_check_blog_users');
 add_action('init', 'subscribe_by_email_init');
 add_action('init', 'subscribe_by_email_external_create_subscription');
+add_action('wp_footer', 'subscribe_by_email_cancel_process');
 add_action('sbe_send_scheduled_notifications','subscribe_by_email_send_scheduled_notifications');
 
 add_action('wp_ajax_sbe_create_subscription', 'subscribe_by_email_internal_create_subscription');
@@ -281,7 +282,7 @@ function subscribe_by_email_cancel_process() {
 	subscribe_by_email_cancel_subscription($_GET['sid']);
 	?>
 	<script type='text/javascript'>
-	jQuery('#subscribe-by-email-msg').html('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled', 'subscribe-by-email'); ?>!</strong></ceneter></p></div>');
+	jQuery('#subscribe-by-email-msg').html('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled!', 'subscribe-by-email'); ?></strong></ceneter></p></div>');
 	</script>
 	<?php
 	}
