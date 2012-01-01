@@ -283,6 +283,7 @@ function subscribe_by_email_cancel_process() {
 	?>
 	<script type='text/javascript'>
 	jQuery('#subscribe-by-email-msg').html('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled!', 'subscribe-by-email'); ?></strong></ceneter></p></div>');
+	window.location += '#subscribe-by-email-msg';
 	</script>
 	<?php
 	}
