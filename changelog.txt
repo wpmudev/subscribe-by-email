@@ -5,6 +5,13 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.1.1 - 01/01/2012 - S H Mohanjith
+----------------------------------------------------------------------
+- Fixed: Undefined variables
+- Removed unused Modal Box js and css
+- Usability improvements
+- WordPress 3.3 improvements
+
 1.1.0 - 10/02/2011 - S H Mohanjith
 ----------------------------------------------------------------------
 - Fixed: Reschedule before timing out
