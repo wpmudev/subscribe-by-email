@@ -136,12 +136,13 @@ function subscribe_by_email_s2_import() {
 }
 
 function subscribe_by_email_form() {
+	global $sbe_button_text;
 	$content = '';
 	$content .= '<form method="post" id="subscribe-by-email-form">';
 	$content .= '<div id="subscribe-by-email-msg"></div>';
         $content .= '<input id="subscription_email" name="subscription_email" style="width:97%;" maxlength="50" value="ex: john@hotmail.com" onfocus="this.value=\'\';" type="text">';
 	$content .= '<center>';
-	$content .= '<input type="button" class="button" name="create_subscription" value="'.__('Create Subscription', 'subscribe-by-email').'" style="width:99%;" onclick="SubscribeByEmailCreate();" />';
+	$content .= '<input type="button" class="button" name="create_subscription" value="'.$sbe_button_text.'" style="width:99%;" onclick="SubscribeByEmailCreate();" />';
 	$content .= '</center>';
 	$content .= '<input type="hidden" name="action" value="external-create-subscription">';
 	$content .= '</form>';
@@ -169,13 +170,15 @@ class subscribe_by_email extends WP_Widget {
 	 * How to display the widget on the screen.
 	 */
 	function widget( $args, $instance ) {
+		global $sbe_button_text;
 		extract( $args );
 
 		$title = apply_filters('widget_title', $instance['title'] );
 		$text = stripslashes($instance['text']);
+		$sbe_button_text = stripslashes($instance['button_text']);
 
 		echo $before_widget;
-			echo $before_title . $title . $after_title;
+		echo $before_title . $title . $after_title;
             ?>
             <ul>
                 <?php echo subscribe_by_email_form(); ?>
@@ -197,6 +200,7 @@ class subscribe_by_email extends WP_Widget {
 		/* Strip tags for title and name to remove HTML (important for text inputs). */
 		$instance['title'] = strip_tags( $new_instance['title'] );
 		$instance['text'] = strip_tags( $new_instance['text'] );
+		$instance['button_text'] = strip_tags( $new_instance['button_text'] );
 
 		return $instance;
 	}
@@ -209,7 +213,7 @@ class subscribe_by_email extends WP_Widget {
 	function form( $instance ) {
 
 		/* Set up some default widget settings. */
-		$defaults = array( 'title' => __('Subscribe by Email', 'subscribe-by-email'), 'text' => __('Completely spam free, opt out any time.', 'subscribe-by-email'));
+		$defaults = array( 'title' => __('Subscribe by Email', 'subscribe-by-email'), 'text' => __('Completely spam free, opt out any time.', 'subscribe-by-email'), 'button_text' => __('Create Subscription', 'subscribe-by-email'));
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
 
 		<p>
@@ -219,6 +223,10 @@ class subscribe_by_email extends WP_Widget {
 		<p>
 			<label for="<?php echo $this->get_field_id( 'text' ); ?>"><?php _e('Text:', 'example', 'subscribe-by-email'); ?></label>
 			<input id="<?php echo $this->get_field_id( 'text' ); ?>" name="<?php echo $this->get_field_name( 'text' ); ?>" value="<?php echo $instance['text']; ?>" style="width:75%;" />
+		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'button_text' ); ?>"><?php _e('Subscribe button text:', 'example', 'subscribe-by-email'); ?></label>
+			<input id="<?php echo $this->get_field_id( 'button_text' ); ?>" name="<?php echo $this->get_field_name( 'button_text' ); ?>" value="<?php echo $instance['button_text']; ?>" style="width:75%;" />
 		</p>
 	<?php
 	}
