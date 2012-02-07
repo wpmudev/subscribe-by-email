@@ -2,7 +2,11 @@
 	function SubscribeByEmailCreate() {
 		var SubscriptionEmail = document.getElementById('subscription_email').value;
 		var http = new XMLHttpRequest();
-		if ( SubscriptionEmail != '' && SubscriptionEmail != 'ex: john@hotmail.com' ) {
+		if ( SubscriptionEmail != '' && SubscriptionEmail != 'ex: john@hotmail.com') {
+			if ( !SubscriptionEmail.match(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/) ) {
+				jQuery('#subscribe-by-email-msg').html('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong>'+sbe_localized.invalid_email+'</strong></ceneter></p></div>');
+				return false;
+			}
 			var url = sbe_localized.site_url;
 			var params = "action=sbe_create_subscription&email=" + SubscriptionEmail.replace("+","PLUS");
 			http.open("POST", url, true);

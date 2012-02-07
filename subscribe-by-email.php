@@ -247,6 +247,7 @@ function subscribe_by_email_enqueue_js() {
 		'already_subscribed' => __('You are already subscribed!', 'subscribe-by-email'),
 		'subscription_cancelled' => __('Your subscription has been successfully canceled!', 'subscribe-by-email'),
 		'failed_to_cancel_subscription' => __('Failed to cancel your subscription!', 'subscribe-by-email'),
+		'invalid_email' => __('Invalid e-mail address!', 'subscribe-by-email'),
 	);
 	//wp_enqueue_script('sbe_modal_box');
 	wp_enqueue_script('sbe_frontend');
@@ -262,6 +263,10 @@ function subscribe_by_email_enqueue_css() {
 
 function subscribe_by_email_create_subscription($email,$note) {
 	global $wpdb;
+	
+	if (!is_email($_POST['email'])) {
+		return false;
+	}
 
 	$count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->prefix . "subscriptions WHERE subscription_email = '" . $email . "'");
 
@@ -299,6 +304,11 @@ function subscribe_by_email_cancel_process() {
 
 function subscribe_by_email_internal_create_subscription() {
 	if ( isset($_POST['action']) && $_POST['action'] == 'sbe_create_subscription' ) {
+		if (!is_email($_POST['email'])) {
+			header("HTTP/1.1 405 Method Not Allowed");
+			echo "Not an e-mail";
+			exit();
+		}
 		if (!subscribe_by_email_create_subscription(str_replace("PLUS", "+", $_POST['email']),"Visitor Subscription")) {
 			header("HTTP/1.1 405 Method Not Allowed");
 			echo "Not allowed";
