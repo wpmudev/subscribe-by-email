@@ -9,6 +9,7 @@ Change Log:
 ----------------------------------------------------------------------
 - Make button text a widget option
 - E-mail validation
+- Fixed: Appearance -> Widget; title and text not translatable
 
 1.1.1 - 01/01/2012 - S H Mohanjith
 ----------------------------------------------------------------------

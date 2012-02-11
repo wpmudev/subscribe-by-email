@@ -140,7 +140,7 @@ function subscribe_by_email_form() {
 	$content = '';
 	$content .= '<form method="post" id="subscribe-by-email-form">';
 	$content .= '<div id="subscribe-by-email-msg"></div>';
-        $content .= '<input id="subscription_email" name="subscription_email" style="width:97%;" maxlength="50" value="ex: john@hotmail.com" onfocus="this.value=\'\';" type="text">';
+        $content .= '<input id="subscription_email" name="subscription_email" style="width:97%;" maxlength="50" value="' . __('ex: john@hotmail.com', 'subscribe-by-email') . '" onfocus="this.value=\'\';" type="text">';
 	$content .= '<center>';
 	$content .= '<input type="button" class="button" name="create_subscription" value="'.$sbe_button_text.'" style="width:99%;" onclick="SubscribeByEmailCreate();" />';
 	$content .= '</center>';
@@ -163,7 +163,7 @@ class subscribe_by_email extends WP_Widget {
 		$control_ops = array( 'width' => 300, 'height' => 350, 'id_base' => 'subscribe-by-email' );
 
 		/* Create the widget. */
-		$this->WP_Widget( 'subscribe-by-email', __('Subscribe by Email', 'subscribe-by-email'), $widget_ops, $control_ops );
+		$this->WP_Widget( 'subscribe-by-email', 'Subscribe by Email', $widget_ops, $control_ops );
 	}
 
 	/**
@@ -178,7 +178,7 @@ class subscribe_by_email extends WP_Widget {
 		$sbe_button_text = stripslashes($instance['button_text']);
 
 		echo $before_widget;
-		echo $before_title . $title . $after_title;
+		echo $before_title . __($title, 'subscribe-by-email') . $after_title;
             ?>
             <ul>
                 <?php echo subscribe_by_email_form(); ?>
@@ -248,6 +248,7 @@ function subscribe_by_email_enqueue_js() {
 		'subscription_cancelled' => __('Your subscription has been successfully canceled!', 'subscribe-by-email'),
 		'failed_to_cancel_subscription' => __('Failed to cancel your subscription!', 'subscribe-by-email'),
 		'invalid_email' => __('Invalid e-mail address!', 'subscribe-by-email'),
+		'default_email' => __('ex: john@hotmail.com', 'subscribe-by-email'),
 	);
 	//wp_enqueue_script('sbe_modal_box');
 	wp_enqueue_script('sbe_frontend');
