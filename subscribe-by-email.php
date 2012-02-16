@@ -342,8 +342,12 @@ function subscribe_by_email_process_instant_subscriptions($new_status, $old_stat
 }
 
 function subscribe_by_email_send_scheduled_notifications($post_id) {
+	if (!$post_id || empty($post_id))
+		return;
 	$post = get_post($post_id);
-	subscribe_by_email_send_instant_notifications($post);
+	if ($post && $post->ID == $post_id) {
+		subscribe_by_email_send_instant_notifications($post);
+	}
 }
 
 function subscribe_by_email_send_instant_notifications($post) {
