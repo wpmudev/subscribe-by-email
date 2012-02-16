@@ -353,6 +353,10 @@ function subscribe_by_email_send_scheduled_notifications($post_id) {
 function subscribe_by_email_send_instant_notifications($post) {
 	global $wpdb, $subscribe_by_email_instant_notification_content;
 	
+	if (!$post || empty($post->ID)) {
+		return;
+	}
+	
 	$subscribe_by_email_excerpts = get_option('subscribe_by_email_excerpts', 'no');
 
 	$cancel_url = get_option('siteurl') . '?action=cancel-subscription&sid=';
