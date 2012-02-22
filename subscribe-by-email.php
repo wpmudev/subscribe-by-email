@@ -746,7 +746,7 @@ function subscribe_by_email_settings_output() {
 			<textarea name="subscribe_by_email_instant_notification_content"
 				id="subscribe_by_email_instant_notification_content"
 				rows="12" cols="35"><?php print $subscribe_by_email_instant_notification_content; ?></textarea>
-			<br /><?php _e('You can use following variables BLOGNAME, POST_TITLE, POST_URL, EXCERPT, BLOGNAME and CANCEL_URL', 'subscribe-by-email') ?>
+			<br /><?php _e('You can use following variables BLOGNAME, POST_TITLE, POST_URL, POST_CONTENT, EXCERPT, BLOGNAME and CANCEL_URL', 'subscribe-by-email') ?>
 		    </td>
 		</tr>
             </table>
