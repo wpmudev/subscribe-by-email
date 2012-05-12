@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Philip John (Incsub) 
-Version: 1.1.2
+Version: 1.1.3
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -31,22 +31,7 @@ $subscribe_by_email_current_version = '1.1.2';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
-global $subscribe_by_email_instant_notification_content;
 
-$subscribe_by_email_instant_notification_content =
-	get_option('subscribe_by_email_instant_notification_content',
-"Dear Subscriber,
-
-BLOGNAME has posted a new item: POST_TITLE
-
-You can read the post in full here: POST_URL
-
-EXCERPT
-
-Thanks,
-BLOGNAME
-
-Cancel subscription: CANCEL_URL");
 //------------------------------------------------------------------------//
 //---Hook-----------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -72,7 +57,44 @@ add_action('wp_ajax_nopriv_sbe_cancel_subscription', 'subscribe_by_email_interna
 //---Functions------------------------------------------------------------//
 //------------------------------------------------------------------------//
 function subscribe_by_email_init() {
+	global $subscribe_by_email_instant_notification_subject, $subscribe_by_email_instant_notification_content;
+
 	load_plugin_textdomain('subscribe-by-email', false, 'subscribe-by-email/languages');
+	
+	add_option('subscribe_by_email_instant_notification_subject', "BLOGNAME: New Post");
+	add_option('subscribe_by_email_instant_notification_content',
+"Dear Subscriber,
+
+BLOGNAME has posted a new item: POST_TITLE
+
+You can read the post in full here: POST_URL
+
+EXCERPT
+
+Thanks,
+BLOGNAME
+
+Cancel subscription: CANCEL_URL");
+	
+	$subscribe_by_email_instant_notification_subject = get_option('subscribe_by_email_instant_notification_subject');
+	$subscribe_by_email_instant_notification_content = get_option('subscribe_by_email_instant_notification_content');
+	
+	if ( isset($_POST['page']) && isset($_POST['action']) && $_POST['page'] == "subscription" && $_POST['action'] == "export_subscription") {
+		global $wpdb;
+		$query = "SELECT * FROM " . $wpdb->prefix . "subscriptions ";
+		$query .= ' ORDER BY subscription_ID ASC';
+		
+		$subscriptions = $wpdb->get_results( $query, ARRAY_A );
+		
+		header('Content-Type: text/csv');
+		header('Content-Disposition: attachment;filename='.date('YmdHi').'.csv');
+		
+		echo '"ID","E-mail","Type","Created","Note"'."\n";
+		
+		foreach ($subscriptions as $subscription) {
+			echo '"'.$subscription['subscription_ID'].'","'.$subscription['subscription_email'].'","'.$subscription['subscription_type'].'","'.$subscription['subscription_created'].'","'.$subscription['subscription_note'].'"'."\n";
+		}
+	}
 }
 
 function subscribe_by_email_make_current() {
@@ -296,8 +318,10 @@ function subscribe_by_email_cancel_process() {
 	subscribe_by_email_cancel_subscription($_GET['sid']);
 	?>
 	<script type='text/javascript'>
-	jQuery('#subscribe-by-email-msg').html('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled!', 'subscribe-by-email'); ?></strong></ceneter></p></div>');
-	window.location += '#subscribe-by-email-msg';
+		jQuery(document).ready(function() {
+			jQuery('#subscribe-by-email-msg').html('<div style=\'font-size:20px; padding-bottom:20px;\'><p><center><strong><?php echo _e('Your subscription has been successfully canceled!', 'subscribe-by-email'); ?></strong></ceneter></p></div>');
+			window.location += '#subscribe-by-email-msg';
+		});
 	</script>
 	<?php
 	}
@@ -351,7 +375,7 @@ function subscribe_by_email_send_scheduled_notifications($post_id) {
 }
 
 function subscribe_by_email_send_instant_notifications($post) {
-	global $wpdb, $subscribe_by_email_instant_notification_content;
+	global $wpdb, $subscribe_by_email_instant_notification_subject, $subscribe_by_email_instant_notification_content;
 	
 	if (!$post || empty($post->ID)) {
 		return;
@@ -385,6 +409,14 @@ function subscribe_by_email_send_instant_notifications($post) {
 	$blog_name = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
 	
 	//format notification text
+	$subscribe_by_email_instant_notification_subject = str_replace("BLOGNAME",$blog_name,$subscribe_by_email_instant_notification_subject);
+	$subscribe_by_email_instant_notification_subject = str_replace("POST_TITLE",$post_title,$subscribe_by_email_instant_notification_subject);
+	if ( $subscribe_by_email_excerpts == 'yes' ) {
+		$subscribe_by_email_instant_notification_subject = str_replace("EXCERPT",$post_excerpt,$subscribe_by_email_instant_notification_subject);
+	} else {
+		$subscribe_by_email_instant_notification_subject = str_replace("EXCERPT","",$subscribe_by_email_instant_notification_subject);
+	}
+	
 	$subscribe_by_email_instant_notification_content = str_replace("BLOGNAME",$blog_name,$subscribe_by_email_instant_notification_content);
 	$subscribe_by_email_instant_notification_content = str_replace("POST_TITLE",$post_title,$subscribe_by_email_instant_notification_content);
 	if ( $subscribe_by_email_excerpts == 'yes' ) {
@@ -411,13 +443,14 @@ function subscribe_by_email_send_instant_notifications($post) {
 			}
 			$i++;
 			//=========================================================//
+			$loop_notification_subject = $subscribe_by_email_instant_notification_subject;
 			$loop_notification_content = $subscribe_by_email_instant_notification_content;
 			//format notification text
 			$loop_notification_content = str_replace("CANCEL_URL",$cancel_url . $subscription_email['subscription_ID'],$loop_notification_content);
-			$subject_content = $blog_name . ': ' . __('New Post', 'subscribe-by-email');
+			
 			$from_email = $admin_email;
 			$message_headers = "MIME-Version: 1.0\n" . "From: " . $blog_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
-			wp_mail($subscription_email['subscription_email'], $subject_content, $loop_notification_content, $message_headers);
+			wp_mail($subscription_email['subscription_email'], $loop_notification_subject, $loop_notification_content, $message_headers);
 			update_post_meta($post->ID, 'sbe_notified', $i);
 			//=========================================================//
 		}
@@ -529,12 +562,11 @@ function subscribe_by_email_manage_output() {
 			?>
 			<h2><?php _e('Subscriptions', 'subscribe-by-email') ?></h2>
 			<form id="form-subscriptions-list" action="admin.php?page=subscription&action=cancel_subscriptions" method="post">
-
 			<div class="tablenav">
 				<?php if ( $navigation ) echo "<div class='tablenav-pages'>" . $navigation . "</div>"; ?>
 
 				<div class="alignleft">
-					<input type="submit" value="<?php _e('Cancel Subscription(s)', 'subscribe-by-email') ?>" name="cancel" class="button-secondary delete" />
+					<input type="submit" value="<?php _e('Cancel Subscription(s)', 'subscribe-by-email') ?>" name="cancel" class="button-secondary delete" /> 
 					<br class="clear" />
 				</div>
 			</div>
@@ -618,7 +650,17 @@ function subscribe_by_email_manage_output() {
 			</table>
 			</form>
 			</div>
-
+			
+			<div class="wrap">
+				<h2><?php _e('Export Subscriptions', 'subscribe-by-email') ?></h2>
+				<form method="post" action="admin.php">
+					<input type="hidden" name="page" value="subscription" />
+					<input type="hidden" name="action" value="export_subscription" />
+					<p class="submit">
+						<input class="button" type="submit" name="go" value="<?php _e('Export Subscriptions', 'subscribe-by-email') ?>" /></p>
+				</form>
+			</div>
+			
 			<div class="wrap">
 				<h2><?php _e('Search Subscriptions', 'subscribe-by-email') ?></h2>
 				<form method="get" action="admin.php">
@@ -653,6 +695,7 @@ function subscribe_by_email_manage_output() {
 				</form>
 			<?php
 		break;
+	
 		//---------------------------------------------------//
 		case "create_subscription":
 			if  ( !empty( $_POST['email'] ) ) {
@@ -706,7 +749,7 @@ function subscribe_by_email_manage_output() {
 }
 
 function subscribe_by_email_settings_output() {
-	global $wpdb, $wp_roles, $current_user, $subscribe_by_email_instant_notification_content;
+	global $wpdb, $wp_roles, $current_user, $subscribe_by_email_instant_notification_subject, $subscribe_by_email_instant_notification_content;
 
 	if(!current_user_can('manage_options')) {
 		echo "<p>" . __('Nice Try...', 'subscribe-by-email') . "</p>";  //If accessed properly, this message doesn't appear.
@@ -741,12 +784,20 @@ function subscribe_by_email_settings_output() {
 		    <br /><?php _e('Include post excerpts in notification emails.', 'subscribe-by-email') ?></td>
 		</tr>
 		<tr valign="top">
+		    <th scope="row"><?php _e('Notification Subject', 'subscribe-by-email') ?></th>
+		    <td>
+			<input name="subscribe_by_email_instant_notification_subject" size="40"
+				id="subscribe_by_email_instant_notification_subject" value="<?php print $subscribe_by_email_instant_notification_subject; ?>" type="text" />
+			<br /><?php _e('You can use following variables BLOGNAME, POST_TITLE, and EXCERPT', 'subscribe-by-email') ?>
+		    </td>
+		</tr>
+		<tr valign="top">
 		    <th scope="row"><?php _e('Notification Content', 'subscribe-by-email') ?></th>
 		    <td>
 			<textarea name="subscribe_by_email_instant_notification_content"
 				id="subscribe_by_email_instant_notification_content"
-				rows="12" cols="35"><?php print $subscribe_by_email_instant_notification_content; ?></textarea>
-			<br /><?php _e('You can use following variables BLOGNAME, POST_TITLE, POST_URL, POST_CONTENT, EXCERPT, BLOGNAME and CANCEL_URL', 'subscribe-by-email') ?>
+				rows="12" cols="42"><?php print $subscribe_by_email_instant_notification_content; ?></textarea>
+			<br /><?php _e('You can use following variables BLOGNAME, POST_TITLE, POST_URL, POST_CONTENT, EXCERPT and CANCEL_URL', 'subscribe-by-email') ?>
 		    </td>
 		</tr>
             </table>
@@ -760,6 +811,7 @@ function subscribe_by_email_settings_output() {
 		case "process":
 			update_option( "subscribe_by_email_auto_subscribe", $_POST[ 'subscribe_by_email_auto_subscribe' ] );
 			update_option( "subscribe_by_email_excerpts", $_POST[ 'subscribe_by_email_excerpts' ] );
+			update_option( "subscribe_by_email_instant_notification_subject", $_POST['subscribe_by_email_instant_notification_subject']);
 			update_option( "subscribe_by_email_instant_notification_content", $_POST['subscribe_by_email_instant_notification_content']);
 			echo "
 			<script type='text/javascript'>
