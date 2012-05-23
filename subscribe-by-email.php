@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Philip John (Incsub) 
-Version: 1.1.4
+Version: 1.1.5
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -27,7 +27,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$subscribe_by_email_current_version = '1.1.4';
+$subscribe_by_email_current_version = '1.1.5';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -65,7 +65,7 @@ function subscribe_by_email_init() {
 	add_option('subscribe_by_email_instant_notification_content',
 "Dear Subscriber,
 
-BLOGNAME has posted a new item: POST_TITLE
+AUTHOR_NAME has posted a new item on BLOGNAME: POST_TITLE
 
 You can read the post in full here: POST_URL
 
@@ -287,7 +287,7 @@ function subscribe_by_email_enqueue_css() {
 function subscribe_by_email_create_subscription($email,$note) {
 	global $wpdb;
 	
-	if (!is_email($_POST['email'])) {
+	if (!is_email($email)) {
 		return false;
 	}
 
@@ -389,6 +389,10 @@ function subscribe_by_email_send_instant_notifications($post) {
 	$post_title = $post->post_title;
 	$post_content = $post->post_content;
 	$post_url = get_permalink($post_id);
+	
+	$user_details = get_userdata($post->post_author );
+	$display_name = empty($user_details->display_name )?$user_details->user_login:$user_details->display_name;
+	
 	//cleanup title
 	$post_title = strip_tags($post_title);
 	//cleanup content
@@ -418,6 +422,7 @@ function subscribe_by_email_send_instant_notifications($post) {
 	}
 	
 	$subscribe_by_email_instant_notification_content = str_replace("BLOGNAME",$blog_name,$subscribe_by_email_instant_notification_content);
+	$subscribe_by_email_instant_notification_content = str_replace("AUTHOR_NAME",$display_name,$subscribe_by_email_instant_notification_content);
 	$subscribe_by_email_instant_notification_content = str_replace("POST_TITLE",$post_title,$subscribe_by_email_instant_notification_content);
 	if ( $subscribe_by_email_excerpts == 'yes' ) {
 		$subscribe_by_email_instant_notification_content = str_replace("EXCERPT",$post_excerpt,$subscribe_by_email_instant_notification_content);
@@ -484,10 +489,11 @@ function subscribe_by_email_add_user_to_blog($user_id, $role, $blog_id) {
 
 function subscribe_by_email_check_blog_users() {
 	global $wpdb;
+	
 	if ( get_option('subscribe_by_email_auto_subscribe', 'no') != 'no' && get_option( "subscribe_by_email_installed" ) == 'yes' ) {
 		$query = "SELECT user_id FROM " . $wpdb->usermeta . " WHERE meta_key = '" . $wpdb->prefix . "capabilities'";
 		$users = $wpdb->get_results( $query, ARRAY_A );
-
+		
 		if ( count( $users ) > 0 ) {
 			foreach ( $users as $user ) {
 				$email = $wpdb->get_var( "SELECT user_email FROM " . $wpdb->users . " WHERE ID = '" . $user['user_id'] . "'");
