@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Philip John (Incsub) 
-Version: 1.1.4.1
+Version: 1.1.4.2
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -27,7 +27,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$subscribe_by_email_current_version = '1.1.4.1';
+$subscribe_by_email_current_version = '1.1.4.2';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -397,9 +397,16 @@ function subscribe_by_email_send_instant_notifications($post) {
 	$post_title = strip_tags($post_title);
 	//cleanup content
 	$post_content = strip_tags($post_content);
+	$post_content = strip_shortcodes($post_content);
+	$post_content = preg_replace("/&#?[a-z0-9]{2,8};/i","", $post_content);
+	
 	//get excerpt
 	if ($post->post_excerpt && !empty($post->post_excerpt)) {
 		$post_excerpt = $post->post_excerpt;
+		
+		$post_excerpt = strip_tags($post_excerpt);
+		$post_excerpt = strip_shortcodes($post_excerpt);
+		$post_excerpt = preg_replace("/&#?[a-z0-9]{2,8};/i","", $post_excerpt);
 	} else {
 		$post_excerpt = $post_content;
 		if (strlen($post_excerpt) > 255) {
