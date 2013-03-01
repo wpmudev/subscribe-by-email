@@ -4,14 +4,14 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Philip John (Incsub) 
-Version: 1.1.4.2
+Version: 1.1.5
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
 */
 
 /*
-Copyright 2007-2010 Incsub (http://incsub.com)
+Copyright 2007-2013 Incsub (http://incsub.com)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License (Version 2 - GPLv2) as published by
@@ -27,7 +27,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$subscribe_by_email_current_version = '1.1.4.2';
+$subscribe_by_email_current_version = '1.1.5';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -138,7 +138,7 @@ function subscribe_by_email_blog_install() {
 }
 
 function subscribe_by_email_plug_pages() {
-	add_menu_page(__('Subscriptions', 'subscribe-by-email'), __('Subscriptions', 'subscribe-by-email'), 'manage_options', 'subscription', 'subscribe_by_email_manage_output');
+	add_menu_page(__('Subscriptions', 'subscribe-by-email'), __('Subscriptions', 'subscribe-by-email'), 'manage_options', 'subscription', 'subscribe_by_email_manage_output', plugins_url( '/css/icon-email.png', __FILE__ ) );
 	add_submenu_page('subscription', __('Settings', 'subscribe-by-email'), __('Settings', 'subscribe-by-email'), 'manage_options', 'subscription_settings', 'subscribe_by_email_settings_output' );
 }
 
@@ -676,7 +676,7 @@ function subscribe_by_email_manage_output() {
 					<input type="hidden" name="page" value="subscription" />
 					<input type="hidden" name="action" value="export_subscription" />
 					<p class="submit">
-						<input class="button" type="submit" name="go" value="<?php _e('Export Subscriptions', 'subscribe-by-email') ?>" /></p>
+						<input class="button-primary" type="submit" name="go" value="<?php _e('Export Subscriptions', 'subscribe-by-email') ?>" /></p>
 				</form>
 			</div>
 			
@@ -692,7 +692,7 @@ function subscribe_by_email_manage_output() {
 						</tr>
 					</table>
 					<p class="submit">
-						<input class="button" type="submit" name="go" value="<?php _e('Search Subscriptions', 'subscribe-by-email') ?>" /></p>
+						<input class="button-primary" type="submit" name="go" value="<?php _e('Search Subscriptions', 'subscribe-by-email') ?>" /></p>
 				</form>
 			</div>
 
@@ -710,7 +710,7 @@ function subscribe_by_email_manage_output() {
 						</tr>
 					</table>
 					<p class="submit">
-						<input class="button" type="submit" name="go" value="<?php _e('Create Subscription', 'subscribe-by-email') ?>" /></p>
+						<input class="button-primary" type="submit" name="go" value="<?php _e('Create Subscription', 'subscribe-by-email') ?>" /></p>
 				</form>
 			<?php
 		break;
@@ -775,7 +775,7 @@ function subscribe_by_email_settings_output() {
 		return;
 	}
 	if (isset($_GET['updated'])) {
-		?><div id="message" class="updated fade"><p><?php _e( urldecode($_GET['updatedmsg']) , 'subscribe-by-email') ?></p></div><?php
+		?><div id="message" class="updated fade"><p><?php echo esc_html( urldecode($_GET['updatedmsg']) ) ?></p></div><?php
 	}
 	echo '<div class="wrap">';
 	$action = isset($_GET['action'])?$_GET['action']:'sbe';
@@ -821,7 +821,7 @@ function subscribe_by_email_settings_output() {
 		</tr>
             </table>
             <p class="submit">
-            <input type="submit" name="Submit" value="<?php _e('Save Changes', 'subscribe-by-email') ?>" />
+            <input class="button-primary" type="submit" name="Submit" value="<?php _e('Save Changes', 'subscribe-by-email') ?>" />
             </p>
             </form>
 			<?php
@@ -850,12 +850,4 @@ function subscribe_by_email_settings_output() {
 //---Support Functions----------------------------------------------------//
 //------------------------------------------------------------------------//
 
-if ( !function_exists( 'wdp_un_check' ) ) {
-	add_action( 'admin_notices', 'wdp_un_check', 5 );
-	add_action( 'network_admin_notices', 'wdp_un_check', 5 );
-
-	function wdp_un_check() {
-		if ( !class_exists( 'WPMUDEV_Update_Notifications' ) && current_user_can( 'edit_users' ) )
-			echo '<div class="error fade"><p>' . __('Please install the latest version of <a href="http://premium.wpmudev.org/project/update-notifications/" title="Download Now &raquo;">our free Update Notifications plugin</a> which helps you stay up-to-date with the most stable, secure versions of WPMU DEV themes and plugins. <a href="http://premium.wpmudev.org/wpmu-dev/update-notifications-plugin-information/">More information &raquo;</a>', 'wpmudev') . '</a></p></div>';
-	}
-}
+include_once( dirname( __FILE__ ) . '/includes/wpmudev-dash-notification.php' );
