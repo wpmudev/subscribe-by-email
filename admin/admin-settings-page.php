@@ -1,0 +1,476 @@
+<?php
+
+class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_Email_Admin_Page {
+
+	// Needed for registering settings
+	private $settings_group;
+	private $settings_name;
+
+	// The settings
+	private $settings;
+
+	public function __construct() {
+
+		$subscribers_page = Incsub_Subscribe_By_Email::$admin_subscribers_page;
+
+		$args = array(
+			'slug' => 'sbe-settings',
+			'page_title' => __( 'Settings', INCSUB_SBE_LANG_DOMAIN ),
+			'menu_title' => __( 'Settings', INCSUB_SBE_LANG_DOMAIN ),
+			'capability' => 'manage_options',
+			'parent' => $subscribers_page->get_menu_slug()
+		);
+		parent::__construct( $args );
+
+		$this->settings_name = Incsub_Subscribe_By_Email::$settings_slug;
+		$this->settings_group = Incsub_Subscribe_By_Email::$settings_slug;
+		$this->settings = Incsub_Subscribe_By_Email::$settings;
+
+		add_action( 'admin_init', array( &$this, 'register_settings' ) );
+
+		add_action( 'admin_init', array( &$this, 'restore_default_template' ) );
+
+		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
+
+	}
+
+
+	/**
+	 * Enqueue needed scripts
+	 */
+	public function enqueue_scripts() {
+		$screen = get_current_screen();
+		if ( $screen->id == $this->get_page_id() ) {
+
+		    wp_enqueue_script( 'thickbox' );
+		    wp_enqueue_script( 'media-upload' );
+		    wp_enqueue_script( 'farbtastic' );
+			wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . '/js/settings.js', array( 'thickbox', 'media-upload' ), '20130515' );
+
+			$l10n = array(
+				'title_text' => __( 'Upload a logo', INCSUB_SBE_LANG_DOMAIN ),
+				'button_text' => __( 'Upload logo', INCSUB_SBE_LANG_DOMAIN )
+			);
+			wp_localize_script( 'sbe-settings-scripts', 'sbe_captions', $l10n );
+
+		}
+	}
+
+
+
+	/**
+	 * Enqueue needed styles
+	 */
+	public function enqueue_styles() {
+		$screen = get_current_screen();
+		if ( $screen->id == $this->get_page_id() ) {
+			wp_enqueue_style( 'thickbox' );
+			wp_enqueue_style( 'farbtastic' );
+		}
+	}
+
+	/**
+	 * Register the settings, sections and fields
+	 */
+	public function register_settings() {
+		register_setting( $this->settings_group, $this->settings_name, array( &$this, 'sanitize_settings' ) );
+
+		add_settings_section( 'general-settings', __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+		//add_settings_field( 'auto-subscribe', __( 'Auto-subscribe', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_auto_subscribe_field' ), $this->get_menu_slug(), 'general-settings' ); 
+		//add_settings_field( 'subscribe-new-users', __( 'Subscribe new users', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribe_new_users_field' ), $this->get_menu_slug(), 'general-settings' ); 
+		add_settings_field( 'from-sender', __( 'Notification From Sender', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_sender_field' ), $this->get_menu_slug(), 'general-settings' ); 
+		add_settings_field( 'from-email', __( 'Notification From Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_email_field' ), $this->get_menu_slug(), 'general-settings' ); 
+		add_settings_field( 'subject', __( 'Mail subject', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subject_field' ), $this->get_menu_slug(), 'general-settings' ); 
+		add_settings_field( 'frequency', __( 'Send How Often?', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_frequency_field' ), $this->get_menu_slug(), 'general-settings' ); 
+		add_settings_field( 'mail_batch', __( 'Mail batches', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_mail_batches_field' ), $this->get_menu_slug(), 'general-settings' ); 
+		
+		add_settings_section( 'style-settings', __( 'Styling Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+		add_settings_field( 'logo', __( 'Logo for notifications', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_logo_field' ), $this->get_menu_slug(), 'style-settings' ); 
+		add_settings_field( 'featured-images', __( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_featured_image' ), $this->get_menu_slug(), 'style-settings' ); 
+		add_settings_field( 'header-color', __( 'Header color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_color_field' ), $this->get_menu_slug(), 'style-settings' ); 
+		add_settings_field( 'header-text-color', __( 'Header text color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_color_field' ), $this->get_menu_slug(), 'style-settings' ); 
+		add_settings_field( 'header-text', __( 'Header text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_field' ), $this->get_menu_slug(), 'style-settings' ); 
+		add_settings_field( 'footer-text', __( 'Footer text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_footer_text_field' ), $this->get_menu_slug(), 'style-settings' ); 
+
+		add_settings_section( 'email-preview', __( 'Email preview', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_preview_section' ), $this->get_menu_slug() );
+
+	}
+
+
+	/**
+	 * render the settings page
+	 */
+	public function render_content() {
+
+
+		$errors = get_settings_errors( $this->settings_name ); 
+		if ( ! empty( $errors ) ) {
+			?>	
+				<div class="error">
+					<ul>
+						<?php
+						foreach ( $errors as $error ) {
+							?>
+								<li><?php echo $error['message']; ?></li>
+							<?php
+						}
+						?>
+					</ul>
+				</div>
+			<?php
+		}
+		elseif ( isset( $_GET['settings-updated'] ) ) {
+			?>
+				<div class="updated"><p><?php _e( 'Settings updated', INCSUB_SBE_LANG_DOMAIN ); ?></p></div>
+			<?php
+		}
+		?>
+		
+			<form action="options.php" method="post">
+				<?php settings_fields( $this->settings_group ); ?>
+				<?php do_settings_sections( $this->get_menu_slug() ); ?>
+					
+				<p class="submit">
+					<?php submit_button( null, 'primary', $this->settings_name . '[submit_settings]', false ) ?>
+				</p>
+			</form>
+		
+		<?php
+	}
+
+	/********************************/
+	/* 		FIELDS RENDERINGS		*/
+	/********************************/
+
+	/**
+	 * Auto Subscribe field
+	 */
+	public function render_auto_subscribe_field() {
+
+		?>
+			<label for="auto_subscribe_yes">
+				<input id="auto_subscribe_yes" type="radio" name="<?php echo $this->settings_name; ?>[auto_subscribe]" value="yes" <?php checked( $this->settings['auto-subscribe'], true ); ?>>
+				<?php _e( 'Yes', INCSUB_SBE_LANG_DOMAIN ); ?>
+			</label><br/>
+			<label for="auto_subscribe_no">
+				<input id="auto_subscribe_no" type="radio" name="<?php echo $this->settings_name; ?>[auto_subscribe]" value="no" <?php checked( $this->settings['auto-subscribe'], false ); ?>>
+				<?php _e( 'No', INCSUB_SBE_LANG_DOMAIN ); ?>
+			</label><br/>
+			<span class="description"><?php _e( 'Subscribe users without sending a confirmation mail.', INCSUB_SBE_LANG_DOMAIN ); ?></span>  
+		<?php
+	}
+
+	
+
+	/**
+	 * From Sender field
+	 */
+	public function render_from_sender_field() {
+		?>
+			<input type="text" name="<?php echo $this->settings_name; ?>[from_sender]" class="regular-text" value="<?php echo esc_attr( $this->settings['from_sender'] ); ?>">
+		<?php
+	}
+
+	/**
+	 * From Email field
+	 */
+	public function render_from_email_field() {
+		?>
+			<input type="text" name="<?php echo $this->settings_name; ?>[from_email]" class="regular-text" value="<?php echo esc_attr( $this->settings['from_email'] ); ?>"><br/>
+			<span class="description"><?php _e( 'Recommended: no-reply@yourdomain.com as spam filters may block other addresses.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+		<?php
+	}
+
+	/**
+	 * Subject field
+	 */
+	public function render_subject_field() {
+		?>
+			<input type="text" name="<?php echo $this->settings_name; ?>[subject]" class="regular-text" value="<?php echo esc_attr( $this->settings['subject'] ); ?>"><br/>
+			<span><?php _e( 'You can use <strong>%title%</strong> wildcard to show the latest post title/s, they will be shorted to no more than 50 charactes', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+		<?php
+	}
+
+	/**
+	 * Subject field
+	 */
+	public function render_mail_batches_field() {
+		?>
+			<label for="mail_batches"><?php printf( __( 'Send %s mails every hour.', INCSUB_SBE_LANG_DOMAIN ), '<input id="mail_batches" type="number" name="' . $this->settings_name . '[mail_batches]" class="small-text" value="' . esc_attr( $this->settings['mails_batch_size'] ) . '">' ); ?></label><br/>
+			<span class="description"><?php _e( 'If you are experiencing problems when sending mails, your server may not support so many sendings at the same time, try reducing this number. Mails will be sent every hour in groups of X mails.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+		<?php
+	}
+
+	/**
+	 * Frequency field
+	 */
+	public function render_frequency_field() {
+		$time_format = get_option( 'time_format', 'H:i' );
+		?>
+			<select name="<?php echo $this->settings_name; ?>[frequency]" id="frequency-select">
+				<?php foreach ( Incsub_Subscribe_By_Email::$frequency as $key => $freq ): ?>
+					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $this->settings['frequency'] ); ?>><?php echo $freq; ?></option>
+				<?php endforeach; ?>
+			</select>
+			<br/><br/>
+			<div id="time-wrap">
+				<label for="time-select"><?php _e( 'What time should the digest email be sent?', INCSUB_SBE_LANG_DOMAIN ); ?>
+					<select name="<?php echo $this->settings_name; ?>[time]" id="time-select">
+						<?php foreach ( Incsub_Subscribe_By_Email::$time as $key => $t ): ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $this->settings['time'] ); ?>><?php echo $t; ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label> 
+				<span class="description"><?php printf( __( 'The time now is %s', INCSUB_SBE_LANG_DOMAIN ), date_i18n( $time_format ) ); ?></span>
+			</div>
+
+			<div id="day-of-week-wrap">
+				<label for="day-of-week-select"><?php _e( 'What day of the week should the digest email be sent?', INCSUB_SBE_LANG_DOMAIN ); ?>
+					<select name="<?php echo $this->settings_name; ?>[day_of_week]" id="day-of-week-select">
+						<?php foreach ( Incsub_Subscribe_By_Email::$day_of_week as $key => $day ): ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $this->settings['day_of_week'] ); ?>><?php echo $day; ?></option>
+						<?php endforeach; ?>
+					</select>
+				</label>
+			</div>
+		<?php
+	}
+
+	/**
+	 * Logo field
+	 */
+	public function render_logo_field() {
+		?>
+			
+			<input type="hidden" name="<?php echo $this->settings_name; ?>[logo]" id="upload-logo-value" value="<?php echo esc_url( $this->settings['logo'] ); ?>">
+			<input type="button" class="button-secondary" id="upload-logo" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
+			<div class="sbe-logo-preview">
+				<img style="max-width:300px;border:1px solid #DDD;padding:3px;background:#EFEFEF;margin-top:20px;" id="sbe-logo-img" src="<?php echo esc_url( $this->settings['logo'] ); ?>"></img>
+				<?php submit_button( __( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[remove-logo]', true, array( 'id' => 'remove-logo-button' ) ); ?>
+			</div>
+		<?php
+	}
+
+
+	/**
+	 * Logo field
+	 */
+	public function render_featured_image() {
+		?>
+			<input type="checkbox" name="<?php echo $this->settings_name; ?>[featured_image]" id="featured-image" <?php checked( $this->settings['featured_image'] ); ?>> 
+			<span class="description"><?php _e( 'If your theme allows it, every post in the mail will have its feature image on its left.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+		<?php
+	}
+
+	/**
+	 * Header color field
+	 */
+	public function render_header_color_field() {
+		?>
+			<input type="text" id="header-color" name="<?php echo $this->settings_name; ?>[header_color]" value="<?php echo esc_attr( $this->settings['header_color'] ); ?>" />
+			<div class="colorpicker-wrap" style="position:relative;">
+ 				<div class="colorpicker" id="header-color-picker" style="position:absolute;background:#FFF;border:1px solid #EFEFEF; left: 139px; top:-24px; display:none;"></div>
+ 			</div>
+		<?php
+	}
+
+	/**
+	 * Header text color field
+	 */
+	public function render_header_text_color_field() {
+		?>
+			<input type="text" id="header-text-color" name="<?php echo $this->settings_name; ?>[header_text_color]" value="<?php echo esc_attr( $this->settings['header_text_color'] ); ?>" />
+			<div class="colorpicker-wrap" style="position:relative;">
+ 				<div class="colorpicker" id="header-text-color-picker" style="position:absolute;background:#FFF;border:1px solid #EFEFEF; left: 139px; top:-24px; display:none;"></div>
+ 			</div>
+		<?php
+	}
+
+	/**
+	 * Header text field
+	 */
+	public function render_header_text_field() {
+		?>
+			<textarea class="large-text" name="<?php echo $this->settings_name; ?>[header_text]" id="header-text" rows="4"><?php echo esc_textarea( $this->settings['header_text'] ); ?></textarea>
+		<?php
+	}
+	/**
+	 * Footer text field
+	 */
+	public function render_footer_text_field() {
+		?>
+			<textarea class="large-text" name="<?php echo $this->settings_name; ?>[footer_text]" id="footer-text" rows="4"><?php echo esc_textarea( $this->settings['footer_text'] ); ?></textarea>
+		<?php
+	}
+
+	public function render_email_preview_section() {
+		?>
+			<p>
+				<?php submit_button( __( 'Refresh changes', INCSUB_SBE_LANG_DOMAIN ), 'primary', $this->settings_name . '[submit_refresh_changes]', false ) ?>
+				<?php submit_button( __( 'Send a test mail to:', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[submit_test_email]', false ) ?>
+				<input type="text" class="regular-text" name="<?php echo $this->settings_name; ?>[test_mail]" value="<?php echo esc_attr( get_option( 'admin_email') ); ?>"><br/>
+			</p>
+
+			<?php 
+				$restore_link = add_query_arg( 
+					'restore-template', 
+					'true',
+					self::get_permalink()
+				);
+			?>
+			<p><a href="<?php echo $restore_link; ?>"><?php _e( 'Restore template to default', INCSUB_SBE_LANG_DOMAIN ); ?></a></p>
+
+			<?php 
+				$template = new Incsub_Subscribe_By_Email_Template( $this->settings, true ); 
+				$template->render_mail_template();
+			?>
+		<?php
+	}
+
+
+	/**
+	 * Sanitizes the settings and return the values to be saved
+	 * 
+	 * @param Array $input $_POST values
+	 * 
+	 * @return Array New settings
+	 */
+	public function sanitize_settings( $input ) {
+
+		$new_settings = $this->settings;
+
+		if ( isset( $input['submit_settings'] ) || isset( $input['remove-logo'] ) || isset( $input['submit_test_email'] ) || isset( $input['submit_refresh_changes'] ) ) {
+
+			// Auto subscribe
+			//if ( 'yes' == $input['auto_subscribe'] )
+			//	$new_settings['auto-subscribe'] = true;
+			//else
+			//	$new_settings['auto-subscribe'] = false;
+
+			// Subscribe new users
+			//if ( 'yes' == $input['subscribe_new_users'] )
+			//	$new_settings['subscribe_new_users'] = true;
+			//else
+			//	$new_settings['subscribe_new_users'] = false;
+
+			// From Sender
+			$from_email = sanitize_email( $input['from_email'] );
+
+			if ( is_email( $from_email ) )
+				$new_settings['from_email'] = $from_email;
+			else
+				add_settings_error( $this->settings_name, 'invalid-from-email', __( 'Notification From Email is not a valid email', INCSUB_SBE_LANG_DOMAIN ) );
+
+			$from_sender = sanitize_text_field( $input['from_sender'] );
+			if ( ! empty( $from_sender ) )
+				$new_settings['from_sender'] = $from_sender;
+			else
+				add_settings_error( $this->settings_name, 'invalid-from-sender', __( 'Notification From Sender cannot be empty', INCSUB_SBE_LANG_DOMAIN ) );
+
+			// Mail subject
+			$subject = sanitize_text_field( $input['subject'] );
+			if ( ! empty( $subject ) )
+				$new_settings['subject'] = $subject;
+			else
+				add_settings_error( $this->settings_name, 'invalid-subject', __( 'Mail subject cannot be empty', INCSUB_SBE_LANG_DOMAIN ) );
+
+			// Frequency
+			if ( array_key_exists( $input['frequency'], Incsub_Subscribe_By_Email::$frequency ) )
+				$new_settings['frequency'] = $input['frequency'];
+			else
+				$new_settings['frequency'] = Incsub_Subscribe_By_Email::$default_settings['frequency'];
+
+			// For daily frequencies
+			if ( 'daily' == $new_settings['frequency'] && array_key_exists( $input['time'], Incsub_Subscribe_By_Email::$time ) ) {
+				$new_settings['time'] = $input['time'];
+				if ( 'daily' != $this->settings['frequency'] || $input['time'] != $this->settings['time'] ) {
+					// We have changed this setting
+					Incsub_Subscribe_By_Email::set_next_day_schedule_time( $input['time'] );
+				}
+			}
+			else {
+				$new_settings['time'] = Incsub_Subscribe_By_Email::$default_settings['time'];
+			}
+
+			// For weekly frequencies
+			if ( 'weekly' == $new_settings['frequency'] && array_key_exists( $input['day_of_week'], Incsub_Subscribe_By_Email::$day_of_week ) ) {
+				$new_settings['day_of_week'] = $input['day_of_week'];
+
+				if ( 'weekly' != $this->settings['frequency'] || $input['day_of_week'] != $this->settings['day_of_week'] ) {
+					// We have changed this setting
+					Incsub_Subscribe_By_Email::set_next_week_schedule_time( $input['day_of_week'] );
+				}
+			}
+			else {
+				$new_settings['day_of_week'] = Incsub_Subscribe_By_Email::$default_settings['day_of_week'];
+			}
+
+			// Logo
+			if ( isset( $input['remove-logo'] ) ) {
+				$new_settings['logo'] = '';
+			}
+			else {
+				$url = esc_url_raw( $input['logo'] );
+				$new_settings['logo'] = $url;
+			}
+
+			// Featured image
+			if ( isset( $input['featured_image'] ) )
+				$new_settings['featured_image'] = true;
+			else
+				$new_settings['featured_image'] = false;
+
+			// Colors
+			if ( preg_match( '/^#[a-f0-9]{6}$/i', $input['header_color'] ) )
+				$new_settings['header_color'] = $input['header_color'];
+			else 
+		    	$new_settings['header_color'] = Incsub_Subscribe_By_Email::$default_settings['header_color'];
+
+		    if ( preg_match( '/^#[a-f0-9]{6}$/i', $input['header_text_color'] ) )
+				$new_settings['header_text_color'] = $input['header_text_color'];
+			else 
+		    	$new_settings['header_text_color'] = Incsub_Subscribe_By_Email::$default_settings['header_text_color'];
+
+			// Batches
+		    if ( ! empty( $input['mail_batches'] ) )
+				$new_settings['mails_batch_size'] = absint( $input['mail_batches'] );
+			
+			// Texts
+			$new_settings['header_text'] = $input['header_text'];
+			$new_settings['footer_text'] = $input['footer_text'];
+			
+			if ( isset( $input['submit_test_email'] ) ) {
+
+				$mail = sanitize_email( $input['test_mail'] );
+
+				if ( is_email( $mail ) ) {
+					$template = new Incsub_Subscribe_By_Email_Template( $new_settings, true );
+					$template->send_mail( $mail );
+				}
+			}
+
+		}
+
+		return $new_settings;
+
+	}
+
+	public function restore_default_template() {
+		if ( isset( $_GET['page'] ) && $this->get_menu_slug() == $_GET['page'] && isset( $_GET['restore-template'] ) ) {
+			$defaults = Incsub_Subscribe_By_Email::$default_settings;
+
+			$this->settings['logo'] = $defaults['logo'];
+			$this->settings['header_color'] = $defaults['header_color'];
+			$this->settings['header_text_color'] = $defaults['header_text_color'];
+			$this->settings['featured_image'] = $defaults['featured_image'];
+
+			update_option( $this->settings_name, $this->settings );
+
+			wp_redirect( $this->get_permalink() );
+		}
+	}
+
+	
+
+}
