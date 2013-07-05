@@ -71,8 +71,6 @@ class Incsub_Subscribe_By_Email {
 
 		add_action( 'plugins_loaded', array( &$this, 'load_text_domain' ) );
 
-		add_action( 'sbe_send_mail_batch', array( &$this, 'send_mail_batch' ) );
-
 	}
 
 
@@ -205,9 +203,7 @@ class Incsub_Subscribe_By_Email {
 			set_transient( 'sbe_remove_old_subscriptions', true, 86400 );
 		}
 
-		if ( ! wp_next_scheduled( 'sbe_send_mail_batch' ) ) {
-			wp_schedule_event( time(), 'hourly', 'sbe_send_mail_batch');
-		}
+		$this->maybe_send_pending_emails();
 
 	}
 
@@ -405,19 +401,25 @@ class Incsub_Subscribe_By_Email {
 	 * Send a batch of mails
 	 * 
 	 */
-	public function send_mail_batch() {
+	public function maybe_send_pending_emails() {
 
-		$model = Incsub_Subscribe_By_Email_Model::get_instance();
-		$mail_log = $model->get_remaining_batch_mail();
+		if ( ! get_transient( 'sbe_pending_mails_sent' ) ) {
 
-		if ( ! empty( $mail_log ) ) {
-			$mail_settings = maybe_unserialize( $mail_log['mail_settings'] );
-			$emails_from = absint( $mail_settings['email_from'] );
-			$posts_ids = $mail_settings['posts_ids'];
-			$log_id = $mail_log['id'];
+			$model = Incsub_Subscribe_By_Email_Model::get_instance();
+			$mail_log = $model->get_remaining_batch_mail();
 
-			$this->send_mails( $posts_ids, $emails_from, $log_id );	
+			if ( ! empty( $mail_log ) ) {
+				$mail_settings = maybe_unserialize( $mail_log['mail_settings'] );
+				$emails_from = absint( $mail_settings['email_from'] );
+				$posts_ids = $mail_settings['posts_ids'];
+				$log_id = $mail_log['id'];
+
+				$this->send_mails( $posts_ids, $emails_from, $log_id );	
+			}
+
+			set_transient( 'sbe_pending_mails_sent', 'next', 60 );
 		}
+		
 	}
 
 	/**

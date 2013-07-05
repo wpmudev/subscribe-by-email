@@ -31,7 +31,8 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
 
     function get_columns(){
         $columns = array(
-            'recipients'  	=> __( 'Recipients no.', INCSUB_SBE_LANG_DOMAIN ),
+            'subject'   => __( 'Subject', INCSUB_SBE_LANG_DOMAIN ),
+            'recipients'    => __( 'Recipients no.', INCSUB_SBE_LANG_DOMAIN ),
             'date'   => __( 'Date', INCSUB_SBE_LANG_DOMAIN )
         );
         return $columns;
@@ -40,7 +41,8 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
 
     function get_sortable_columns() {
     	$sortable_columns = array(
-            'date'   => array( 'mail_date', isset( $_GET['orderby'] ) && isset( $_GET['order'] ) && 'mail_date' == $_GET['orderby'] ? $_GET['order'] : false )
+            'date'   => array( 'mail_date', isset( $_GET['orderby'] ) && isset( $_GET['order'] ) && 'mail_date' == $_GET['orderby'] ? $_GET['order'] : false ),
+            'subject'   => array( 'mail_subject', isset( $_GET['orderby'] ) && isset( $_GET['order'] ) && 'mail_subject' == $_GET['orderby'] ? $_GET['order'] : false )
         );
         return $sortable_columns;
     }

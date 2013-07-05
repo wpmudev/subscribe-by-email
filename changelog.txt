@@ -5,6 +5,16 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.0 - 2013/07/05
+----------------------------------------------------------------------
+- Plugin completely recoded
+- Added a more customizable template
+- Emails sent in batches controlled by the user.
+- Better styled widget
+- New emails sent log
+- Send mails weekly or daily
+- The plugin sends a confirmation email for each new subscription
+
 1.1.5 - 3/1/2013 - Aaron Edwards
 ----------------------------------------------------------------------
 - Fix XSS vulnerability!
