@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Ignacio (Incsub)
-Version:2.1
+Version:2.1.1
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -94,7 +94,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.1' );
+		define( 'INCSUB_SBE_VERSION', '2.1.1' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -197,8 +197,6 @@ class Incsub_Subscribe_By_Email {
 			'header_text_color' => '#000000',
 			'mails_batch_size' => 80
 		);
-
-		var_dump(self::$default_settings);
 
 		self::$settings = wp_parse_args( $current_settings, self::$default_settings );
 
