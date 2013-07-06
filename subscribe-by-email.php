@@ -131,7 +131,6 @@ class Incsub_Subscribe_By_Email {
 
 	public function deactivate() {
 		delete_option( 'incsub_sbe_version' );
-		wp_clear_scheduled_hook( 'sbe_send_mail_batch' );
 	}
 
 
@@ -139,7 +138,15 @@ class Incsub_Subscribe_By_Email {
 	 * Set the settings for the plugin
 	 */
 	public function set_settings() {
-		$blog_details = get_blog_details( get_current_blog_id() );
+
+	
+		if ( is_multisite() ) {
+			$blog_details = get_blog_details( get_current_blog_id() );
+			$site_url = $blog_details->siteurl;
+		}
+		else {
+			$site_url = site_url();
+		}
 
 		global $wp_locale;
 
@@ -170,7 +177,7 @@ class Incsub_Subscribe_By_Email {
 
 		$current_settings = get_option( self::$settings_slug );
 
-		$base_domain = str_replace( 'http://', '', $blog_details->siteurl );
+		$base_domain = str_replace( 'http://', '', $site_url );
 		$base_domain = str_replace( 'https://', '', $base_domain );
 
 		self::$default_settings = array(
@@ -190,6 +197,8 @@ class Incsub_Subscribe_By_Email {
 			'header_text_color' => '#000000',
 			'mails_batch_size' => 80
 		);
+
+		var_dump(self::$default_settings);
 
 		self::$settings = wp_parse_args( $current_settings, self::$default_settings );
 
