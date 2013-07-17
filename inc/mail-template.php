@@ -202,10 +202,11 @@ class Incsub_Subscribe_By_Email_Template {
 				'orderby'			=>	'post_date',
 				'order'				=>	'DESC',
 				'include'			=>	$this->posts_ids,
-				'post_type'			=>	'post',
+				'post_type'			=>	$this->settings['post_types'],
 				'post_status'		=>	'publish' 
 			)
 		);
+
 	}
 
 	/**

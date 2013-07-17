@@ -189,6 +189,7 @@ class Incsub_Subscribe_By_Email {
 			'frequency' => 'inmediately',
 			'time' => 0,
 			'day_of_week' => 0,
+			'post_types' => array( 'post' ),
 			'logo' => '',
 			'featured_image' => false,
 			'header_text' => '',
@@ -283,11 +284,22 @@ class Incsub_Subscribe_By_Email {
 	 * 
 	 * @param Integer $subscription_id 
 	 */
-	public static function subscribe_user( $user_email, $note, $type ) {
-
+	public static function subscribe_user( $user_email, $note, $type, $autopt = false ) {
+		
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 
 		$sid = $model->add_subscriber( $user_email, $note, $type, 0 );
+
+		if ( $autopt && $sid ) {
+
+			$user_key = $model->get_user_key( $user_email );
+
+			if ( $user_key ) {
+				$model->confirm_subscription( $user_key );
+			}
+
+			return true;
+		}
 
 		if ( $sid ) {
 			self::send_confirmation_mail( $sid );
@@ -477,7 +489,7 @@ class Incsub_Subscribe_By_Email {
 	 * @return type
 	 */
 	public function process_instant_subscriptions( $new_status, $old_status, $post ) {
-		if ( $post->post_type == 'post' && $new_status != $old_status && 'publish' == $new_status && self::$settings['frequency'] == 'inmediately' ) {
+		if ( in_array( $post->post_type, self::$settings['post_types'] ) && $new_status != $old_status && 'publish' == $new_status && self::$settings['frequency'] == 'inmediately' ) {
 			//send emails
 			$this->send_mails( array( $post->ID ) );	
 		}

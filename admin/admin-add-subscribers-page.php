@@ -50,9 +50,14 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 							<div class="updated"><p><?php printf( __( 'Subscription added. He has %d days to confirm his subscription or he will be removed from the list.', INCSUB_SBE_LANG_DOMAIN ), Incsub_Subscribe_By_Email::$max_confirmation_time / ( 60 * 60 * 24 ) ); ?></p></div>
 						<?php
 					}
-					elseif ( isset( $_GET['users-subscribed'] ) ) {
+					elseif ( isset( $_GET['users-subscribed'] ) && ! isset( $_GET['autopt'] ) ) {
 						?>
 							<div class="updated"><p><?php printf( __( '%d subscriptions created out of %d e-mail addresses. They have %d days to confirm their subscriptions or they will be removed from the list.', INCSUB_SBE_LANG_DOMAIN ), $_GET['subscribed'], $_GET['total'], Incsub_Subscribe_By_Email::$max_confirmation_time / ( 60 * 60 * 24 ) ); ?></p></div>
+						<?php
+					}
+					elseif ( isset( $_GET['users-subscribed'] ) && isset( $_GET['autopt'] ) ) {
+						?>
+							<div class="updated"><p><?php printf( __( '%d subscriptions created out of %d e-mail addresses.', INCSUB_SBE_LANG_DOMAIN ), $_GET['subscribed'], $_GET['total'] ); ?></p></div>
 						<?php
 					}
 				?>
@@ -65,7 +70,16 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 							<tr valign="top">
 								<th scope="row"><?php _e( 'Email', INCSUB_SBE_LANG_DOMAIN ); ?></th>
 								<td>
-									<input type="text" class="regular-text" name="subscribe-email">
+									<input type="text" class="regular-text" name="subscribe-email"><br/>
+								</td>
+							</tr>
+							<tr valign="top">
+								<th scope="row"><?php _e( 'Auto-opt in', INCSUB_SBE_LANG_DOMAIN ); ?></th>
+								<td>
+									<label for="autopt-single">
+										<input type="checkbox" name="autopt" id="autopt-single" value="1"> 
+										<?php _e( 'Will not send a confirmation email', INCSUB_SBE_LANG_DOMAIN ); ?>
+									</label>
 								</td>
 							</tr>
 						</tbody>
@@ -84,6 +98,15 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 									<input type="file" class="regular-text" name="subscribe-file">
 								</td>
 							</tr>
+							<tr valign="top">
+								<th scope="row"><?php _e( 'Auto-opt in', INCSUB_SBE_LANG_DOMAIN ); ?></th>
+								<td>
+									<label for="autopt-bulk">
+										<input type="checkbox" name="autopt" id="autopt-bulk" value="1"> 
+										<?php _e( 'Will not send confirmation emails', INCSUB_SBE_LANG_DOMAIN ); ?>
+									</label>
+								</td>
+							</tr>
 						</tbody>
 					</table>
 					<?php submit_button( __( 'Import', INCSUB_SBE_LANG_DOMAIN ), 'primary', 'submit-bulk' ); ?>
@@ -100,6 +123,8 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 
 			$input = $_POST;
 
+			$autopt = ! empty( $_POST['autopt'] ) ? true : false;
+
 			if ( isset( $input['submit-single'] ) ) {
 				
 				if ( ! wp_verify_nonce( $input['_wpnonce'], 'subscribe' ) )
@@ -109,7 +134,7 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 				$email = sanitize_email( $input['subscribe-email'] );
 				if ( is_email( $email ) ) {
 					$model = Incsub_Subscribe_By_Email_Model::get_instance();
-					$result = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Instant', INCSUB_SBE_LANG_DOMAIN ) );
+					$result = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Instant', INCSUB_SBE_LANG_DOMAIN ), $autopt );
 				}
 				else {
 					// Email not valid
@@ -154,6 +179,7 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 					return false;
 				}
 
+
 				if ( ( $handle = fopen( $_FILES['subscribe-file']['tmp_name'], 'r' ) ) !== false ) {
 					
 					$subscribed_c = 0;
@@ -161,6 +187,7 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 					$email_col = -1;
 
 					while ( ( $row = fgetcsv( $handle, null, ',', '"' ) ) !== false ) {
+
 						$cols = count( $row );
 						$row_c++;
 						if ( $email_col == -1 ) {
@@ -171,19 +198,28 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 								}
 							}
 						}
-						if ( is_email( sanitize_email( $row[$email_col] ) ) && Incsub_Subscribe_By_Email::subscribe_user( sanitize_email( $row[$email_col] ), __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Import', INCSUB_SBE_LANG_DOMAIN ) ) )
+
+						if ( 
+							is_email( sanitize_email( $row[$email_col] ) ) 
+							&& Incsub_Subscribe_By_Email::subscribe_user( sanitize_email( $row[$email_col] ), __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Import', INCSUB_SBE_LANG_DOMAIN ), $autopt ) 
+						)
 							$subscribed_c++;
 					}
 
 					fclose( $handle );
 
+					$query_args = array(
+						'page' => $this->get_menu_slug(),
+						'users-subscribed' => 'true',
+						'total' => $row_c,
+						'subscribed' => $subscribed_c,
+					);
+
+					if ( $autopt )
+						$query_args['autopt'] = 'true';
+
 					wp_redirect( add_query_arg( 
-						array(
-							'page' => $this->get_menu_slug(),
-							'users-subscribed' => 'true',
-							'total' => $row_c,
-							'subscribed' => $subscribed_c,
-						),
+						$query_args,
 						admin_url( 'admin.php' ) )
 					);
 

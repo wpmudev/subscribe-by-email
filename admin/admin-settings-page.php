@@ -84,7 +84,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		add_settings_field( 'subject', __( 'Mail subject', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subject_field' ), $this->get_menu_slug(), 'general-settings' ); 
 		add_settings_field( 'frequency', __( 'Send How Often?', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_frequency_field' ), $this->get_menu_slug(), 'general-settings' ); 
 		add_settings_field( 'mail_batch', __( 'Mail batches', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_mail_batches_field' ), $this->get_menu_slug(), 'general-settings' ); 
-		
+	
+		add_settings_section( 'posts-settings', __( 'Posts Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+		add_settings_field( 'post-types', __( 'Posts Types', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_field' ), $this->get_menu_slug(), 'posts-settings' ); 
+
 		add_settings_section( 'style-settings', __( 'Styling Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 		add_settings_field( 'logo', __( 'Logo for notifications', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_logo_field' ), $this->get_menu_slug(), 'style-settings' ); 
 		add_settings_field( 'featured-images', __( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_featured_image' ), $this->get_menu_slug(), 'style-settings' ); 
@@ -236,6 +239,30 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			</div>
 		<?php
 	}
+
+
+	/**
+	 * Post Types field
+	 */
+	public function render_posts_types_field() {
+		$args=array(
+		  'publicly_queryable'   => true,
+		); 
+		$post_types = get_post_types( $args, 'object' );
+		unset( $post_types['attachments'] );
+		
+		foreach ( $post_types as $post_slug => $post_type ) {
+			$label = $post_type->labels->name;
+			?>
+				<label for="post-type-<?php echo $post_slug; ?>">
+					<input type="checkbox" <?php checked( in_array( $post_slug, $this->settings['post_types'] ) ); ?> id="post-type-<?php echo $post_slug; ?>" name="<?php echo $this->settings_name; ?>[post_types][]" value="<?php echo $post_slug; ?>"> 
+					<?php echo $label; ?>
+					<br/>
+				</label>
+			<?php
+		}
+	}
+
 
 	/**
 	 * Logo field
@@ -404,6 +431,11 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			}
 			else {
 				$new_settings['day_of_week'] = Incsub_Subscribe_By_Email::$default_settings['day_of_week'];
+			}
+
+			// Post types
+			if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
+				$new_settings['post_types'] = $input['post_types'];
 			}
 
 			// Logo

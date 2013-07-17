@@ -55,16 +55,24 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	public function subscribe_user() {
 		
 		if ( ! empty( $_POST['subscription-email'] ) ) {
-			$email = sanitize_email( $_POST['subscription-email'] );
-			if ( ! is_email( $email ) ) {
-				echo "MAIL ERROR";
+			$instance = $this->get_settings();
+
+			if ( array_key_exists( $this->number, $instance ) ) {
+				$instance = $instance[ $this->number ];
+
+				if ( false !== $instance ) {
+					$autopt = $instance['autopt'];
+
+					$email = sanitize_email( $_POST['subscription-email'] );
+					if ( ! is_email( $email ) ) {
+						echo "MAIL ERROR";
+					}
+					else {
+						Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant', $autopt );
+						echo "TRUE";
+					}
+				}
 			}
-			else {
-				Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant' );
-				echo "TRUE";
-			}
-				
-			
 		}
 		die();
 	}
@@ -73,7 +81,6 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	 * How to display the widget on the screen.
 	 */
 	function widget( $args, $instance ) {
-
 		extract( $args );
 
         $title = apply_filters( 'widget_title', $instance['title'] );
@@ -84,14 +91,16 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	     
 	    if ( $title )
 	     	echo $before_title . $title . $after_title; 
-	          
+	    
+	    $message = $instance['autopt'] ? __( 'Thank you, your email has been added to the mailing.', INCSUB_SBE_LANG_DOMAIN ) : __( 'Thank you, your email will be added to the mailing list once you click on the link in the confirmation email.', INCSUB_SBE_LANG_DOMAIN );
+
 	    ?>
 	        <form method="post" id="subscribe-by-email-subscribe-form">
 	        	<p>
 		        	<?php echo $text; ?>
 		        </p>
 	        	<p class="subscribe-by-email-error"><?php _e( 'Please, insert a valid email.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
-        		<p class="subscribe-by-email-updated"><?php _e( 'Thank you, your email will be added to the mailing list once you click on the link in the confirmation email.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+        		<p class="subscribe-by-email-updated"><?php echo $message; ?></p>
 	        	<input type="text" class="subscribe-by-email-field" name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>">
 	        	<input type="hidden" name="action" value="sbe_subscribe_user">
 	        	<input type="submit" class="subscribe-by-email-submit" name="submit-subscribe-user" value="<?php echo $button_text; ?>">
@@ -112,6 +121,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		$instance['title'] = sanitize_text_field( $new_instance['title'] );
 		$instance['text'] = sanitize_text_field( $new_instance['text'] );
 		$instance['button_text'] = sanitize_text_field( $new_instance['button_text'] );
+		$instance['autopt'] = ! empty( $new_instance['autopt'] ) ? true : false;
 
 		return $instance;
 	}
@@ -127,20 +137,25 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		$defaults = array( 
 			'title' => __( 'Subscribe by Email', INCSUB_SBE_LANG_DOMAIN ), 
 			'text' => __( 'Completely spam free, opt out any time.', INCSUB_SBE_LANG_DOMAIN ), 
-			'button_text' => __( 'Subscribe', INCSUB_SBE_LANG_DOMAIN  )
+			'button_text' => __( 'Subscribe', INCSUB_SBE_LANG_DOMAIN  ),
+			'autopt' => false
 		);
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title:', 'hybrid', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title:', INCSUB_SBE_LANG_DOMAIN ); ?></label>
 			<input type="text" class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" value="<?php echo esc_attr( $instance['title'] ); ?>" />
 		</p>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'text' ); ?>"><?php _e('Text:', 'example', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+			<label for="<?php echo $this->get_field_id( 'text' ); ?>"><?php _e('Text:', INCSUB_SBE_LANG_DOMAIN ); ?></label>
 			<input type="text" class="widefat" id="<?php echo $this->get_field_id( 'text' ); ?>" name="<?php echo $this->get_field_name( 'text' ); ?>" value="<?php echo esc_attr( $instance['text'] ); ?>" />
 		</p>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'button_text' ); ?>"><?php _e('Subscribe button text:', 'example', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+			<label for="<?php echo $this->get_field_id( 'button_text' ); ?>"><?php _e('Subscribe button text:', INCSUB_SBE_LANG_DOMAIN); ?></label>
 			<input type="text" class="widefat" id="<?php echo $this->get_field_id( 'button_text' ); ?>" name="<?php echo $this->get_field_name( 'button_text' ); ?>" value="<?php echo esc_attr( $instance['button_text'] ); ?>" />
+		</p>
+		<p>
+			<input type="checkbox" id="<?php echo $this->get_field_id( 'autopt' ); ?>" name="<?php echo $this->get_field_name( 'autopt' ); ?>" value="1" <?php checked( $instance['autopt'] ); ?> /> 
+			<label for="<?php echo $this->get_field_id( 'autopt' ); ?>"><?php _e('Auto-opt In (it will not send a confirmation email to the user)', INCSUB_SBE_LANG_DOMAIN ); ?></label>
 		</p>
 	<?php
 	}
