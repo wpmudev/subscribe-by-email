@@ -5,6 +5,17 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.2 - 2013/07/18
+----------------------------------------------------------------------
+* Added auto-opt In option when importing and adding new subscribers.
+* Added auto-opt In option in widget
+* New Post Types Setting
+* Improved some captions
+* Improved Settings page, splitted into tabs
+* Added new subscribe email customization text field
+* Fixed export CSV date
+* Minor bug fixing
+
 2.1.1 - 2013/07/06
 ----------------------------------------------------------------------
 * Removed debugging left by mistake
