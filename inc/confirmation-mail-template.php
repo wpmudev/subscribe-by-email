@@ -25,7 +25,7 @@ class Incsub_Subscribe_By_Email_Confirmation_Template {
 	 * @return String
 	 */
 	public function render_mail_template() {
-		$font_style = "style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif !important;background:#DEDEDE;padding-top:20px;\"";
+		$font_style = "style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif !important;background:#DEDEDE;padding-top:20px;margin-bottom:30px;\"";
 		$table_top_style = 'style="padding:10px 20px;border-bottom:1px solid black;margin:0 auto;width:600px;border-top:5px solid ' . $this->settings['header_color'] . '"';
 		$table_style = 'style="padding:10px 20px;width:600px;margin:0 auto;"';
 		$column_style = 'style="display: block!important;"';
@@ -34,8 +34,7 @@ class Incsub_Subscribe_By_Email_Confirmation_Template {
 		$subject_style = 'style="font-weight: 500; font-size: 27px;line-height: 1.1; margin-bottom: 15px; color: #000 !important;"';
 		$lead_style = 'style="font-size: 17px;margin-bottom: 10px; font-weight: normal; font-size: 14px; line-height: 1.6;"';
 		$footer_style = 'style="font-size:11px;color:#666 !important;"';
-		$button_style = 'style="background-color:#278AB6;border-radius:25px;text-decoration:none;color: #FFF;display: inline-block;line-height: 23px;height: 24px;padding: 0 10px 1px;cursor:pointer;box-sizing: border-box;font-size:12px;"';
-
+		$button_style = 'style="background-color:#278AB6;border-radius:25px;text-decoration:none;color: #FFF;display: inline-block;line-height: 23px;height: 24px;padding: 0 10px 1px;cursor:pointer;box-sizing: border-box;font-size:12px"';
 		ob_start();
 
 		?>
@@ -70,25 +69,17 @@ class Incsub_Subscribe_By_Email_Confirmation_Template {
 											<tr>
 												<td>
 													<?php 
-
-													printf( __( '<p>Howdy.</p>
-														<p>
-															You recently signed up to be notified of new posts on my blog. This means
-															once you confirm below, you will receive an email when posts are published.
-														</p>
-														<p>
-															To activate, click confirm below. If you believe this is an error, ignore this message
-															and nothing more will happen.
-														</p>
-														<p><strong>Blog Name:</strong> %s</p>
-														<p><strong>Blog URL:</strong> <a href="%s">%s</a></p>
-														<a %s href="%s">Confirm subscription</a>', INCSUB_SBE_LANG_DOMAIN ),
-														get_bloginfo( 'name' ),
-														site_url(),
-														site_url(),
-														$button_style,
-														add_query_arg( 'sbe_confirm', $this->user_key, site_url() )
-													);
+														echo wpautop( $this->settings['subscribe_email_content'] );
+														printf( __( '<p><strong>Blog Name:</strong> %s</p>
+<p><strong>Blog URL:</strong> <a href="%s">%s</a></p>
+<a %s href="%s">Confirm subscription</a>', INCSUB_SBE_LANG_DOMAIN ),
+															get_bloginfo( 'name' ),
+															site_url(),
+															site_url(),
+															$button_style,
+															add_query_arg( 'sbe_confirm', $this->user_key, site_url() )
+														);
+													
 													?>
 												</td>
 											</tr>

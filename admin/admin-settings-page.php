@@ -9,9 +9,17 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	// The settings
 	private $settings;
 
+	// Tabs
+	private $tabs;
+
 	public function __construct() {
 
 		$subscribers_page = Incsub_Subscribe_By_Email::$admin_subscribers_page;
+
+		$this->tabs = array(
+			'general' => __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ),
+			'template' => __( 'Mail template', INCSUB_SBE_LANG_DOMAIN )
+		);
 
 		$args = array(
 			'slug' => 'sbe-settings',
@@ -76,27 +84,72 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	public function register_settings() {
 		register_setting( $this->settings_group, $this->settings_name, array( &$this, 'sanitize_settings' ) );
 
-		add_settings_section( 'general-settings', __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
-		//add_settings_field( 'auto-subscribe', __( 'Auto-subscribe', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_auto_subscribe_field' ), $this->get_menu_slug(), 'general-settings' ); 
-		//add_settings_field( 'subscribe-new-users', __( 'Subscribe new users', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribe_new_users_field' ), $this->get_menu_slug(), 'general-settings' ); 
-		add_settings_field( 'from-sender', __( 'Notification From Sender', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_sender_field' ), $this->get_menu_slug(), 'general-settings' ); 
-		add_settings_field( 'from-email', __( 'Notification From Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_email_field' ), $this->get_menu_slug(), 'general-settings' ); 
-		add_settings_field( 'subject', __( 'Mail subject', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subject_field' ), $this->get_menu_slug(), 'general-settings' ); 
-		add_settings_field( 'frequency', __( 'Send How Often?', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_frequency_field' ), $this->get_menu_slug(), 'general-settings' ); 
-		add_settings_field( 'mail_batch', __( 'Mail batches', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_mail_batches_field' ), $this->get_menu_slug(), 'general-settings' ); 
-	
-		add_settings_section( 'posts-settings', __( 'Posts Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
-		add_settings_field( 'post-types', __( 'Posts Types', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_field' ), $this->get_menu_slug(), 'posts-settings' ); 
+		if ( $this->get_current_tab() == 'general' ) {
+			add_settings_section( 'general-settings', __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			//add_settings_field( 'auto-subscribe', __( 'Auto-subscribe', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_auto_subscribe_field' ), $this->get_menu_slug(), 'general-settings' ); 
+			//add_settings_field( 'subscribe-new-users', __( 'Subscribe new users', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribe_new_users_field' ), $this->get_menu_slug(), 'general-settings' ); 
+			add_settings_field( 'from-sender', __( 'Notification From Sender', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_sender_field' ), $this->get_menu_slug(), 'general-settings' ); 
+			add_settings_field( 'from-email', __( 'Notification From Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_email_field' ), $this->get_menu_slug(), 'general-settings' ); 
+			add_settings_field( 'subject', __( 'Mail subject', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subject_field' ), $this->get_menu_slug(), 'general-settings' ); 
+			add_settings_field( 'frequency', __( 'Send How Often?', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_frequency_field' ), $this->get_menu_slug(), 'general-settings' ); 
+			add_settings_field( 'mail_batch', __( 'Mail batches', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_mail_batches_field' ), $this->get_menu_slug(), 'general-settings' ); 
 
-		add_settings_section( 'style-settings', __( 'Styling Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
-		add_settings_field( 'logo', __( 'Logo for notifications', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_logo_field' ), $this->get_menu_slug(), 'style-settings' ); 
-		add_settings_field( 'featured-images', __( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_featured_image' ), $this->get_menu_slug(), 'style-settings' ); 
-		add_settings_field( 'header-color', __( 'Header color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_color_field' ), $this->get_menu_slug(), 'style-settings' ); 
-		add_settings_field( 'header-text-color', __( 'Header text color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_color_field' ), $this->get_menu_slug(), 'style-settings' ); 
-		add_settings_field( 'header-text', __( 'Header text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_field' ), $this->get_menu_slug(), 'style-settings' ); 
-		add_settings_field( 'footer-text', __( 'Footer text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_footer_text_field' ), $this->get_menu_slug(), 'style-settings' ); 
+			add_settings_section( 'posts-settings', __( 'Posts Settings', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_section' ), $this->get_menu_slug() );
+			add_settings_field( 'post-types', __( 'Posts Types', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_field' ), $this->get_menu_slug(), 'posts-settings' ); 
+		}
+		elseif ( $this->get_current_tab() == 'template' ) {
+			add_settings_section( 'style-settings', __( 'Styling Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			add_settings_field( 'logo', __( 'Logo for notifications', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_logo_field' ), $this->get_menu_slug(), 'style-settings' ); 
+			add_settings_field( 'featured-images', __( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_featured_image' ), $this->get_menu_slug(), 'style-settings' ); 
+			add_settings_field( 'header-color', __( 'Header color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_color_field' ), $this->get_menu_slug(), 'style-settings' ); 
+			add_settings_field( 'header-text-color', __( 'Header text color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_color_field' ), $this->get_menu_slug(), 'style-settings' ); 
+			add_settings_field( 'header-text', __( 'Header text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_field' ), $this->get_menu_slug(), 'style-settings' ); 
+			add_settings_field( 'footer-text', __( 'Footer text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_footer_text_field' ), $this->get_menu_slug(), 'style-settings' ); 
+			add_settings_field( 'subscribe-email-content', __( 'Subscribe Email Content', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribe_email_content' ), $this->get_menu_slug(), 'style-settings' ); 
 
-		add_settings_section( 'email-preview', __( 'Email preview', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_preview_section' ), $this->get_menu_slug() );
+			add_settings_section( 'email-preview', __( 'Email preview', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_preview_section' ), $this->get_menu_slug() );
+		}
+
+	}
+
+	private function get_current_tab() {
+		if ( isset( $_GET['tab'] ) && array_key_exists( $_GET['tab'], $this->tabs ) ) {
+			return $_GET['tab'];
+		}
+		else {
+			return 'general';
+		}
+	}
+
+	private function the_tabs() {
+		$current_tab = $this->get_current_tab();
+
+		echo '<h2 class="nav-tab-wrapper">';
+		foreach ( $this->tabs as $key => $name ): ?>
+			<a href="?page=<?php echo $this->get_menu_slug(); ?>&tab=<?php echo $key; ?>" class="nav-tab <?php echo $current_tab == $key ? 'nav-tab-active' : ''; ?>"><?php echo $name; ?></a>
+		<?php endforeach;
+			
+		echo '</h2>';
+		
+	}
+
+	public function render_page() {
+
+		if ( ! current_user_can( $this->get_capability() ) )
+			wp_die( __( 'You do not have enough permissions to access to this page', INCSUB_SBE_LANG_DOMAIN ) );
+
+		?>
+			<div class="wrap">
+				
+				<?php screen_icon( 'sbe' ); ?>
+				
+				<?php $this->the_tabs(); ?>
+
+				<?php $this->render_content(); ?>
+
+			</div>
+
+		<?php
 
 	}
 
@@ -105,7 +158,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 * render the settings page
 	 */
 	public function render_content() {
-
 
 		$errors = get_settings_errors( $this->settings_name ); 
 		if ( ! empty( $errors ) ) {
@@ -135,7 +187,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				<?php do_settings_sections( $this->get_menu_slug() ); ?>
 					
 				<p class="submit">
-					<?php submit_button( null, 'primary', $this->settings_name . '[submit_settings]', false ) ?>
+					<?php submit_button( null, 'primary', $this->settings_name . '[submit_settings_' . $this->get_current_tab() . ']', false ) ?>
 				</p>
 			</form>
 		
@@ -240,6 +292,14 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		<?php
 	}
 
+	/**
+	 * Post Types Section
+	 */
+	public function render_posts_types_section() {
+		?>
+			<p><?php _e( 'Check those Post Types that you want to send to your subscribers.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+		<?php
+	}
 
 	/**
 	 * Post Types field
@@ -249,7 +309,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		  'publicly_queryable'   => true,
 		); 
 		$post_types = get_post_types( $args, 'object' );
-		unset( $post_types['attachments'] );
+		unset( $post_types['attachment'] );
 		
 		foreach ( $post_types as $post_slug => $post_type ) {
 			$label = $post_type->labels->name;
@@ -355,6 +415,15 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		<?php
 	}
 
+	/**
+	 * Subscribing Email Contents
+	 */
+	public function render_subscribe_email_content() {
+		?>
+			<textarea class="widefat" rows="8" name="<?php echo $this->settings_name; ?>[subscribe_email_content]"><?php echo esc_textarea( $this->settings['subscribe_email_content'] ); ?></textarea>
+		<?php
+	}
+
 
 	/**
 	 * Sanitizes the settings and return the values to be saved
@@ -367,7 +436,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 		$new_settings = $this->settings;
 
-		if ( isset( $input['submit_settings'] ) || isset( $input['remove-logo'] ) || isset( $input['submit_test_email'] ) || isset( $input['submit_refresh_changes'] ) ) {
+		if ( isset( $input['submit_settings_general'] ) ) {
 
 			// Auto subscribe
 			//if ( 'yes' == $input['auto_subscribe'] )
@@ -437,6 +506,9 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
 				$new_settings['post_types'] = $input['post_types'];
 			}
+		}
+
+		if ( isset( $input['submit_settings_template'] ) || isset( $input['remove-logo'] ) || isset( $input['submit_test_email'] ) || isset( $input['submit_refresh_changes'] ) ) {
 
 			// Logo
 			if ( isset( $input['remove-logo'] ) ) {
@@ -471,6 +543,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			// Texts
 			$new_settings['header_text'] = $input['header_text'];
 			$new_settings['footer_text'] = $input['footer_text'];
+			$new_settings['subscribe_email_content'] = $input['subscribe_email_content'];
 			
 			if ( isset( $input['submit_test_email'] ) ) {
 

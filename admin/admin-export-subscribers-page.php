@@ -56,7 +56,7 @@ class Incsub_Subscribe_By_Email_Export_Subscribers_Page extends Incsub_Subscribe
 				$subscriptions = $model->get_all_subscribers();
 
 				foreach ($subscriptions as $subscription) {
-					echo '"'.$subscription['subscription_ID'].'","'.$subscription['subscription_email'].'","'.$subscription['subscription_type'].'","'.$subscription['subscription_created'].'","'.$subscription['subscription_note'].'"'."\n";
+					echo '"'.$subscription['subscription_ID'].'","'.$subscription['subscription_email'].'","'.$subscription['subscription_type'].'","'. date_i18n( 'Y-m-d', $subscription['subscription_created'] ) . '","'.$subscription['subscription_note'].'"'."\n";
 				}
 				
 				exit();

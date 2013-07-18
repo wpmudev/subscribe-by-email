@@ -101,4 +101,8 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 		);
 	}
 
+	public function get_capability() {
+		return $this->capability;
+	}
+
 }

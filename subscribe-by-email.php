@@ -180,6 +180,16 @@ class Incsub_Subscribe_By_Email {
 		$base_domain = str_replace( 'http://', '', $site_url );
 		$base_domain = str_replace( 'https://', '', $base_domain );
 
+		// Subscribing email contents
+		$button_style = 'style="background-color:#278AB6;border-radius:25px;text-decoration:none;color: #FFF;display: inline-block;line-height: 23px;height: 24px;padding: 0 10px 1px;cursor:pointer;box-sizing: border-box;font-size:12px;"';
+		$subscribe_email_content = __( 'Howdy.
+
+You recently signed up to be notified of new posts on my blog. This means
+once you confirm below, you will receive an email when posts are published.
+
+To activate, click confirm below. If you believe this is an error, ignore this message
+and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
+
 		self::$default_settings = array(
 			'auto-subscribe' => false,
 			'subscribe_new_users' => false,
@@ -196,7 +206,8 @@ class Incsub_Subscribe_By_Email {
 			'footer_text' => '',
 			'header_color' => '#66aec2',
 			'header_text_color' => '#000000',
-			'mails_batch_size' => 80
+			'mails_batch_size' => 80,
+			'subscribe_email_content' => $subscribe_email_content
 		);
 
 		self::$settings = wp_parse_args( $current_settings, self::$default_settings );

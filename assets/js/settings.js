@@ -18,6 +18,7 @@ jQuery(document).ready(function($) {
 			$('#header-text-color-picker').farbtastic('#header-text-color')
 			$('#header-text-color').click( sbe_settings.toggle_colorpicker );
 
+
 			$(document).mouseup(function (e) {
 			    var container = $(".colorpicker");
 

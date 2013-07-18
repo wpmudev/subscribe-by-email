@@ -45,14 +45,19 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 							</div>
 						<?php
 					}
-					elseif ( isset( $_GET['user-subscribed'] ) ) {
+					elseif ( isset( $_GET['user-subscribed'] ) && ! isset( $_GET['autopt'] ) ) {
 						?>
-							<div class="updated"><p><?php printf( __( 'Subscription added. He has %d days to confirm his subscription or he will be removed from the list.', INCSUB_SBE_LANG_DOMAIN ), Incsub_Subscribe_By_Email::$max_confirmation_time / ( 60 * 60 * 24 ) ); ?></p></div>
+							<div class="updated"><p><?php printf( __( 'Subscription added. User has %d days to confirm his subscription or he will be removed from the list.', INCSUB_SBE_LANG_DOMAIN ), Incsub_Subscribe_By_Email::$max_confirmation_time / ( 60 * 60 * 24 ) ); ?></p></div>
+						<?php
+					}
+					elseif ( isset( $_GET['user-subscribed'] ) && isset( $_GET['autopt'] ) ) {
+						?>
+							<div class="updated"><p><?php _e( 'Subscription added', INCSUB_SBE_LANG_DOMAIN ); ?></p></div>
 						<?php
 					}
 					elseif ( isset( $_GET['users-subscribed'] ) && ! isset( $_GET['autopt'] ) ) {
 						?>
-							<div class="updated"><p><?php printf( __( '%d subscriptions created out of %d e-mail addresses. They have %d days to confirm their subscriptions or they will be removed from the list.', INCSUB_SBE_LANG_DOMAIN ), $_GET['subscribed'], $_GET['total'], Incsub_Subscribe_By_Email::$max_confirmation_time / ( 60 * 60 * 24 ) ); ?></p></div>
+							<div class="updated"><p><?php printf( __( '%d subscriptions created out of %d e-mail addresses. Users have %d days to confirm their subscriptions or they will be removed from the list.', INCSUB_SBE_LANG_DOMAIN ), $_GET['subscribed'], $_GET['total'], Incsub_Subscribe_By_Email::$max_confirmation_time / ( 60 * 60 * 24 ) ); ?></p></div>
 						<?php
 					}
 					elseif ( isset( $_GET['users-subscribed'] ) && isset( $_GET['autopt'] ) ) {
@@ -143,11 +148,17 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 
 				$errors = get_settings_errors( 'subscribe' ); 
 				if ( empty( $errors ) ) {
+
+					$query_args = array(
+						'page' => $this->get_menu_slug(),
+						'user-subscribed' => 'true'
+					);
+
+					if ( $autopt )
+						$query_args['autopt'] = 'true';
+
 					wp_redirect( add_query_arg( 
-						array(
-							'page' => $this->get_menu_slug(),
-							'user-subscribed' => 'true'
-						),
+						$query_args,
 						admin_url( 'admin.php' ) )
 					);
 				}

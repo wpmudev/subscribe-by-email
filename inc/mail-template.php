@@ -317,7 +317,7 @@ class Incsub_Subscribe_By_Email_Template {
 											<tr>
 												<td>
 													<h2 <?php echo $subject_style; ?>><?php echo $this->subject; ?></h2>
-													<p <?php echo $lead_style; ?>><?php echo esc_textarea( $this->settings['header_text'] ); ?></p>
+													<p <?php echo $lead_style; ?>><?php echo wpautop( $this->settings['header_text'] ); ?></p>
 													<hr/>
 													<?php $this->the_content(); ?>												
 												</td>
@@ -344,7 +344,7 @@ class Incsub_Subscribe_By_Email_Template {
 														<?php printf( __( 'You are subscribed to email updates from <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), site_url(), get_bloginfo( 'name' ) ); ?>  <br/>
 														<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sbe_unsubscribe', $key, site_url() ) ) ); ?>
 													</p>
-													<p><?php echo esc_textarea( $this->settings['footer_text'] ); ?></p>
+													<p><?php echo wpautop( $this->settings['footer_text'] ); ?></p>
 												</td>
 											</tr>
 										</tbody>
