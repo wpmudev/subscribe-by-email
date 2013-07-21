@@ -411,7 +411,8 @@ class Incsub_Subscribe_By_Email_Template {
 			$to = ( ! $to ) ? array() : $to;
 
 			if ( is_string( $to ) )
-				$to = array( $to );
+				$to = array( 0 => array( 'email' => $to ) );
+
 
 			if ( $log_id )
 				$mail_log_id = absint( $log_id );
@@ -428,10 +429,13 @@ class Incsub_Subscribe_By_Email_Template {
 			foreach ( $to as $mail ) {
 
 				$key = $model->get_user_key( $mail['email'] );
-				if ( empty( $key ) )
+				if ( empty( $key ) && ! $this->dummy )
 					continue;
+				elseif ( $this->dummy )
+					$key = '';
 
 				$content = $this->render_mail_template( false, $key );
+				
 				if ( ! $this->dummy ) {
 					wp_mail( $mail['email'], $this->subject, $content );
 
