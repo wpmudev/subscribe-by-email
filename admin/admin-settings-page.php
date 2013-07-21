@@ -51,10 +51,16 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		$screen = get_current_screen();
 		if ( $screen->id == $this->get_page_id() ) {
 
-		    wp_enqueue_script( 'thickbox' );
-		    wp_enqueue_script( 'media-upload' );
-		    wp_enqueue_script( 'farbtastic' );
-			wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . '/js/settings.js', array( 'thickbox', 'media-upload' ), '20130515' );
+			if ( 'general' == $this->get_current_tab() ) {
+				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . '/js/settings-general.js', array( 'jquery' ), '20130721' );
+			}
+			elseif ( 'template' == $this->get_current_tab() ) {
+				wp_enqueue_script( 'thickbox' );
+			    wp_enqueue_script( 'media-upload' );
+			    wp_enqueue_script( 'farbtastic' );
+				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . '/js/settings-template.js', array( 'thickbox', 'media-upload' ), '20130721' );
+			}
+		    
 
 			$l10n = array(
 				'title_text' => __( 'Upload a logo', INCSUB_SBE_LANG_DOMAIN ),
