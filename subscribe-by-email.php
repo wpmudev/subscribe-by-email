@@ -141,11 +141,10 @@ class Incsub_Subscribe_By_Email {
 
 	
 		if ( is_multisite() ) {
-			$blog_details = get_blog_details( get_current_blog_id() );
-			$site_url = $blog_details->siteurl;
+			$site_url = get_home_url( get_current_blog_id() );
 		}
 		else {
-			$site_url = site_url();
+			$site_url = get_home_url();
 		}
 
 		global $wp_locale;
@@ -376,7 +375,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 				<p>
 					<?php echo $text; ?>
 				</p><br/><br/>
-				<a href="<?php echo site_url(); ?>"><?php _e( 'Go to site', INCSUB_SBE_LANG_DOMAIN ); ?></a>
+				<a href="<?php echo get_home_url(); ?>"><?php _e( 'Go to site', INCSUB_SBE_LANG_DOMAIN ); ?></a>
 			</div>
 		<?php
 	}
@@ -500,6 +499,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 	 * @return type
 	 */
 	public function process_instant_subscriptions( $new_status, $old_status, $post ) {
+		
 		if ( in_array( $post->post_type, self::$settings['post_types'] ) && $new_status != $old_status && 'publish' == $new_status && self::$settings['frequency'] == 'inmediately' ) {
 			//send emails
 			$this->send_mails( array( $post->ID ) );	

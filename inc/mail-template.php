@@ -293,9 +293,9 @@ class Incsub_Subscribe_By_Email_Template {
 									<table <?php echo $table_style; ?> bgcolor="<?php echo $this->settings['header_color']; ?>">
 										<tbody>
 											<tr>
-												<td><a href="<?php echo site_url(); ?>"><img style="max-width:200px;" src="<?php echo $this->settings['logo']; ?>"></a></td>
+												<td><a href="<?php echo get_home_url(); ?>"><img style="max-width:200px;" src="<?php echo $this->settings['logo']; ?>"></a></td>
 												<td align="right">
-													<h6><a <?php echo $blogname_style; ?> href="<?php echo site_url(); ?>"><?php echo $this->settings['from_sender']; ?></a></h6>
+													<h6><a <?php echo $blogname_style; ?> href="<?php echo get_home_url(); ?>"><?php echo $this->settings['from_sender']; ?></a></h6>
 												</td>
 											</tr>
 										</tbody>
@@ -341,8 +341,8 @@ class Incsub_Subscribe_By_Email_Template {
 											<tr>
 												<td <?php echo $footer_style; ?>>
 													<p>
-														<?php printf( __( 'You are subscribed to email updates from <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), site_url(), get_bloginfo( 'name' ) ); ?>  <br/>
-														<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sbe_unsubscribe', $key, site_url() ) ) ); ?>
+														<?php printf( __( 'You are subscribed to email updates from <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), get_home_url(), get_bloginfo( 'name' ) ); ?>  <br/>
+														<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sbe_unsubscribe', $key, get_home_url() ) ) ); ?>
 													</p>
 													<p><?php echo wpautop( $this->settings['footer_text'] ); ?></p>
 												</td>

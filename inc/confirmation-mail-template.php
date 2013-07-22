@@ -74,10 +74,10 @@ class Incsub_Subscribe_By_Email_Confirmation_Template {
 <p><strong>Blog URL:</strong> <a href="%s">%s</a></p>
 <a %s href="%s">Confirm subscription</a>', INCSUB_SBE_LANG_DOMAIN ),
 															get_bloginfo( 'name' ),
-															site_url(),
-															site_url(),
+															get_home_url(),
+															get_home_url(),
 															$button_style,
-															add_query_arg( 'sbe_confirm', $this->user_key, site_url() )
+															add_query_arg( 'sbe_confirm', $this->user_key, get_home_url() )
 														);
 													
 													?>
