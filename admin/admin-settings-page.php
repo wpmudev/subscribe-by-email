@@ -512,6 +512,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
 				$new_settings['post_types'] = $input['post_types'];
 			}
+
+			// Batches
+		    if ( ! empty( $input['mail_batches'] ) )
+				$new_settings['mails_batch_size'] = absint( $input['mail_batches'] );
 		}
 
 		if ( isset( $input['submit_settings_template'] ) || isset( $input['remove-logo'] ) || isset( $input['submit_test_email'] ) || isset( $input['submit_refresh_changes'] ) ) {
@@ -542,9 +546,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			else 
 		    	$new_settings['header_text_color'] = Incsub_Subscribe_By_Email::$default_settings['header_text_color'];
 
-			// Batches
-		    if ( ! empty( $input['mail_batches'] ) )
-				$new_settings['mails_batch_size'] = absint( $input['mail_batches'] );
+			
 			
 			// Texts
 			$new_settings['header_text'] = $input['header_text'];
