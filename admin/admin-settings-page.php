@@ -102,6 +102,9 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			add_settings_section( 'posts-settings', __( 'Posts Settings', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_section' ), $this->get_menu_slug() );
 			add_settings_field( 'post-types', __( 'Posts Types', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_field' ), $this->get_menu_slug(), 'posts-settings' ); 
+
+			add_settings_section( 'user-subs-page-settings', __( 'Subscription page', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscription_page_section' ), $this->get_menu_slug() );
+			add_settings_field( 'user-subs-page', __( 'Subscribers Management Page', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscription_page_field' ), $this->get_menu_slug(), 'user-subs-page-settings' ); 
 		}
 		elseif ( $this->get_current_tab() == 'template' ) {
 			add_settings_section( 'style-settings', __( 'Styling Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
@@ -329,6 +332,28 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		}
 	}
 
+	public function render_subscription_page_section() {
+		?><p><?php _e( 'You can select a page where users will be able to subscribe/unsubscribe to any post type', INCSUB_SBE_LANG_DOMAIN ); ?></p><?php
+	}
+
+
+	public function render_subscription_page_field() {
+		$args = array(
+			'show_option_none' => __( '--Select a page--', INCSUB_SBE_LANG_DOMAIN ),
+			'selected' => $this->settings['manage_subs_page'],
+			'option_none_value' => 0,
+			'name' => $this->settings_name . '[manage_subs_page]',
+			'id' => 'manage_subs_page_selector'
+		);
+		wp_dropdown_pages( $args );
+		?>
+			 <span class="description"><?php _e( 'After a page is selected, the management form will be appended to the content of the page', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+			 <p><?php _e( "Users will be able to access to the page through a mail link. If you want to test it, just go to the page when you're logged in as administrator", INCSUB_SBE_LANG_DOMAIN ); ?></p>
+		<?php
+	}
+
+
+
 
 	/**
 	 * Logo field
@@ -511,6 +536,11 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			// Post types
 			if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
 				$new_settings['post_types'] = $input['post_types'];
+			}
+
+			// Management Page
+			if ( isset( $input['manage_subs_page'] ) ) {
+				$new_settings['manage_subs_page'] = absint( $input['manage_subs_page'] );
 			}
 
 			// Batches

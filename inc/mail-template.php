@@ -218,7 +218,7 @@ class Incsub_Subscribe_By_Email_Template {
 		add_filter( 'posts_where', array( &$this, 'set_wp_query_filter' ) );
 		$query = new WP_Query(
 			array(
-				'post_type' => 'post',
+				'post_type' => $this->settings['post_types'],
 				'nopaging ' => true,
 				'posts_per_page' => -1,
 				'post_status' => array( 'publish' )
@@ -254,6 +254,7 @@ class Incsub_Subscribe_By_Email_Template {
 		return strtotime( '-' . $days . ' days' );
 	}
 
+
 	/**
 	 * Render the mail template
 	 *
@@ -265,7 +266,8 @@ class Incsub_Subscribe_By_Email_Template {
 	public function render_mail_template( $echo = true, $key = '' ) {
 
 		if ( ! $this->dummy && empty( $this->posts_ids ) ) {
-			$this->set_content();
+			if ( ! $this->set_content() )
+				return false;
 		}
 
 		$this->set_subject();
@@ -342,6 +344,9 @@ class Incsub_Subscribe_By_Email_Template {
 												<td <?php echo $footer_style; ?>>
 													<p>
 														<?php printf( __( 'You are subscribed to email updates from <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), get_home_url(), get_bloginfo( 'name' ) ); ?>  <br/>
+														<?php if ( $this->settings['manage_subs_page'] ): ?>
+															<?php printf( __( 'To manage your subscriptions, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sub_key', $key, get_permalink( $this->settings['manage_subs_page'] ) ) ) ); ?> <br/>	
+														<?php endif; ?>
 														<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sbe_unsubscribe', $key, get_home_url() ) ) ); ?>
 													</p>
 													<p><?php echo wpautop( $this->settings['footer_text'] ); ?></p>
@@ -434,7 +439,13 @@ class Incsub_Subscribe_By_Email_Template {
 				elseif ( $this->dummy )
 					$key = '';
 
+				if ( ! $this->dummy )
+					$this->remove_subscriber_content( $key );
+
 				$content = $this->render_mail_template( false, $key );
+
+				if ( false === $content )
+					continue;
 				
 				if ( ! $this->dummy ) {
 					wp_mail( $mail['email'], $this->subject, $content );

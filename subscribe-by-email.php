@@ -94,7 +94,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.2' );
+		define( 'INCSUB_SBE_VERSION', '2.3' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -122,6 +122,7 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/confirmation-mail-template.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'model/model.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/widget.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/manage-subscription.php' );
 	}
 
 	public function activate() {
@@ -199,6 +200,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'time' => 0,
 			'day_of_week' => 0,
 			'post_types' => array( 'post' ),
+			'manage_subs_page' => 0,
 			'logo' => '',
 			'featured_image' => false,
 			'header_text' => '',
@@ -223,6 +225,8 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 
 		$this->maybe_send_pending_emails();
 
+		$manage_subscription_page = new Incsub_Subscribe_By_Email_Manage_Subscription();
+
 	}
 
 	/**
@@ -232,8 +236,8 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 		$current_version = get_option( 'incsub_sbe_version', '1.0.0' );
 
 		// We're going to join all options into one
-		if ( 0 > version_compare($current_version, INCSUB_SBE_VERSION) ) {
-			
+		if ( 0 > version_compare( $current_version, '2.0' ) ) {
+
 			$new_settings = array();
 
 			$new_settings['auto-subscribe'] = false;
@@ -252,7 +256,12 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 
 			update_option( self::$settings_slug, $new_settings );
 			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+		}
 
+		if ( 0 > version_compare( $current_version, INCSUB_SBE_VERSION ) ) {
+			$model = Incsub_Subscribe_By_Email_Model::get_instance();
+			$model->create_squema();
+			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 		}
 	}
 

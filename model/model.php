@@ -56,6 +56,7 @@ class Incsub_Subscribe_By_Email_Model {
               subscription_note varchar(200) NOT NULL,
               confirmation_flag tinyint(1) DEFAULT 0,
               user_key varchar(50) NOT NULL,
+              subscription_settings text NOT NULL,
               PRIMARY KEY  (subscription_ID)
             )  ENGINE=MyISAM $db_charset_collate;";
        
@@ -303,6 +304,17 @@ class Incsub_Subscribe_By_Email_Model {
         
     }
 
+    public function is_subscriber( $key ) {
+         global $wpdb;
+
+        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_table WHERE user_key = %s", $key ), ARRAY_A );
+
+        if ( ! empty( $result ) )
+            return true;
+
+        return false;
+    }
+
 
     public function add_new_mail_log( $subject ) {
         global $wpdb;
@@ -390,5 +402,37 @@ class Incsub_Subscribe_By_Email_Model {
         );
         
         return $results;
+    }
+
+
+    public function get_subscriber_settings( $user_key ) {
+        global $wpdb;
+
+        $results = $wpdb->get_var( 
+            $wpdb->prepare(
+                "SELECT subscription_settings FROM $this->subscriptions_table WHERE user_key = %s",
+                $user_key
+            )
+        );
+
+        if ( empty( $results ) )
+            return false;
+        else
+            return maybe_unserialize( $results );
+
+    }
+
+    public function update_subscriber_settings( $key, $settings ) {
+        global $wpdb;
+
+        $ser_settings = maybe_serialize( $settings );
+
+        $wpdb->update(
+            $this->subscriptions_table,
+            array( 'subscription_settings' => $ser_settings ),
+            array( 'user_key' => $key ),
+            array( '%s' ),
+            array( '%s' )
+        );
     }
 }

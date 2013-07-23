@@ -2,6 +2,8 @@ jQuery(document).ready(function($) {
 	var sbe_settings = {
 		init: function() {
 			var freq_selector = $( '#frequency-select' );
+			var page_selector = $('#manage_subs_page_selector');
+			$('#manage_subs_page_test_link').hide();
 			
 			sbe_settings.toggle_fields( freq_selector.val() );
 
