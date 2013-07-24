@@ -41,6 +41,14 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
 
+		add_filter( 'plugin_action_links_' . INCSUB_SBE_PLUGIN_FILE, array( &$this, 'add_plugin_list_link' ), 10 , 2 );
+
+	}
+
+	public function add_plugin_list_link( $actions, $file ) {
+		$new_actions = $actions;
+		$new_actions['settings'] = '<a href="' . self::get_permalink() . '" class="edit" title="' . __( 'Subscribe by Email Settings Page', INCSUB_SBE_LANG_DOMAIN ) . '">' . __( 'Settings', INCSUB_SBE_LANG_DOMAIN ) . '</a>';
+		return $new_actions;
 	}
 
 
@@ -97,7 +105,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			add_settings_field( 'from-sender', __( 'Notification From Sender', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_sender_field' ), $this->get_menu_slug(), 'general-settings' ); 
 			add_settings_field( 'from-email', __( 'Notification From Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_email_field' ), $this->get_menu_slug(), 'general-settings' ); 
 			add_settings_field( 'subject', __( 'Mail subject', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subject_field' ), $this->get_menu_slug(), 'general-settings' ); 
-			add_settings_field( 'frequency', __( 'Send How Often?', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_frequency_field' ), $this->get_menu_slug(), 'general-settings' ); 
+			add_settings_field( 'frequency', __( 'Email Frequency', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_frequency_field' ), $this->get_menu_slug(), 'general-settings' ); 
 			add_settings_field( 'mail_batch', __( 'Mail batches', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_mail_batches_field' ), $this->get_menu_slug(), 'general-settings' ); 
 
 			add_settings_section( 'posts-settings', __( 'Posts Settings', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_section' ), $this->get_menu_slug() );
@@ -252,7 +260,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	public function render_subject_field() {
 		?>
 			<input type="text" name="<?php echo $this->settings_name; ?>[subject]" class="regular-text" value="<?php echo esc_attr( $this->settings['subject'] ); ?>"><br/>
-			<span><?php _e( 'You can use <strong>%title%</strong> wildcard to show the latest post title/s, they will be shorted to no more than 50 charactes', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+			<span><?php _e( 'You can use the <strong>%title%</strong> wildcard to show the latest post title/s, they will be shortened to no more than 50 charactes', INCSUB_SBE_LANG_DOMAIN ); ?></span>
 		<?php
 	}
 
@@ -261,8 +269,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 */
 	public function render_mail_batches_field() {
 		?>
-			<label for="mail_batches"><?php printf( __( 'Send %s mails every hour.', INCSUB_SBE_LANG_DOMAIN ), '<input id="mail_batches" type="number" name="' . $this->settings_name . '[mail_batches]" class="small-text" value="' . esc_attr( $this->settings['mails_batch_size'] ) . '">' ); ?></label><br/>
-			<span class="description"><?php _e( 'If you are experiencing problems when sending mails, your server may not support so many sendings at the same time, try reducing this number. Mails will be sent every hour in groups of X mails.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+			<label for="mail_batches"><?php printf( __( 'Send %s mails every hour (maximum).', INCSUB_SBE_LANG_DOMAIN ), '<input id="mail_batches" type="number" name="' . $this->settings_name . '[mail_batches]" class="small-text" value="' . esc_attr( $this->settings['mails_batch_size'] ) . '">' ); ?></label><br/>
+			<span class="description"><?php _e( 'If you are experiencing problems when sending mails, your server may be limiting the email volume. Try reducing this number. Mails will be sent every hour in groups of X mails.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
 		<?php
 	}
 
@@ -348,7 +356,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		wp_dropdown_pages( $args );
 		?>
 			 <span class="description"><?php _e( 'After a page is selected, the management form will be appended to the content of the page', INCSUB_SBE_LANG_DOMAIN ); ?></span>
-			 <p><?php _e( "Users will be able to access to the page through a mail link. If you want to test it, just go to the page when you're logged in as administrator", INCSUB_SBE_LANG_DOMAIN ); ?></p>
+			 <p><?php _e( "Users will receive a link to this page via email.", INCSUB_SBE_LANG_DOMAIN ); ?></p>
 		<?php
 	}
 
@@ -377,7 +385,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	public function render_featured_image() {
 		?>
 			<input type="checkbox" name="<?php echo $this->settings_name; ?>[featured_image]" id="featured-image" <?php checked( $this->settings['featured_image'] ); ?>> 
-			<span class="description"><?php _e( 'If your theme allows it, every post in the mail will have its feature image on its left.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+			<span class="description"><?php _e( 'If your theme allows it, the featured image for each post will appear to the left of the post excerpt.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
 		<?php
 	}
 

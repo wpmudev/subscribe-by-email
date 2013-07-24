@@ -83,7 +83,7 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 								<td>
 									<label for="autopt-single">
 										<input type="checkbox" name="autopt" id="autopt-single" value="1"> 
-										<?php _e( 'Will not send a confirmation email', INCSUB_SBE_LANG_DOMAIN ); ?>
+										<?php _e( 'Do not send a confirmation email', INCSUB_SBE_LANG_DOMAIN ); ?>
 									</label>
 								</td>
 							</tr>
@@ -108,7 +108,7 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 								<td>
 									<label for="autopt-bulk">
 										<input type="checkbox" name="autopt" id="autopt-bulk" value="1"> 
-										<?php _e( 'Will not send confirmation emails', INCSUB_SBE_LANG_DOMAIN ); ?>
+										<?php _e( 'Do not send confirmation emails', INCSUB_SBE_LANG_DOMAIN ); ?>
 									</label>
 								</td>
 							</tr>

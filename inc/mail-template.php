@@ -263,10 +263,10 @@ class Incsub_Subscribe_By_Email_Template {
 	 * @return String
 	 */
 	 
-	public function render_mail_template( $user_content, $echo = true, $key = '' ) {
+	public function render_mail_template( $user_content = array(), $echo = true, $key = '' ) {
 
 		$this->set_subject( $user_content );
-
+		
 		$font_style = "style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif !important;\"";
 		$table_style = 'style="width: 100%;"';
 		$column_style = 'style="display: block!important; max-width: 600px!important; margin: 0 auto!important; clear: both!important;"';

@@ -102,6 +102,9 @@ class Incsub_Subscribe_By_Email {
 		define( 'INCSUB_SBE_LANG_DOMAIN', 'subscribe-by-email' );
 
 		define( 'INCSUB_SBE_ASSETS_URL', INCSUB_SBE_PLUGIN_URL . 'assets/' );
+
+		define( 'INCSUB_SBE_PLUGIN_FILE', plugin_basename( __FILE__ ) );
+		
 	}
 
 	/**
