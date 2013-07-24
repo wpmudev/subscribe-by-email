@@ -23,7 +23,7 @@ class Incsub_Subscribe_By_Email_Template {
 	/**
 	 * Render the content
 	 */
-	public function the_content() {
+	public function the_content( $user_content ) {
 
 		$text_float = ( $this->settings['featured_image'] ) ? 'style="float:left;width: 394px;"' : '';
 		$meta_float = ( $this->settings['featured_image'] ) ? 'float:right;' : 'float:none;';
@@ -72,7 +72,7 @@ class Incsub_Subscribe_By_Email_Template {
 		}
 		else {
 
-			if ( ! empty( $this->content ) ) {
+			if ( ! empty( $user_content ) ) {
 
 				// We need this global or the_title(), the_excerpt... willl not work properly
 				global $post;
@@ -80,7 +80,7 @@ class Incsub_Subscribe_By_Email_Template {
 				add_filter( 'excerpt_more', array( &$this, 'set_excerpt_more' ), 80 );
 				add_filter( 'excerpt_length', array( &$this, 'set_excerpt_length' ), 80 );
 
-				foreach ( $this->content as $content_post ):
+				foreach ( $user_content as $content_post ):
 					
 					$post = $content_post;
 					
@@ -135,7 +135,7 @@ class Incsub_Subscribe_By_Email_Template {
 		return ' <a href="'. get_permalink( get_the_ID() ) . '">' . __( 'Read more...', INCSUB_SBE_LANG_DOMAIN ) . '</a>';
 	}
 
-	public function set_subject() {
+	public function set_subject( $user_content ) {
 
 		if ( $this->dummy && strpos( $this->subject, '%title%' ) ) {
 			if ( 'inmediately' == $this->settings['frequency'] )
@@ -143,10 +143,10 @@ class Incsub_Subscribe_By_Email_Template {
 			else
 				$this->subject = str_replace( '%title%', 'Lorem Ipsum; Lorem Ipsum; Lorem Ipsum', $this->subject );
 		}
-		elseif ( ! $this->dummy && ! empty( $this->content ) ) {
+		elseif ( ! $this->dummy && ! empty( $user_content ) ) {
 
 			$titles = array();
-			foreach ( $this->content as $content_post ) {
+			foreach ( $user_content as $content_post ) {
 				$titles[] = $content_post->post_title;
 			}
 
@@ -263,14 +263,9 @@ class Incsub_Subscribe_By_Email_Template {
 	 * @return String
 	 */
 	 
-	public function render_mail_template( $echo = true, $key = '' ) {
+	public function render_mail_template( $user_content, $echo = true, $key = '' ) {
 
-		if ( ! $this->dummy && empty( $this->posts_ids ) ) {
-			if ( ! $this->set_content() )
-				return false;
-		}
-
-		$this->set_subject();
+		$this->set_subject( $user_content );
 
 		$font_style = "style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif !important;\"";
 		$table_style = 'style="width: 100%;"';
@@ -321,7 +316,7 @@ class Incsub_Subscribe_By_Email_Template {
 													<h2 <?php echo $subject_style; ?>><?php echo $this->subject; ?></h2>
 													<p <?php echo $lead_style; ?>><?php echo wpautop( $this->settings['header_text'] ); ?></p>
 													<hr/>
-													<?php $this->the_content(); ?>												
+													<?php $this->the_content( $user_content ); ?>												
 												</td>
 											</tr>
 										</tbody>
@@ -411,89 +406,108 @@ class Incsub_Subscribe_By_Email_Template {
 	 * @param Array $bcc Bcc list 
 	 */
 	public function send_mail( $to, $log_id = false ) {
-		if ( ! empty( $this->content ) || $this->dummy ) {
 
-			$to = ( ! $to ) ? array() : $to;
+		$to = ( ! $to ) ? array() : $to;
 
-			if ( is_string( $to ) )
-				$to = array( 0 => array( 'email' => $to ) );
+		if ( is_string( $to ) )
+			$to = array( 0 => array( 'email' => $to ) );
 
 
-			if ( $log_id )
-				$mail_log_id = absint( $log_id );
+		if ( $log_id )
+			$mail_log_id = absint( $log_id );
 
-			add_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
-			add_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
-			add_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
+		add_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
+		add_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
+		add_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
 
-			$model = Incsub_Subscribe_By_Email_Model::get_instance();
-			$mails_sent = 0;
+		$model = Incsub_Subscribe_By_Email_Model::get_instance();
+		$mails_sent = 0;
 
-			// We are going to try to send the mail to all subscribers
-			$sent_to_all_subscribers = true;
-			foreach ( $to as $mail ) {
+		if ( ! $this->dummy && empty( $this->posts_ids ) )
+			$this->set_content();
+		
+		// We are going to try to send the mail to all subscribers
+		$sent_to_all_subscribers = true;
+		foreach ( $to as $mail ) {
 
-				$key = $model->get_user_key( $mail['email'] );
-				if ( empty( $key ) && ! $this->dummy )
-					continue;
-				elseif ( $this->dummy )
-					$key = '';
+			$key = $model->get_user_key( $mail['email'] );
+			if ( empty( $key ) && ! $this->dummy )
+				continue;
+			elseif ( $this->dummy )
+				$key = '';
 
-				if ( ! $this->dummy )
-					$this->remove_subscriber_content( $key );
+			// The user may not want to get some types of posts
+			$user_content = $this->remove_user_content( $key );
 
-				$content = $this->render_mail_template( false, $key );
+			if ( empty( $user_content ) )
+				continue;
 
-				if ( false === $content )
-					continue;
-				
-				if ( ! $this->dummy ) {
-					wp_mail( $mail['email'], $this->subject, $content );
+			$content = $this->render_mail_template( $user_content, false, $key );
 
-					// Creating a new log or incrementiung an existing one
-					if ( $mails_sent == 0 && ! isset( $mail_log_id ) )
-						$mail_log_id = $model->add_new_mail_log( $this->subject );
-					else
-						$model->increment_mail_log( $mail_log_id );
-						
-					$mails_sent++;
+			if ( ! $this->dummy ) {
+				wp_mail( $mail['email'], $this->subject, $content );
 
-					if ( $mails_sent == absint( $this->settings['mails_batch_size'] ) ) {
+				// Creating a new log or incrementiung an existing one
+				if ( $mails_sent == 0 && ! isset( $mail_log_id ) )
+					$mail_log_id = $model->add_new_mail_log( $this->subject );
+				else
+					$model->increment_mail_log( $mail_log_id );
+					
+				$mails_sent++;
 
-						// We could not send the mail to all subscribers
-						$sent_to_all_subscribers = false;
+				if ( $mails_sent == absint( $this->settings['mails_batch_size'] ) ) {
 
-						// Now saving the data to send the rest of the mails later
-						$mail_settings = array(
-							'email_from' => $mail['id'],
-							'posts_ids' => $this->posts_ids
-						);
+					// We could not send the mail to all subscribers
+					$sent_to_all_subscribers = false;
 
-						$mail_settings = maybe_serialize( $mail_settings );
+					// Now saving the data to send the rest of the mails later
+					$mail_settings = array(
+						'email_from' => $mail['id'],
+						'posts_ids' => $this->posts_ids
+					);
 
-						$model->set_mail_log_settings( $mail_log_id, $mail_settings );
+					$mail_settings = maybe_serialize( $mail_settings );
 
-						// We'll finish with this later
-						break;
-					}
-				}
-				else {
-					wp_mail( $mail['email'], $this->subject, $content );
+					$model->set_mail_log_settings( $mail_log_id, $mail_settings );
+
+					// We'll finish with this later
+					break;
 				}
 			}
-
-			// If we have sent the mail to all subscribers we won't need the settings in that log for the future
-			if ( $sent_to_all_subscribers && isset( $mail_log_id ) ) {
-				$model->clear_mail_log_settings( $mail_log_id );
+			else {
+				wp_mail( $mail['email'], $this->subject, $content );
 			}
-
-
-			remove_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
-			remove_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
-			remove_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
-
 		}
 
+		// If we have sent the mail to all subscribers we won't need the settings in that log for the future
+		if ( $sent_to_all_subscribers && isset( $mail_log_id ) ) {
+			$model->clear_mail_log_settings( $mail_log_id );
+		}
+
+
+		remove_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
+		remove_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
+		remove_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
+
+	}
+
+	private function remove_user_content( $key ) {
+		$model = Incsub_Subscribe_By_Email_Model::get_instance();
+		$user_settings = $model->get_subscriber_settings( $key );
+
+		// These are the post types that the user wants to get
+		$user_post_types = ! $user_settings ? $this->settings['post_types'] : $user_settings['post_types'];
+
+		$user_content = array();
+		foreach ( $this->content as $post ) {
+			if ( ! in_array( $post->post_type, $user_post_types ) )
+				continue;
+			
+			$user_content[] = $post;
+		}
+
+		return $user_content;
+		
 	}
 
 

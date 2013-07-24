@@ -57,6 +57,7 @@ class Incsub_Subscribe_By_Email {
 		add_action( 'init', array( &$this, 'confirm_subscription' ), 1 );
 		add_action( 'init', array( &$this, 'cancel_subscription' ), 20 );
 		
+		
 		add_action( 'transition_post_status', array( &$this, 'process_instant_subscriptions' ), 2, 3);
 		add_action( 'init', array( &$this, 'process_scheduled_subscriptions' ), 2, 3);
 
@@ -131,7 +132,6 @@ class Incsub_Subscribe_By_Email {
 	}
 
 	public function deactivate() {
-		delete_option( 'incsub_sbe_version' );
 	}
 
 
