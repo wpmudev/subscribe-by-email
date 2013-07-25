@@ -10,6 +10,30 @@ WDP ID: 127
 Text Domain: subscribe-by-email
 */
 
+add_action( 'init', 'hey' );
+function hey() {
+	global $wpdb;
+
+	$results = $wpdb->get_results("SELECT ID FROM wp_posts AS p 
+INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+WHERE post_type='program'
+AND ( pm.meta_key = 'related_school' AND pm.meta_value = p.ID )
+AND post_status='publish' 
+AND p.ID NOT IN ( 
+	SELECT post_id 
+	FROM wp_postmeta AS pm2 
+	WHERE pm2.meta_key = 'program_flags' AND pm2.meta_value = 'Gas' AND p.ID = pm2.post_id
+) 
+ORDER BY p.post_title ASC;");
+	do_dump($results);
+	$posts = get_posts($results);
+	foreach( $posts as $post ) : setup_postdata($post); ?>
+	<li>
+      <?php echo $post->post_type; ?>
+    </li>
+<?php endforeach;
+}
+
 class Incsub_Subscribe_By_Email {
 
 	// Settings of the plugin
@@ -25,6 +49,8 @@ class Incsub_Subscribe_By_Email {
 	static $freq_weekly_transient_slug = 'next_week_scheduled';
 	static $freq_daily_transient_slug = 'next_day_scheduled';
 
+	static $pending_mails_transient_slug = 'sbe_pending_mails_sent';
+
 	// Settings slug name
 	static $settings_slug = 'incsub_sbe_settings';
 
@@ -33,6 +59,9 @@ class Incsub_Subscribe_By_Email {
 
 	// Max mail subject length
 	static $max_subject_length = 120;
+
+	// Time between batches
+	static $time_between_batches = 1800;
 
 	//Menus
 	static $admin_subscribers_page;
@@ -444,7 +473,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 	 */
 	public function maybe_send_pending_emails() {
 
-		if ( ! get_transient( 'sbe_pending_mails_sent' ) ) {
+		if ( ! get_transient( self::$pending_mails_transient_slug ) ) {
 
 			$model = Incsub_Subscribe_By_Email_Model::get_instance();
 			$mail_log = $model->get_remaining_batch_mail();
@@ -458,7 +487,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 				$this->send_mails( $posts_ids, $emails_from, $log_id );	
 			}
 
-			set_transient( 'sbe_pending_mails_sent', 'next', 60 );
+			set_transient( self::$pending_mails_transient_slug, 'next', self::$time_between_batches );
 		}
 		
 	}
@@ -519,7 +548,6 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 	}
 
 	public function process_scheduled_subscriptions() {
-
 		if ( 'weekly' == self::$settings['frequency'] && ! get_transient( self::$freq_weekly_transient_slug ) ) {
 			self::set_next_week_schedule_time( self::$settings['day_of_week'] );
 			$this->send_mails();

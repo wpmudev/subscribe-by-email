@@ -402,8 +402,8 @@ class Incsub_Subscribe_By_Email_Template {
 	/**
 	 * Send the mail based on the template
 	 * 
-	 * @param False/String $to False if just sending Bcc
-	 * @param Array $bcc Bcc list 
+	 * @param Array $to List of emails
+	 * @param Integer $log_id If we have to continue sending mails from a log that did not finish last time
 	 */
 	public function send_mail( $to, $log_id = false ) {
 
@@ -425,7 +425,7 @@ class Incsub_Subscribe_By_Email_Template {
 
 		if ( ! $this->dummy && empty( $this->posts_ids ) )
 			$this->set_content();
-		
+
 		// We are going to try to send the mail to all subscribers
 		$sent_to_all_subscribers = true;
 		foreach ( $to as $mail ) {
@@ -446,7 +446,7 @@ class Incsub_Subscribe_By_Email_Template {
 
 			if ( ! $this->dummy ) {
 				wp_mail( $mail['email'], $this->subject, $content );
-
+				
 				// Creating a new log or incrementiung an existing one
 				if ( $mails_sent == 0 && ! isset( $mail_log_id ) )
 					$mail_log_id = $model->add_new_mail_log( $this->subject );
@@ -469,6 +469,8 @@ class Incsub_Subscribe_By_Email_Template {
 					$mail_settings = maybe_serialize( $mail_settings );
 
 					$model->set_mail_log_settings( $mail_log_id, $mail_settings );
+
+					set_transient( Incsub_Subscribe_By_Email::$pending_mails_transient_slug, 'next', Incsub_Subscribe_By_Email::$time_between_batches );
 
 					// We'll finish with this later
 					break;

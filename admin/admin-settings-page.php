@@ -269,7 +269,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 */
 	public function render_mail_batches_field() {
 		?>
-			<label for="mail_batches"><?php printf( __( 'Send %s mails every hour (maximum).', INCSUB_SBE_LANG_DOMAIN ), '<input id="mail_batches" type="number" name="' . $this->settings_name . '[mail_batches]" class="small-text" value="' . esc_attr( $this->settings['mails_batch_size'] ) . '">' ); ?></label><br/>
+			<label for="mail_batches"><?php printf( __( 'Send %s mails every %d minutes (maximum).', INCSUB_SBE_LANG_DOMAIN ), '<input id="mail_batches" type="number" name="' . $this->settings_name . '[mail_batches]" class="small-text" value="' . esc_attr( $this->settings['mails_batch_size'] ) . '">', Incsub_Subscribe_By_Email::$time_between_batches / 60 ); ?></label><br/>
 			<span class="description"><?php _e( 'If you are experiencing problems when sending mails, your server may be limiting the email volume. Try reducing this number. Mails will be sent every hour in groups of X mails.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
 		<?php
 	}
