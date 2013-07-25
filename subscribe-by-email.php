@@ -10,29 +10,7 @@ WDP ID: 127
 Text Domain: subscribe-by-email
 */
 
-add_action( 'init', 'hey' );
-function hey() {
-	global $wpdb;
 
-	$results = $wpdb->get_results("SELECT ID FROM wp_posts AS p 
-INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
-WHERE post_type='program'
-AND ( pm.meta_key = 'related_school' AND pm.meta_value = p.ID )
-AND post_status='publish' 
-AND p.ID NOT IN ( 
-	SELECT post_id 
-	FROM wp_postmeta AS pm2 
-	WHERE pm2.meta_key = 'program_flags' AND pm2.meta_value = 'Gas' AND p.ID = pm2.post_id
-) 
-ORDER BY p.post_title ASC;");
-	do_dump($results);
-	$posts = get_posts($results);
-	foreach( $posts as $post ) : setup_postdata($post); ?>
-	<li>
-      <?php echo $post->post_type; ?>
-    </li>
-<?php endforeach;
-}
 
 class Incsub_Subscribe_By_Email {
 
