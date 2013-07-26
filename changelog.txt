@@ -5,6 +5,23 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.3 - 2013/07/26
+----------------------------------------------------------------------
+* Texts improved
+* Reduced time between batches to 30min
+* Improved log table
+* Fixed error while sending batches
+* Fixed minor bugs
+* Changed template system
+* Improved mails system performance
+* Fixed error when sending different post types on weekly or daily digest
+* Added new Subscription Management screen
+* Fixed bug when saving settings
+* Added languages files
+* Fixed JS conflict
+* Fixed error when sending a test email.
+
+
 2.2 - 2013/07/18
 ----------------------------------------------------------------------
 * Added auto-opt In option when importing and adding new subscribers.
