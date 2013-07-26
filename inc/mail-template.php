@@ -412,7 +412,6 @@ class Incsub_Subscribe_By_Email_Template {
 		if ( is_string( $to ) )
 			$to = array( 0 => array( 'email' => $to ) );
 
-
 		if ( $log_id )
 			$mail_log_id = absint( $log_id );
 
@@ -436,14 +435,20 @@ class Incsub_Subscribe_By_Email_Template {
 			elseif ( $this->dummy )
 				$key = '';
 
-			// The user may not want to get some types of posts
-			$user_content = $this->remove_user_content( $key );
+			if ( ! $this->dummy ) {
+				// The user may not want to get some types of posts
+				$user_content = $this->remove_user_content( $key );
 
-			if ( empty( $user_content ) )
-				continue;
+				if ( empty( $user_content ) )
+					continue;
+			}
+			else {
+				$user_content = array();
+			}
+
 
 			$content = $this->render_mail_template( $user_content, false, $key );
-
+			
 			if ( ! $this->dummy ) {
 				wp_mail( $mail['email'], $this->subject, $content );
 				
@@ -476,7 +481,7 @@ class Incsub_Subscribe_By_Email_Template {
 					break;
 				}
 			}
-			else {
+			else {			
 				wp_mail( $mail['email'], $this->subject, $content );
 			}
 		}

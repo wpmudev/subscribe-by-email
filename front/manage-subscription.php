@@ -17,8 +17,15 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 		if ( ! empty( $this->settings['manage_subs_page'] ) && is_page( $this->settings['manage_subs_page'] ) ) {
 			$model = Incsub_Subscribe_By_Email_Model::get_instance();
 
-			if ( ! isset( $_REQUEST['sub_key'] ) )
-				return $new_content;
+			if ( ! isset( $_REQUEST['sub_key'] ) ) {
+				ob_start();
+				?>
+					<div id="manage_subscription_wrap">
+						<h4><?php _e( 'This page will show details of your email subscriptions. To see the options available to you, click the link in any newsletter email you have received from us', INCSUB_SBE_LANG_DOMAIN ); ?></h4>
+					</div>
+				<?php
+				return $new_content . ob_get_clean();
+			}
 
 			$key = $_REQUEST['sub_key'];
 
@@ -58,7 +65,7 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 
 						<?php if ( ! empty( $post_types ) ): ?>
 
-							<h3><?php _e( 'Check those post types from what you want to be notified', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+							<h3><?php _e( 'Please select which post types you wish to be notified about.', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
 
 							<?php foreach ( $post_types as $post_type ): ?>
 								<label class="sub_post_type_label" for="sub_post_type-<?php echo $post_type['slug']; ?>">

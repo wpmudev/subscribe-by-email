@@ -268,9 +268,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 * Subject field
 	 */
 	public function render_mail_batches_field() {
+		$minutes = Incsub_Subscribe_By_Email::$time_between_batches / 60;
 		?>
-			<label for="mail_batches"><?php printf( __( 'Send %s mails every %d minutes (maximum).', INCSUB_SBE_LANG_DOMAIN ), '<input id="mail_batches" type="number" name="' . $this->settings_name . '[mail_batches]" class="small-text" value="' . esc_attr( $this->settings['mails_batch_size'] ) . '">', Incsub_Subscribe_By_Email::$time_between_batches / 60 ); ?></label><br/>
-			<span class="description"><?php _e( 'If you are experiencing problems when sending mails, your server may be limiting the email volume. Try reducing this number. Mails will be sent every hour in groups of X mails.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+			<label for="mail_batches"><?php printf( __( 'Send %s mails every %d minutes (maximum).', INCSUB_SBE_LANG_DOMAIN ), '<input id="mail_batches" type="number" name="' . $this->settings_name . '[mail_batches]" class="small-text" value="' . esc_attr( $this->settings['mails_batch_size'] ) . '">', $minutes ); ?></label><br/>
+			<span class="description"><?php printf( __( 'If you are experiencing problems when sending mails, your server may be limiting the email volume. Try reducing this number. Mails will be sent every %d minutes in groups of X mails.', INCSUB_SBE_LANG_DOMAIN ), $minutes ); ?></span>
 		<?php
 	}
 
@@ -592,7 +593,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			$new_settings['subscribe_email_content'] = $input['subscribe_email_content'];
 			
 			if ( isset( $input['submit_test_email'] ) ) {
-
+				
 				$mail = sanitize_email( $input['test_mail'] );
 
 				if ( is_email( $mail ) ) {

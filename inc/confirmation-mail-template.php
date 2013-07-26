@@ -112,7 +112,7 @@ class Incsub_Subscribe_By_Email_Confirmation_Template {
 		add_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
 
 		$content = $this->render_mail_template();
-		wp_mail( $this->to, __( 'Please, confirm subscription', INCSUB_SBE_LANG_DOMAIN ), $content );
+		wp_mail( $this->to, __( 'Please confirm subscription', INCSUB_SBE_LANG_DOMAIN ), $content );
 
 		remove_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
 		remove_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
