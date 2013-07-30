@@ -595,3 +595,4 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 }
 
 new Incsub_Subscribe_By_Email();
+

@@ -170,12 +170,21 @@ class Incsub_Subscribe_By_Email_Model {
             $subscriptions = $wpdb->get_results( $query, ARRAY_A );
         }
         else {
-            $query = "SELECT COUNT( subscription_ID ) FROM $this->subscriptions_table ORDER BY subscription_ID";
-            $subscriptions = $wpdb->get_var( $query, ARRAY_A );
+            $query = "SELECT COUNT( subscription_ID ) subscriptions FROM $this->subscriptions_table ORDER BY subscription_ID";
+            $subscriptions = $wpdb->get_row( $query, ARRAY_A );
+            $subscriptions = absint( $subscriptions['subscriptions'] );
         }
-        
         return $subscriptions;
     }
+
+    function get_active_subscribers_count() {
+        global $wpdb;
+        
+        $query = "SELECT COUNT( subscription_ID ) subscriptions FROM $this->subscriptions_table WHERE confirmation_flag = 1 ORDER BY subscription_ID";
+        $subscriptions = $wpdb->get_row( $query, ARRAY_A );
+        return absint( $subscriptions['subscriptions'] );
+    }
+
 
     public function get_email_list() {
         global $wpdb;

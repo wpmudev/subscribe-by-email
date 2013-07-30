@@ -224,6 +224,7 @@ class Incsub_Subscribe_By_Email_Template {
 				'post_status' => array( 'publish' )
 			)
 		);
+
 		$this->content = $query->posts;
 		remove_filter( 'posts_where', array( &$this, 'set_wp_query_filter' ) );
 		
