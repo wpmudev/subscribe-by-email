@@ -47,7 +47,8 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 		$this->frequency = array(
 			'inmediately' 	=> __( 'Immediately when a new post is published', INCSUB_SBE_LANG_DOMAIN ),
 			'weekly'		=> __( 'Send a weekly digest with all posts from the previous week', INCSUB_SBE_LANG_DOMAIN ),
-			'daily'			=> __( 'Send a daily digest with all posts from the previous 24 hours', INCSUB_SBE_LANG_DOMAIN )
+			'daily'			=> __( 'Send a daily digest with all posts from the previous 24 hours', INCSUB_SBE_LANG_DOMAIN ),
+			'never'			=> __( 'Never', INCSUB_SBE_LANG_DOMAIN )
 		);
 
 		$this->time = array();
@@ -112,9 +113,12 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'day_of_week' => 0,
 			'post_types' => array( 'post' ),
 			'manage_subs_page' => 0,
+			'get_notifications' => false,
 			'logo' => '',
+			'logo_width' => 200,
 			'featured_image' => false,
 			'header_text' => '',
+			'show_blog_name' => true,
 			'footer_text' => '',
 			'header_color' => '#66aec2',
 			'header_text_color' => '#000000',

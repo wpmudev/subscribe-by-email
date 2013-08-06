@@ -66,6 +66,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				wp_enqueue_script( 'thickbox' );
 			    wp_enqueue_script( 'media-upload' );
 			    wp_enqueue_script( 'farbtastic' );
+			    wp_enqueue_script( 'jquery-ui-slider' );
 				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . '/js/settings-template.js', array( 'thickbox', 'media-upload' ), '20130721' );
 			}
 		    
@@ -89,6 +90,9 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		if ( $screen->id == $this->get_page_id() ) {
 			wp_enqueue_style( 'thickbox' );
 			wp_enqueue_style( 'farbtastic' );
+
+			if ( 'template' == $this->get_current_tab() )
+				wp_enqueue_style( 'jquery-ui-css', INCSUB_SBE_ASSETS_URL .'css/jquery-ui/jquery-ui-1.10.3.custom.min' );
 		}
 	}
 
@@ -107,6 +111,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			add_settings_field( 'subject', __( 'Mail subject', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subject_field' ), $this->get_menu_slug(), 'general-settings' ); 
 			add_settings_field( 'frequency', __( 'Email Frequency', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_frequency_field' ), $this->get_menu_slug(), 'general-settings' ); 
 			add_settings_field( 'mail_batch', __( 'Mail batches', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_mail_batches_field' ), $this->get_menu_slug(), 'general-settings' ); 
+			add_settings_field( 'get-nofitications', __( 'Get notifications', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_get_notifications_field' ), $this->get_menu_slug(), 'general-settings' ); 
 
 			add_settings_section( 'posts-settings', __( 'Posts Settings', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_section' ), $this->get_menu_slug() );
 			add_settings_field( 'post-types', __( 'Posts Types', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_field' ), $this->get_menu_slug(), 'posts-settings' ); 
@@ -115,14 +120,24 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			add_settings_field( 'user-subs-page', __( 'Subscribers Management Page', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscription_page_field' ), $this->get_menu_slug(), 'user-subs-page-settings' ); 
 		}
 		elseif ( $this->get_current_tab() == 'template' ) {
-			add_settings_section( 'style-settings', __( 'Styling Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
-			add_settings_field( 'logo', __( 'Logo for notifications', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_logo_field' ), $this->get_menu_slug(), 'style-settings' ); 
-			add_settings_field( 'featured-images', __( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_featured_image' ), $this->get_menu_slug(), 'style-settings' ); 
-			add_settings_field( 'header-color', __( 'Header color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_color_field' ), $this->get_menu_slug(), 'style-settings' ); 
-			add_settings_field( 'header-text-color', __( 'Header text color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_color_field' ), $this->get_menu_slug(), 'style-settings' ); 
-			add_settings_field( 'header-text', __( 'Header text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_field' ), $this->get_menu_slug(), 'style-settings' ); 
-			add_settings_field( 'footer-text', __( 'Footer text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_footer_text_field' ), $this->get_menu_slug(), 'style-settings' ); 
-			add_settings_field( 'subscribe-email-content', __( 'Subscribe Email Content', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribe_email_content' ), $this->get_menu_slug(), 'style-settings' ); 
+			add_settings_section( 'logo-settings', __( 'Logo', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			add_settings_field( 'logo', __( 'Logo for notifications', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_logo_field' ), $this->get_menu_slug(), 'logo-settings' ); 
+			add_settings_field( 'logo-width', __( 'Logo max width in pixels', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_logo_width_field' ), $this->get_menu_slug(), 'logo-settings' ); 
+
+			add_settings_section( 'header-settings', __( 'Header', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			add_settings_field( 'header-color', __( 'Header color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_color_field' ), $this->get_menu_slug(), 'header-settings' ); 
+			add_settings_field( 'header-text-color', __( 'Header text color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_color_field' ), $this->get_menu_slug(), 'header-settings' ); 
+			add_settings_field( 'header-text', __( 'Subtitle text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_field' ), $this->get_menu_slug(), 'header-settings' ); 
+			add_settings_field( 'header-blog-name', __( 'Show From Sender', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_show_blog_name_field' ), $this->get_menu_slug(), 'header-settings' ); 
+
+			add_settings_section( 'footer-settings', __( 'Footer', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			add_settings_field( 'footer-text', __( 'Footer text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_footer_text_field' ), $this->get_menu_slug(), 'footer-settings' ); 
+
+			add_settings_section( 'subscribe-email-settings', __( 'Subscribe Email', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			add_settings_field( 'subscribe-email-content', __( 'Subscribe Email Content', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribe_email_content' ), $this->get_menu_slug(), 'subscribe-email-settings' ); 
+
+			add_settings_section( 'other-styling-settings', __( 'Other options', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			add_settings_field( 'featured-images', __( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_featured_image' ), $this->get_menu_slug(), 'other-styling-settings' ); 
 
 			add_settings_section( 'email-preview', __( 'Email preview', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_preview_section' ), $this->get_menu_slug() );
 		}
@@ -275,6 +290,15 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		<?php
 	}
 
+	public function render_get_notifications_field() {
+		?>
+			<label for="get-notifications">
+				<input id="get-notifications" type="checkbox" name="<?php echo $this->settings_name; ?>[get_notifications]" <?php checked( $this->settings['get_notifications'] ); ?> /> 
+				<?php _e( "If checked, the Administrators will get email notifications when there's a new subscriber or when someone ends their subscription", INCSUB_SBE_LANG_DOMAIN ); ?>
+			</label>
+		<?php
+	}
+
 	/**
 	 * Frequency field
 	 */
@@ -380,6 +404,31 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		<?php
 	}
 
+	public function render_logo_width_field() {
+		?>
+			<div style="max-width:30%;" id="logo-width-slider"></div><br/>
+			<p id="logo-width-caption"><span id="logo-width-quantity"><?php echo $this->settings['logo_width']; ?></span> <span class="description">px</span></p>
+
+			<input type="hidden" class="small-text" name="<?php echo $this->settings_name; ?>[logo_width]" id="logo-width" value="<?php echo $this->settings['logo_width']; ?>" />
+			<script>
+			jQuery(document).ready(function($) {
+				$( "#logo-width-slider" ).slider({
+					value:<?php echo $this->settings['logo_width']; ?>,
+					min: 100,
+					max: 700,
+					step: 10,
+					slide: function( event, ui ) {
+						$( "#logo-width" ).val( ui.value );
+						$( "#logo-width-quantity" ).text( ui.value );
+					}
+				});
+			    	$( "#logo-width" ).val( $( "#logo-width-slider" ).slider( "value" ) );
+			    	$( "#logo-width-quantity" ).val( $( "#logo-width-slider" ).slider( "value" ) );
+				});
+			</script>
+		<?php
+	}
+
 
 	/**
 	 * Logo field
@@ -423,6 +472,19 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			<textarea class="large-text" name="<?php echo $this->settings_name; ?>[header_text]" id="header-text" rows="4"><?php echo esc_textarea( $this->settings['header_text'] ); ?></textarea>
 		<?php
 	}
+
+	/**
+	 * Header text field
+	 */
+	public function render_show_blog_name_field() {
+		?>
+			<label for="show-blog-name">
+				<input type="checkbox" name="<?php echo $this->settings_name; ?>[show_blog_name]" <?php checked( $this->settings['show_blog_name'] ); ?> id="show-blog-name"> 
+				<?php _e( 'If checked, the From Sender Text will appear on the header', INCSUB_SBE_LANG_DOMAIN ); ?>
+			</label>
+		<?php
+	}
+
 	/**
 	 * Footer text field
 	 */
@@ -561,6 +623,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			// Batches
 		    if ( ! empty( $input['mail_batches'] ) )
 				$new_settings['mails_batch_size'] = absint( $input['mail_batches'] );
+
+			$new_settings['get_notifications'] = isset( $input['get_notifications'] );
 		}
 
 		if ( isset( $input['submit_settings_template'] ) || isset( $input['remove-logo'] ) || isset( $input['submit_test_email'] ) || isset( $input['submit_refresh_changes'] ) ) {
@@ -572,6 +636,15 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			else {
 				$url = esc_url_raw( $input['logo'] );
 				$new_settings['logo'] = $url;
+			}
+
+			// Logo Width
+			if ( isset( $input['logo_width'] ) && is_numeric( $input['logo_width'] ) ) {
+				$new_settings['logo_width'] = absint( $input['logo_width'] );
+			}
+			else {
+				$default_settings = incsub_sbe_get_default_settings();
+		    	$new_settings['logo_width'] = $default_settings['logo_width'];
 			}
 
 			// Featured image
@@ -596,6 +669,11 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				$default_settings = incsub_sbe_get_default_settings();
 		    	$new_settings['header_text_color'] = $default_settings['header_text_color'];
 		    }
+
+		    if ( isset( $input['show_blog_name'] ) )
+				$new_settings['show_blog_name'] = true;
+			else
+				$new_settings['show_blog_name'] = false;
 
 			
 			

@@ -291,9 +291,11 @@ class Incsub_Subscribe_By_Email_Template {
 									<table <?php echo $table_style; ?> bgcolor="<?php echo $this->settings['header_color']; ?>">
 										<tbody>
 											<tr>
-												<td><a href="<?php echo get_home_url(); ?>"><img style="max-width:200px;" src="<?php echo $this->settings['logo']; ?>"></a></td>
+												<td><a href="<?php echo get_home_url(); ?>"><img style="max-width:<?php echo $this->settings['logo_width']; ?>px;" src="<?php echo $this->settings['logo']; ?>"></a></td>
 												<td align="right">
-													<h6><a <?php echo $blogname_style; ?> href="<?php echo get_home_url(); ?>"><?php echo $this->settings['from_sender']; ?></a></h6>
+													<?php if ( $this->settings['show_blog_name'] ): ?>
+														<h6><a <?php echo $blogname_style; ?> href="<?php echo get_home_url(); ?>"><?php echo $this->settings['from_sender']; ?></a></h6>
+													<?php endif; ?>
 												</td>
 											</tr>
 										</tbody>
