@@ -10,9 +10,8 @@ Change Log:
 * Improved performance (settings just loaded when needed)
 * Added Confirm Subscription action in Subscribers Table
 * Added subscribers counter in widget
-* Added "Never" option in frequency digest sending http://premium.wpmudev.org/forums/topic/plugin-subscribe-by-email-add-never-in-dropdown
-* SBE: Improved captions
-* SBE: New settings: Logo width( with jQuery UI Slider), notifications, From Sender text in header
+* Added "Never" option in frequency digest sending
+* New settings: Logo width( with Slider ), notifications, From Sender text in header
 
 2.3 - 2013/07/26
 ----------------------------------------------------------------------
