@@ -30,9 +30,9 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		);
 		parent::__construct( $args );
 
-		$this->settings_name = Incsub_Subscribe_By_Email::$settings_slug;
-		$this->settings_group = Incsub_Subscribe_By_Email::$settings_slug;
-		$this->settings = Incsub_Subscribe_By_Email::$settings;
+		$this->settings_name = incsub_sbe_get_settings_slug();
+		$this->settings_group = incsub_sbe_get_settings_slug();
+		$this->settings = incsub_sbe_get_settings();
 
 		add_action( 'admin_init', array( &$this, 'register_settings' ) );
 
@@ -280,9 +280,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 */
 	public function render_frequency_field() {
 		$time_format = get_option( 'time_format', 'H:i' );
+
 		?>
 			<select name="<?php echo $this->settings_name; ?>[frequency]" id="frequency-select">
-				<?php foreach ( Incsub_Subscribe_By_Email::$frequency as $key => $freq ): ?>
+				<?php foreach ( incsub_sbe_get_digest_frequency() as $key => $freq ): ?>
 					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $this->settings['frequency'] ); ?>><?php echo $freq; ?></option>
 				<?php endforeach; ?>
 			</select>
@@ -290,7 +291,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			<div id="time-wrap">
 				<label for="time-select"><?php _e( 'What time should the digest email be sent?', INCSUB_SBE_LANG_DOMAIN ); ?>
 					<select name="<?php echo $this->settings_name; ?>[time]" id="time-select">
-						<?php foreach ( Incsub_Subscribe_By_Email::$time as $key => $t ): ?>
+						<?php foreach ( incsub_sbe_get_digest_times() as $key => $t ): ?>
 							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $this->settings['time'] ); ?>><?php echo $t; ?></option>
 						<?php endforeach; ?>
 					</select>
@@ -301,7 +302,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			<div id="day-of-week-wrap">
 				<label for="day-of-week-select"><?php _e( 'What day of the week should the digest email be sent?', INCSUB_SBE_LANG_DOMAIN ); ?>
 					<select name="<?php echo $this->settings_name; ?>[day_of_week]" id="day-of-week-select">
-						<?php foreach ( Incsub_Subscribe_By_Email::$day_of_week as $key => $day ): ?>
+						<?php foreach ( incsub_sbe_get_digest_days_of_week() as $key => $day ): ?>
 							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $this->settings['day_of_week'] ); ?>><?php echo $day; ?></option>
 						<?php endforeach; ?>
 					</select>
@@ -512,13 +513,16 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				add_settings_error( $this->settings_name, 'invalid-subject', __( 'Mail subject cannot be empty', INCSUB_SBE_LANG_DOMAIN ) );
 
 			// Frequency
-			if ( array_key_exists( $input['frequency'], Incsub_Subscribe_By_Email::$frequency ) )
+			if ( array_key_exists( $input['frequency'], incsub_sbe_get_digest_frequency() ) ) {
 				$new_settings['frequency'] = $input['frequency'];
-			else
-				$new_settings['frequency'] = Incsub_Subscribe_By_Email::$default_settings['frequency'];
+			}
+			else {
+				$default_settings = incsub_sbe_get_default_settings();
+				$new_settings['frequency'] = $default_settings['frequency'];
+			}
 
 			// For daily frequencies
-			if ( 'daily' == $new_settings['frequency'] && array_key_exists( $input['time'], Incsub_Subscribe_By_Email::$time ) ) {
+			if ( 'daily' == $new_settings['frequency'] && array_key_exists( $input['time'], incsub_sbe_get_digest_times() ) ) {
 				$new_settings['time'] = $input['time'];
 				if ( 'daily' != $this->settings['frequency'] || $input['time'] != $this->settings['time'] ) {
 					// We have changed this setting
@@ -526,11 +530,12 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				}
 			}
 			else {
-				$new_settings['time'] = Incsub_Subscribe_By_Email::$default_settings['time'];
+				$default_settings = incsub_sbe_get_default_settings();
+				$new_settings['time'] = $default_settings['time'];
 			}
 
 			// For weekly frequencies
-			if ( 'weekly' == $new_settings['frequency'] && array_key_exists( $input['day_of_week'], Incsub_Subscribe_By_Email::$day_of_week ) ) {
+			if ( 'weekly' == $new_settings['frequency'] && array_key_exists( $input['day_of_week'], incsub_sbe_get_digest_days_of_week() ) ) {
 				$new_settings['day_of_week'] = $input['day_of_week'];
 
 				if ( 'weekly' != $this->settings['frequency'] || $input['day_of_week'] != $this->settings['day_of_week'] ) {
@@ -539,7 +544,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				}
 			}
 			else {
-				$new_settings['day_of_week'] = Incsub_Subscribe_By_Email::$default_settings['day_of_week'];
+				$default_settings = incsub_sbe_get_default_settings();
+				$new_settings['day_of_week'] = $default_settings['day_of_week'];
 			}
 
 			// Post types
@@ -575,15 +581,21 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				$new_settings['featured_image'] = false;
 
 			// Colors
-			if ( preg_match( '/^#[a-f0-9]{6}$/i', $input['header_color'] ) )
+			if ( preg_match( '/^#[a-f0-9]{6}$/i', $input['header_color'] ) ) {
 				$new_settings['header_color'] = $input['header_color'];
-			else 
-		    	$new_settings['header_color'] = Incsub_Subscribe_By_Email::$default_settings['header_color'];
+			}
+			else {
+				$default_settings = incsub_sbe_get_default_settings();
+		    	$new_settings['header_color'] = $default_settings['header_color'];
+		    }
 
-		    if ( preg_match( '/^#[a-f0-9]{6}$/i', $input['header_text_color'] ) )
+		    if ( preg_match( '/^#[a-f0-9]{6}$/i', $input['header_text_color'] ) ) {
 				$new_settings['header_text_color'] = $input['header_text_color'];
-			else 
-		    	$new_settings['header_text_color'] = Incsub_Subscribe_By_Email::$default_settings['header_text_color'];
+			}
+			else {
+				$default_settings = incsub_sbe_get_default_settings();
+		    	$new_settings['header_text_color'] = $default_settings['header_text_color'];
+		    }
 
 			
 			
@@ -610,14 +622,14 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 	public function restore_default_template() {
 		if ( isset( $_GET['page'] ) && $this->get_menu_slug() == $_GET['page'] && isset( $_GET['restore-template'] ) ) {
-			$defaults = Incsub_Subscribe_By_Email::$default_settings;
+			$default_settings = incsub_sbe_get_default_settings();
 
-			$this->settings['logo'] = $defaults['logo'];
-			$this->settings['header_color'] = $defaults['header_color'];
-			$this->settings['header_text_color'] = $defaults['header_text_color'];
-			$this->settings['featured_image'] = $defaults['featured_image'];
+			$this->settings['logo'] = $default_settings['logo'];
+			$this->settings['header_color'] = $default_settings['header_color'];
+			$this->settings['header_text_color'] = $default_settings['header_text_color'];
+			$this->settings['featured_image'] = $default_settings['featured_image'];
 
-			update_option( $this->settings_name, $this->settings );
+			incsub_sbe_update_settings( $this->settings );
 
 			wp_redirect( $this->get_permalink() );
 		}

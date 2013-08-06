@@ -13,32 +13,19 @@ Text Domain: subscribe-by-email
 
 class Incsub_Subscribe_By_Email {
 
-	// Settings of the plugin
-	static $settings;
-	static $default_settings;
-
-	// Settings properties
-	static $frequency;
-	static $time;
-	static $day_of_week;
-	static $confirmation_flag;
-
 	static $freq_weekly_transient_slug = 'next_week_scheduled';
 	static $freq_daily_transient_slug = 'next_day_scheduled';
 
 	static $pending_mails_transient_slug = 'sbe_pending_mails_sent';
-
-	// Settings slug name
-	static $settings_slug = 'incsub_sbe_settings';
-
-	// Max time in seconds during which the user can activate his subscription
-	static $max_confirmation_time;
 
 	// Max mail subject length
 	static $max_subject_length = 120;
 
 	// Time between batches
 	static $time_between_batches = 1800;
+
+	// Max time in seconds during which the user can activate his subscription
+	static $max_confirmation_time = 604800;
 
 	//Menus
 	static $admin_subscribers_page;
@@ -56,8 +43,7 @@ class Incsub_Subscribe_By_Email {
 		$this->set_globals();
 		$this->includes();
 
-		add_action( 'init', array( &$this, 'set_settings' ), 1 );
-
+		add_action( 'init', array( &$this, 'init_plugin' ), 5 );
 		add_action( 'init', array( &$this, 'set_admin_menus' ), 15 );
 
 		add_action( 'init', array( &$this, 'confirm_subscription' ), 1 );
@@ -78,6 +64,24 @@ class Incsub_Subscribe_By_Email {
 
 		add_action( 'plugins_loaded', array( &$this, 'load_text_domain' ) );
 
+	}
+
+	public function init_plugin() {
+
+		// Do we have to remove old subscriptions?
+		$transient = get_transient( 'sbe_remove_old_subscriptions' );
+		if ( ! $transient ) {
+			$model = Incsub_Subscribe_By_Email_Model::get_instance();
+			$model->remove_old_subscriptions();
+			set_transient( 'sbe_remove_old_subscriptions', true, 86400 );
+		}
+
+		$this->maybe_upgrade();
+
+		$this->maybe_send_pending_emails();
+
+		if ( ! is_admin() )
+			$manage_subscription_page = new Incsub_Subscribe_By_Email_Manage_Subscription();
 	}
 
 
@@ -126,13 +130,16 @@ class Incsub_Subscribe_By_Email {
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-sent-emails-page.php' );
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/subscribers-table.php' );
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/log-table.php' );
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/uninstall.php' );
 			
 		}
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/settings.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-template.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/confirmation-mail-template.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'model/model.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/widget.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/manage-subscription.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers.php' );
 	}
 
 	public function activate() {
@@ -144,99 +151,7 @@ class Incsub_Subscribe_By_Email {
 	}
 
 
-	/**
-	 * Set the settings for the plugin
-	 */
-	public function set_settings() {
-
 	
-		if ( is_multisite() ) {
-			$site_url = get_home_url( get_current_blog_id() );
-		}
-		else {
-			$site_url = get_home_url();
-		}
-
-		global $wp_locale;
-
-		self::$settings_slug = 'incsub_sbe_settings';
-
-		// The user can choose between these options
-		self::$frequency = array(
-			'inmediately' 	=> __( 'Immediately when a new post is published', INCSUB_SBE_LANG_DOMAIN ),
-			'weekly'		=> __( 'Send a weekly digest with all posts from the previous week', INCSUB_SBE_LANG_DOMAIN ),
-			'daily'			=> __( 'Send a daily digest with all posts from the previous 24 hours', INCSUB_SBE_LANG_DOMAIN )
-		);
-
-		self::$time = array();
-		for ( $i = 0; $i < 24; $i++ ) {
-			self::$time[$i] = str_pad( $i, 2, 0, STR_PAD_LEFT ) . ':00';
-		}
-
-		self::$day_of_week = $wp_locale->weekday;
-
-		self::$confirmation_flag = array(
-			0 => __( 'Awaiting confirmation'),
-			1 => __( 'Email confirmed')
-		);
-
-		self::$max_confirmation_time = 604800;
-
-		$this->maybe_upgrade();
-
-		$current_settings = get_option( self::$settings_slug );
-
-		$base_domain = str_replace( 'http://', '', $site_url );
-		$base_domain = str_replace( 'https://', '', $base_domain );
-
-		// Subscribing email contents
-		$button_style = 'style="background-color:#278AB6;border-radius:25px;text-decoration:none;color: #FFF;display: inline-block;line-height: 23px;height: 24px;padding: 0 10px 1px;cursor:pointer;box-sizing: border-box;font-size:12px;"';
-		$subscribe_email_content = __( 'Howdy.
-
-You recently signed up to be notified of new posts on my blog. This means
-once you confirm below, you will receive an email when posts are published.
-
-To activate, click confirm below. If you believe this is an error, ignore this message
-and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
-
-		self::$default_settings = array(
-			'auto-subscribe' => false,
-			'subscribe_new_users' => false,
-			'from_email' => 'no-reply@' . $base_domain,
-			'from_sender' => get_bloginfo( 'name' ),
-			'subject' => get_bloginfo( 'name' ) . __( ': New post' ),
-			'frequency' => 'inmediately',
-			'time' => 0,
-			'day_of_week' => 0,
-			'post_types' => array( 'post' ),
-			'manage_subs_page' => 0,
-			'logo' => '',
-			'featured_image' => false,
-			'header_text' => '',
-			'footer_text' => '',
-			'header_color' => '#66aec2',
-			'header_text_color' => '#000000',
-			'mails_batch_size' => 80,
-			'subscribe_email_content' => $subscribe_email_content
-		);
-
-		self::$settings = wp_parse_args( $current_settings, self::$default_settings );
-
-		update_option( self::$settings_slug, self::$settings );
-
-		// Do we have to remove old subscriptions?
-		$transient = get_transient( 'sbe_remove_old_subscriptions' );
-		if ( ! $transient ) {
-			$model = Incsub_Subscribe_By_Email_Model::get_instance();
-			$model->remove_old_subscriptions();
-			set_transient( 'sbe_remove_old_subscriptions', true, 86400 );
-		}
-
-		$this->maybe_send_pending_emails();
-
-		$manage_subscription_page = new Incsub_Subscribe_By_Email_Manage_Subscription();
-
-	}
 
 	/**
 	 * Upgrade settings and tables to the new version
@@ -263,7 +178,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			$model->create_squema();
 			$model->upgrade_schema();				
 
-			update_option( self::$settings_slug, $new_settings );
+			incsub_sbe_update_settings( $new_settings );
 			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 		}
 
@@ -287,25 +202,6 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 		}
 	}
 
-	/**
-	 * Triggered when a new user is added to the blog
-	 * 
-	 * @param type $user_id 
-	 * @return type
-	 */
-	//public function add_user_to_blog( $user_id, $role, $blog_id ) {
-//
-	//	// The settings ares till not loaded
-	//	$this->set_settings();
-//
-	//	if ( self::$settings['subscribe_new_users'] ) {
-	//		switch_to_blog( $blog_id );
-	//		$user = get_userdata( $user_id );
-	//		self::subscribe_user( $user->data->user_email, __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Instant', INCSUB_SBE_LANG_DOMAIN ) );
-	//		restore_current_blog();
-	//	}
-	//	
-	//}
 
 	/**
 	 * Subscribe a new user
@@ -345,8 +241,10 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 	 */
 	public static function send_confirmation_mail( $subscription_id ) {
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
+		$settings = incsub_sbe_get_settings();
+
 		$subscriber = $model->get_subscriber( $subscription_id );
-		$confirmation_mail = new Incsub_Subscribe_By_Email_Confirmation_Template( self::$settings, $subscriber->subscription_email );
+		$confirmation_mail = new Incsub_Subscribe_By_Email_Confirmation_Template( $settings, $subscriber->subscription_email );
 		$confirmation_mail->send_mail();
 	}
 
@@ -404,6 +302,8 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 		if ( empty( $content_width ) )
 			$content_width = 900;
 
+		$settings = incsub_sbe_get_settings();
+
 		?>
 			<style>
 				body {
@@ -411,8 +311,8 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 					padding:25px;
 				}
 				.sbe-notice {
-					border-top:5px solid <?php echo self::$settings['header_color']; ?>;
-					border-bottom:5px solid <?php echo self::$settings['header_color']; ?>;
+					border-top:5px solid <?php echo $settings['header_color']; ?>;
+					border-bottom:5px solid <?php echo $settings['header_color']; ?>;
 					background-color:#FFF;
 					width:<?php echo $content_width; ?>px;
 					margin: 0 auto;
@@ -498,7 +398,8 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			$emails_list = array_slice( $emails_list, absint( $last_id ) );
 		}
 
-		$mail_template = new Incsub_Subscribe_By_Email_Template( self::$settings, false );
+		$settings = incsub_sbe_get_settings();
+		$mail_template = new Incsub_Subscribe_By_Email_Template( $settings, false );
 
 		if ( ! empty( $posts_ids ) )
 			$mail_template->set_posts( $posts_ids );
@@ -517,20 +418,23 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 	 * @return type
 	 */
 	public function process_instant_subscriptions( $new_status, $old_status, $post ) {
-		
-		if ( in_array( $post->post_type, self::$settings['post_types'] ) && $new_status != $old_status && 'publish' == $new_status && self::$settings['frequency'] == 'inmediately' ) {
+		$settings = incsub_sbe_get_settings();
+
+		if ( in_array( $post->post_type, $settings['post_types'] ) && $new_status != $old_status && 'publish' == $new_status && $settings['frequency'] == 'inmediately' ) {
 			//send emails
 			$this->send_mails( array( $post->ID ) );	
 		}
 	}
 
 	public function process_scheduled_subscriptions() {
-		if ( 'weekly' == self::$settings['frequency'] && ! get_transient( self::$freq_weekly_transient_slug ) ) {
-			self::set_next_week_schedule_time( self::$settings['day_of_week'] );
+		$settings = incsub_sbe_get_settings();
+
+		if ( 'weekly' == $settings['frequency'] && ! get_transient( self::$freq_weekly_transient_slug ) ) {
+			self::set_next_week_schedule_time( $settings['day_of_week'] );
 			$this->send_mails();
 		}
-		elseif ( 'daily' == self::$settings['frequency'] && ! get_transient( self::$freq_daily_transient_slug ) ) {
-			self::set_next_day_schedule_time( self::$settings['time'] );
+		elseif ( 'daily' == $settings['frequency'] && ! get_transient( self::$freq_daily_transient_slug ) ) {
+			self::set_next_day_schedule_time( $settings['time'] );
 			$this->send_mails();
 		}
 

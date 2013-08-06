@@ -39,6 +39,10 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
                 esc_url( add_query_arg( array( 'action' => 'send_confirmation', 'sid' => absint( $item['subscription_ID'] ) ) ) ),
                 __( 'Resend confirmation mail', INCSUB_SBE_LANG_DOMAIN )
             );
+            $actions['confirm_subscription'] = sprintf( __( '<span><a class="trash" href="%s">%s</a></span>', INCSUB_SBE_LANG_DOMAIN ), 
+                esc_url( add_query_arg( array( 'action' => 'confirm_subscription', 'sid' => absint( $item['subscription_ID'] ) ) ) ),
+                __( 'Confirm Subscription', INCSUB_SBE_LANG_DOMAIN )
+            );
         }
         
         return $item['subscription_email'] . $this->row_actions( $actions );
@@ -49,7 +53,8 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
     }
 
     function column_note( $item ) {
-        return Incsub_Subscribe_By_Email::$confirmation_flag[ $item['confirmation_flag'] ];
+        $confirmation_flag_captions = incsub_sbe_get_confirmation_flag_captions();
+        return isset( $confirmation_flag_captions[ $item['confirmation_flag'] ] ) ? $confirmation_flag_captions[ $item['confirmation_flag'] ] : '';
     }
 
     function column_subscription_type( $item ) {
@@ -110,6 +115,22 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
                     <p><?php _e( 'Confirmation mail sent', INCSUB_SBE_LANG_DOMAIN ); ?></p>
                 </div>
             <?php
+        }
+
+        if ( 'confirm_subscription' == $this->current_action() && isset( $_GET['sid'] ) ) {
+            $model = Incsub_Subscribe_By_Email_Model::get_instance();
+            $subscriber = $model->get_subscriber( absint( $_GET['sid'] ) );
+
+            if ( ! empty( $subscriber ) ) {
+                $key = $model->get_user_key( $subscriber->subscription_email );
+                $model->confirm_subscription( $key );
+                ?>
+                    <div class="updated">
+                        <p><?php _e( 'Subscription confirmed', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+                    </div>
+                <?php
+            }
+            
         }
 
         

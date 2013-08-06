@@ -5,7 +5,7 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 	private $settings;
 
 	public function __construct() {
-		$this->settings = Incsub_Subscribe_By_Email::$settings;
+		$this->settings = incsub_sbe_get_settings();
 
 		add_filter( 'the_content', array( &$this, 'set_the_content' ), 80 );
 	}
