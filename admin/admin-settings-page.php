@@ -294,8 +294,13 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		?>
 			<label for="get-notifications">
 				<input id="get-notifications" type="checkbox" name="<?php echo $this->settings_name; ?>[get_notifications]" <?php checked( $this->settings['get_notifications'] ); ?> /> 
-				<?php _e( "If checked, the Administrators will get email notifications when there's a new subscriber or when someone ends their subscription", INCSUB_SBE_LANG_DOMAIN ); ?>
+				<?php _e( "If checked, the following role will get email notifications when there's a new subscriber or when someone ends their subscription", INCSUB_SBE_LANG_DOMAIN ); ?>
 			</label>
+			
+			<select name="<?php echo $this->settings_name; ?>[get_notifications_role]" id="get-notifications-role">
+				<?php echo wp_dropdown_roles( $this->settings['get_notifications_role'] ); ?>
+			</select>
+
 		<?php
 	}
 
@@ -625,6 +630,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				$new_settings['mails_batch_size'] = absint( $input['mail_batches'] );
 
 			$new_settings['get_notifications'] = isset( $input['get_notifications'] );
+
+			$new_settings['get_notifications_role'] = $input['get_notifications_role'];
 		}
 
 		if ( isset( $input['submit_settings_template'] ) || isset( $input['remove-logo'] ) || isset( $input['submit_test_email'] ) || isset( $input['submit_refresh_changes'] ) ) {

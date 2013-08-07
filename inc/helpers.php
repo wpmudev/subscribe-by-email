@@ -77,3 +77,4 @@ function incsub_sbe_get_confirmation_flag_captions() {
 	$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
 	return $settings_handler->get_confirmation_flag();
 }
+

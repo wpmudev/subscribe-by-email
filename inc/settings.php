@@ -114,6 +114,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'post_types' => array( 'post' ),
 			'manage_subs_page' => 0,
 			'get_notifications' => false,
+			'get_notifications_role' => 'administrator',
 			'logo' => '',
 			'logo_width' => 200,
 			'featured_image' => false,

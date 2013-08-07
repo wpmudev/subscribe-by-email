@@ -43,10 +43,9 @@ class Incsub_Subscribe_By_Email {
 		$this->set_globals();
 		$this->includes();
 
-		add_action( 'init', array( &$this, 'init_plugin' ), 5 );
-		add_action( 'init', array( &$this, 'set_admin_menus' ), 15 );
+		add_action( 'init', array( &$this, 'init_plugin' ), 1 );
 
-		add_action( 'init', array( &$this, 'confirm_subscription' ), 1 );
+		add_action( 'init', array( &$this, 'confirm_subscription' ), 2 );
 		add_action( 'init', array( &$this, 'cancel_subscription' ), 20 );
 		
 		
@@ -67,7 +66,7 @@ class Incsub_Subscribe_By_Email {
 	}
 
 	public function init_plugin() {
-
+		
 		// Do we have to remove old subscriptions?
 		$transient = get_transient( 'sbe_remove_old_subscriptions' );
 		if ( ! $transient ) {
@@ -82,6 +81,12 @@ class Incsub_Subscribe_By_Email {
 
 		if ( ! is_admin() )
 			$manage_subscription_page = new Incsub_Subscribe_By_Email_Manage_Subscription();
+
+		self::$admin_subscribers_page = new Incsub_Subscribe_By_Email_Admin_Subscribers_Page();
+		self::$admin_add_new_subscriber_page = new Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page();
+		self::$admin_export_subscribers_page = new Incsub_Subscribe_By_Email_Export_Subscribers_Page();
+		self::$admin_settings_page = new Incsub_Subscribe_By_Email_Admin_Settings_Page();
+		self::$admin_sent_emails_page = new Incsub_Subscribe_By_Email_Sent_Emails_Page();
 	}
 
 
@@ -121,21 +126,22 @@ class Incsub_Subscribe_By_Email {
 	 * Include needed files
 	 */
 	private function includes() {
-		if ( is_admin() ) {
-			require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-page.php' );
-			require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-settings-page.php' );
-			require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-subscribers-page.php' );
-			require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-add-subscribers-page.php' );
-			require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-export-subscribers-page.php' );
-			require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-sent-emails-page.php' );
-			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/subscribers-table.php' );
-			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/log-table.php' );
-			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/uninstall.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/subscribers-table.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/log-table.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/uninstall.php' );
 			
-		}
+
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-settings-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-subscribers-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-add-subscribers-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-export-subscribers-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-sent-emails-page.php' );
+
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/settings.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-template.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/confirmation-mail-template.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/confirmation-mail-template.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'model/model.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/widget.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/manage-subscription.php' );
@@ -186,19 +192,6 @@ class Incsub_Subscribe_By_Email {
 			$model = Incsub_Subscribe_By_Email_Model::get_instance();
 			$model->create_squema();
 			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
-		}
-	}
-
-	/**
-	 * Initialize admin menus
-	 */
-	public function set_admin_menus() {
-		if ( is_admin() ) {
-			self::$admin_subscribers_page = new Incsub_Subscribe_By_Email_Admin_Subscribers_Page();
-			self::$admin_add_new_subscriber_page = new Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page();
-			self::$admin_export_subscribers_page = new Incsub_Subscribe_By_Email_Export_Subscribers_Page();
-			self::$admin_settings_page = new Incsub_Subscribe_By_Email_Admin_Settings_Page();
-			self::$admin_sent_emails_page = new Incsub_Subscribe_By_Email_Sent_Emails_Page();
 		}
 	}
 
@@ -276,9 +269,17 @@ class Incsub_Subscribe_By_Email {
 	public function cancel_subscription() {
 		if ( isset( $_GET['sbe_unsubscribe'] ) ) {
 			$model = Incsub_Subscribe_By_Email_Model::get_instance();
+			$subscriber = $model->get_subscriber_by_key( $_GET['sbe_unsubscribe'] );
 			$model->cancel_subscription( $_GET['sbe_unsubscribe'] );
 
 			$this->sbe_subscribing_notice( __( 'Your email subscription has been succesfully cancelled.', INCSUB_SBE_LANG_DOMAIN ) );
+			
+			$settings = incsub_sbe_get_settings();
+			if ( $settings['get_notifications'] ) {
+				$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Unsubscribed_Notice_Template( $subscriber->subscription_email );
+				$admin_notice->send_email();
+			}
+
 			die();
 		}
 	}

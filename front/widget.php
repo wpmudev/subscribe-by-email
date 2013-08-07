@@ -69,6 +69,13 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 					}
 					else {
 						Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant', $autopt );
+
+						$settings = incsub_sbe_get_settings();
+						if ( $settings['get_notifications'] ) {
+							$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Subscribed_Notice_Template( $email );
+							$admin_notice->send_email();
+						}
+
 						echo "TRUE";
 					}
 				}

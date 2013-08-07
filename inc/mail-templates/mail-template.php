@@ -64,7 +64,7 @@ class Incsub_Subscribe_By_Email_Template {
 					</div>
 					<div style="clear:both;"></div>
 					<div <?php echo $meta_style; ?>>
-						<?php printf( __( 'by %s on %s' ), 'author', date_i18n( $date_format ) ); ?>
+						<?php printf( __( 'by %s on %s', INCSUB_SBE_LANG_DOMAIN ), 'author', date_i18n( $date_format ) ); ?>
 					</div>
 					<div style="clear:both;"></div>
 				<?php
@@ -98,7 +98,7 @@ class Incsub_Subscribe_By_Email_Template {
 						</div>
 						<div style="clear:both;"></div>
 						<div <?php echo $meta_style; ?>>
-							<?php printf( __( 'by %s on %s' ), get_the_author(), get_the_date( $date_format ) ); ?>
+							<?php printf( __( 'by %s on %s', INCSUB_SBE_LANG_DOMAIN ), get_the_author(), get_the_date( $date_format ) ); ?>
 						</div>
 						<div style="clear:both;"></div>
 					<?php

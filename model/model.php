@@ -251,6 +251,12 @@ class Incsub_Subscribe_By_Email_Model {
 
         return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_table WHERE subscription_ID = %d", $sid ) );
     }
+
+    public function get_subscriber_by_key( $key ) {
+        global $wpdb;
+
+        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_table WHERE user_key = %s", $key ) );
+    }
     
     public function get_subscriber_id( $email ) {
         global $wpdb;
