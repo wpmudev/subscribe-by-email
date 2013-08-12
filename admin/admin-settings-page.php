@@ -353,7 +353,11 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 * Post Types field
 	 */
 	public function render_posts_types_field() {
-		$args=array(
+
+		$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
+		do_dump($settings_handler->get_taxonomies());
+		do_dump($settings_handler->get_post_types());
+		$args = array(
 		  'publicly_queryable'   => true,
 		); 
 		$post_types = get_post_types( $args, 'object' );
@@ -365,8 +369,39 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				<label for="post-type-<?php echo $post_slug; ?>">
 					<input type="checkbox" <?php checked( in_array( $post_slug, $this->settings['post_types'] ) ); ?> id="post-type-<?php echo $post_slug; ?>" name="<?php echo $this->settings_name; ?>[post_types][]" value="<?php echo $post_slug; ?>"> 
 					<?php echo $label; ?>
-					<br/>
 				</label>
+
+				<?php $post_type_taxonomies = get_object_taxonomies( $post_slug ); ?>
+
+				<?php if ( ! empty ( $post_type_taxonomies ) ): ?>
+					<?php foreach ( $post_type_taxonomies as $taxonomy_slug ): ?>
+						<?php $taxonomy = get_taxonomy( $taxonomy_slug ); ?>
+
+						<?php if ( $taxonomy->hierarchical ): ?>
+
+							<div id="poststuff" style="width:280px;margin-left:25px">
+			            		<div id="categorydiv" class="postbox ">
+									<h3 class="hndle"><span><?php echo $taxonomy->labels->name; ?></span></h3>
+									<div class="inside">
+										<div id="taxonomy-category" class="categorydiv">
+											<div id="category-all" class="tabs-panel">
+												<ul id="categorychecklist" data-wp-lists="list:category" class="categorychecklist form-no-clear">
+													<li id="all-categories"><label class="selectit"><input value="all-categories" type="checkbox" <?php //checked( in_array( 'all-categories', $template['post_category'] ) ); ?> name="post_category[]" id="in-all-categories"> <strong><?php _e( 'All', INCSUB_SBE_LANG_DOMAIN ); ?></strong></label></li>
+													<?php wp_terms_checklist( 0, array( 'taxonomy' => $taxonomy_slug ) ); ?>
+												</ul>
+											</div>
+													
+										</div>
+									</div>
+								</div>
+							</div>
+
+						<?php endif; ?>
+
+					<?php endforeach; ?>
+				<?php endif; ?>
+				
+				
 			<?php
 		}
 	}

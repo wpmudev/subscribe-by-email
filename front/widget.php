@@ -54,7 +54,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 
 	public function subscribe_user() {
 		
-		if ( ! empty( $_POST['subscription-email'] ) ) {
+		if ( isset( $_POST['subscription-email'] ) ) {
 			$instance = $this->get_settings();
 
 			if ( array_key_exists( $this->number, $instance ) ) {

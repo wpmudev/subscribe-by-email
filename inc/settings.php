@@ -13,6 +13,8 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 	private $time;
 	private $day_of_week;
 	private $confirmation_flag;
+	private $post_types;
+	private $taxonomies;
 
 	// Settings slug name
 	private $settings_slug = 'incsub_sbe_settings';
@@ -67,6 +69,31 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 
 		$this->settings = wp_parse_args( $current_settings, $this->get_default_settings() );
 
+		// Get all post types
+		$args=array(
+		  'publicly_queryable'   => true,
+		); 
+		$this->post_types = get_post_types( $args, 'object' );
+		unset( $this->post_types['attachment'] );
+
+		// Get those taxonomies that are hierachical
+		$this->taxonomies = array();
+		foreach ( $this->post_types as $post_slug => $post_type ) {
+			$post_type_taxonomies = get_object_taxonomies( $post_slug );
+
+			if ( ! empty( $post_type_taxonomies ) ) {
+				foreach ( $post_type_taxonomies as $taxonomy_slug ) {
+					$taxonomy = get_taxonomy( $taxonomy_slug );
+
+					if ( $taxonomy->hierarchical ) {
+						$this->taxonomies[ $post_slug ][ $taxonomy_slug ] = $taxonomy->labels->name;
+					}
+				}
+				
+			}
+
+		}
+
 	}
 
 	public function get_settings() {
@@ -112,6 +139,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'time' => 0,
 			'day_of_week' => 0,
 			'post_types' => array( 'post' ),
+			'taxonomies' => array( 'post' => 'all' ),
 			'manage_subs_page' => 0,
 			'get_notifications' => false,
 			'get_notifications_role' => 'administrator',
@@ -151,6 +179,14 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 
 	public function get_confirmation_flag() {
 		return $this->confirmation_flag;
+	}
+
+	public function get_post_types() {
+		return $this->post_types;
+	}
+
+	public function get_taxonomies() {
+		return $this->taxonomies;
 	}
 
 }
