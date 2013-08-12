@@ -78,3 +78,80 @@ function incsub_sbe_get_confirmation_flag_captions() {
 	return $settings_handler->get_confirmation_flag();
 }
 
+/**
+ * Code took and modified from wp-admin/template.php
+ */
+function sbe_terms_checklist($post_id = 0, $args = array()) {
+ 	$defaults = array(
+		'descendants_and_self' => 0,
+		'selected_cats' => false,
+		'popular_cats' => false,
+		'walker' => null,
+		'taxonomy' => 'category',
+		'checked_ontop' => true,
+		'disabled' => false,
+		'taxonomy_slug' => '',
+		'post_type_slug' => '',
+		'base_name' => 'tax_input',
+		'indent' => true
+	);
+	$args = apply_filters( 'wp_terms_checklist_args', $args, $post_id );
+
+
+	extract( wp_parse_args($args, $defaults), EXTR_SKIP );
+	
+	if ( empty($walker) || !is_a($walker, 'Walker') )
+		$walker = new Walker_Category_Checklist;
+
+	$descendants_and_self = (int) $descendants_and_self;
+
+	$args = array('taxonomy' => $taxonomy);
+
+	$tax = get_taxonomy($taxonomy);
+	$args['disabled'] = $disabled;
+
+	$args['taxonomy_slug'] = $taxonomy_slug;
+	$args['post_type_slug'] = $post_type_slug;
+	$args['base_name'] = $base_name;
+	$args['indent'] = $indent;
+
+	if ( is_array( $selected_cats ) )
+		$args['selected_cats'] = $selected_cats;
+	elseif ( $post_id )
+		$args['selected_cats'] = wp_get_object_terms($post_id, $taxonomy, array_merge($args, array('fields' => 'ids')));
+	else
+		$args['selected_cats'] = array();
+
+	if ( is_array( $popular_cats ) )
+		$args['popular_cats'] = $popular_cats;
+	else
+		$args['popular_cats'] = get_terms( $taxonomy, array( 'fields' => 'ids', 'orderby' => 'count', 'order' => 'DESC', 'number' => 10, 'hierarchical' => false ) );
+
+	if ( $descendants_and_self ) {
+		$categories = (array) get_terms($taxonomy, array( 'child_of' => $descendants_and_self, 'hierarchical' => 0, 'hide_empty' => 0 ) );
+		$self = get_term( $descendants_and_self, $taxonomy );
+		array_unshift( $categories, $self );
+	} else {
+		$categories = (array) get_terms($taxonomy, array('get' => 'all'));
+	}
+
+	
+	if ( $checked_ontop ) {
+		// Post process $categories rather than adding an exclude to the get_terms() query to keep the query the same across all posts (for any query cache)
+		$checked_categories = array();
+		$keys = array_keys( $categories );
+
+		foreach( $keys as $k ) {
+			if ( in_array( $categories[$k]->term_id, $args['selected_cats'] ) ) {
+				$checked_categories[] = $categories[$k];
+				unset( $categories[$k] );
+			}
+		}
+
+		// Put checked cats on top
+		echo call_user_func_array(array(&$walker, 'walk'), array($checked_categories, 0, $args));
+	}
+	// Then the rest of them
+	echo call_user_func_array(array(&$walker, 'walk'), array($categories, 0, $args));
+}
+

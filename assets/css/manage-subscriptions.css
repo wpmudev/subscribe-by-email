@@ -1,0 +1,10 @@
+.taxonomies-list li {
+	list-style: none;
+	float: left;
+	width: 200px;
+	max-width:200px;
+}
+
+.taxonomies-box {
+	padding:20px 0;
+}

@@ -86,7 +86,7 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 					$taxonomy = get_taxonomy( $taxonomy_slug );
 
 					if ( $taxonomy->hierarchical ) {
-						$this->taxonomies[ $post_slug ][ $taxonomy_slug ] = $taxonomy->labels->name;
+						$this->taxonomies[ $post_slug ][ $taxonomy_slug ] = $taxonomy;
 					}
 				}
 				
@@ -139,7 +139,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'time' => 0,
 			'day_of_week' => 0,
 			'post_types' => array( 'post' ),
-			'taxonomies' => array( 'post' => 'all' ),
+			'taxonomies' => array( 'post' => array( 'categories' => array( 'all' ) ) ),
 			'manage_subs_page' => 0,
 			'get_notifications' => false,
 			'get_notifications_role' => 'administrator',
@@ -187,6 +187,10 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 
 	public function get_taxonomies() {
 		return $this->taxonomies;
+	}
+
+	public function get_taxonomies_by_post_type( $post_type_slug ) {
+		return isset( $this->taxonomies[ $post_type_slug ] ) ? $this->taxonomies[ $post_type_slug ] : array();
 	}
 
 }

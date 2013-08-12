@@ -142,6 +142,7 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/confirmation-mail-template.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/walker-terms-checklist.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'model/model.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/widget.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/manage-subscription.php' );

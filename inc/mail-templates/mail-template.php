@@ -507,11 +507,13 @@ class Incsub_Subscribe_By_Email_Template {
 
 		// These are the post types that the user wants to get
 		$user_post_types = ! $user_settings ? $this->settings['post_types'] : $user_settings['post_types'];
+		$user_taxonomies = ! $user_settings || ! isset( $user_settings['taxonomies'] ) ? $this->settings['taxonomies'] : $user_settings['taxonomies'];
 
 		$user_content = array();
 		foreach ( $this->content as $post ) {
 			if ( ! in_array( $post->post_type, $user_post_types ) )
 				continue;
+			
 			
 			$user_content[] = $post;
 		}

@@ -18,6 +18,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 		$this->tabs = array(
 			'general' => __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ),
+			'content' => __( 'Contents', INCSUB_SBE_LANG_DOMAIN ),
 			'template' => __( 'Mail template', INCSUB_SBE_LANG_DOMAIN )
 		);
 
@@ -61,6 +62,9 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			if ( 'general' == $this->get_current_tab() ) {
 				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . '/js/settings-general.js', array( 'jquery' ), '20130721' );
+			}
+			elseif ( 'content' == $this->get_current_tab() ) {
+				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . '/js/settings-content.js', array( 'jquery' ), '20130721' );
 			}
 			elseif ( 'template' == $this->get_current_tab() ) {
 				wp_enqueue_script( 'thickbox' );
@@ -113,11 +117,25 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			add_settings_field( 'mail_batch', __( 'Mail batches', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_mail_batches_field' ), $this->get_menu_slug(), 'general-settings' ); 
 			add_settings_field( 'get-nofitications', __( 'Get notifications', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_get_notifications_field' ), $this->get_menu_slug(), 'general-settings' ); 
 
-			add_settings_section( 'posts-settings', __( 'Posts Settings', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_section' ), $this->get_menu_slug() );
-			add_settings_field( 'post-types', __( 'Posts Types', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_field' ), $this->get_menu_slug(), 'posts-settings' ); 
-
 			add_settings_section( 'user-subs-page-settings', __( 'Subscription page', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscription_page_section' ), $this->get_menu_slug() );
 			add_settings_field( 'user-subs-page', __( 'Subscribers Management Page', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscription_page_field' ), $this->get_menu_slug(), 'user-subs-page-settings' ); 
+		}
+		elseif ( $this->get_current_tab() == 'content' ) {
+			$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
+			$post_types = $settings_handler->get_post_types();
+			//do_dump($post_types);
+			
+			foreach ( $post_types as $post_type_slug => $post_type ) {
+				add_settings_section( 'post-type-' . $post_type_slug . '-settings', $post_type->labels->name, null, $this->get_menu_slug() );
+				add_settings_field( 'post-types' . $post_type_slug . '-send-content-field', __( 'Send this post type', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_send_content_field' ), $this->get_menu_slug(), 'post-type-' . $post_type_slug . '-settings', array( 'post_type_slug' => $post_type_slug, 'post_type_name' => $post_type->labels->name ) ); 	
+
+				$taxonomies = $settings_handler->get_taxonomies_by_post_type( $post_type_slug );
+				foreach ( $taxonomies as $tax_slug => $taxonomy ) {
+					add_settings_field( 'post-types' . $post_type_slug . '-tax-' . $tax_slug, $taxonomy->labels->name, array( &$this, 'render_send_content_taxonomy_field' ), $this->get_menu_slug(), 'post-type-' . $post_type_slug . '-settings', array( 'taxonomy_slug' => $tax_slug, 'taxonomy' => $taxonomy, 'post_type_slug' => $post_type_slug ) ); 	
+				}
+				
+			}
+			//add_settings_field( 'post-types', __( 'Posts Types', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_field' ), $this->get_menu_slug(), 'posts-settings' ); 
 		}
 		elseif ( $this->get_current_tab() == 'template' ) {
 			add_settings_section( 'logo-settings', __( 'Logo', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
@@ -349,62 +367,73 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		<?php
 	}
 
-	/**
-	 * Post Types field
-	 */
-	public function render_posts_types_field() {
-
-		$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
-		do_dump($settings_handler->get_taxonomies());
-		do_dump($settings_handler->get_post_types());
-		$args = array(
-		  'publicly_queryable'   => true,
-		); 
-		$post_types = get_post_types( $args, 'object' );
-		unset( $post_types['attachment'] );
-		
-		foreach ( $post_types as $post_slug => $post_type ) {
-			$label = $post_type->labels->name;
-			?>
-				<label for="post-type-<?php echo $post_slug; ?>">
-					<input type="checkbox" <?php checked( in_array( $post_slug, $this->settings['post_types'] ) ); ?> id="post-type-<?php echo $post_slug; ?>" name="<?php echo $this->settings_name; ?>[post_types][]" value="<?php echo $post_slug; ?>"> 
-					<?php echo $label; ?>
-				</label>
-
-				<?php $post_type_taxonomies = get_object_taxonomies( $post_slug ); ?>
-
-				<?php if ( ! empty ( $post_type_taxonomies ) ): ?>
-					<?php foreach ( $post_type_taxonomies as $taxonomy_slug ): ?>
-						<?php $taxonomy = get_taxonomy( $taxonomy_slug ); ?>
-
-						<?php if ( $taxonomy->hierarchical ): ?>
-
-							<div id="poststuff" style="width:280px;margin-left:25px">
-			            		<div id="categorydiv" class="postbox ">
-									<h3 class="hndle"><span><?php echo $taxonomy->labels->name; ?></span></h3>
-									<div class="inside">
-										<div id="taxonomy-category" class="categorydiv">
-											<div id="category-all" class="tabs-panel">
-												<ul id="categorychecklist" data-wp-lists="list:category" class="categorychecklist form-no-clear">
-													<li id="all-categories"><label class="selectit"><input value="all-categories" type="checkbox" <?php //checked( in_array( 'all-categories', $template['post_category'] ) ); ?> name="post_category[]" id="in-all-categories"> <strong><?php _e( 'All', INCSUB_SBE_LANG_DOMAIN ); ?></strong></label></li>
-													<?php wp_terms_checklist( 0, array( 'taxonomy' => $taxonomy_slug ) ); ?>
-												</ul>
-											</div>
-													
-										</div>
-									</div>
-								</div>
-							</div>
-
-						<?php endif; ?>
-
-					<?php endforeach; ?>
-				<?php endif; ?>
-				
-				
-			<?php
-		}
+	public function render_send_content_field( $args ) {
+		extract( $args );
+		?>
+			<label>
+				<input class="post-type-checkbox" data-post-slug="<?php echo $post_type_slug; ?>" type="checkbox" <?php checked( in_array( $post_type_slug, $this->settings['post_types'] ) ); ?> name="<?php echo $this->settings_name; ?>[post_types][]" value="<?php echo $post_type_slug; ?>"> <?php printf( __( '%s will be included in the digests', INCSUB_SBE_LANG_DOMAIN ), $post_type_name ); ?>
+			</label>
+		<?php
 	}
+
+	public function render_send_content_taxonomy_field( $args ) {
+		extract( $args );
+
+		// All categories checkbox is checked?
+		$all_checked = (
+			( ! isset( $this->settings['taxonomies'][ $post_type_slug ][ $taxonomy_slug ] ) )
+			|| ( in_array( 'all', $this->settings['taxonomies'][ $post_type_slug ][ $taxonomy_slug ] ) )
+			|| ( empty( $this->settings['taxonomies'][ $post_type_slug ][ $taxonomy_slug ] ) )
+		);
+
+		// Checkboxes are disabled?
+		$disabled = ! in_array( $post_type_slug, $this->settings['post_types'] );
+		
+		$base_name = $this->settings_name . '[tax_input]';
+
+		if ( isset( $this->settings['taxonomies'][ $post_type_slug ][ $taxonomy_slug ] ) && is_array( $this->settings['taxonomies'][ $post_type_slug ][ $taxonomy_slug ] ) && ! $all_checked ) {
+			$selected_cats = $this->settings['taxonomies'][ $post_type_slug ][ $taxonomy_slug ];
+		}
+		else {
+			$selected_cats = array();
+		}
+
+		?>
+			<div id="poststuff" style="width:280px;margin-left:0;padding-top:0">
+        		<div id="<?php echo $taxonomy_slug; ?>-categorydiv" class="postbox ">
+					<h3 class="hndle"><span><?php echo $taxonomy->labels->name; ?></span></h3>
+					<div class="inside">
+						<div id="taxonomy-<?php echo $taxonomy_slug; ?>" class="categorydiv">
+							<div id="<?php echo $taxonomy_slug; ?>-all" class="tabs-panel">
+								<ul id="<?php echo $taxonomy_slug; ?>checklist" class="<?php echo $taxonomy_slug; ?>checklist form-no-clear">
+									<li id="<?php echo $taxonomy_slug; ?>-all"><label class="selectit"><input class="settings-term-checkbox <?php echo $post_type_slug; ?>-checkbox" value="all" type="checkbox" <?php checked( $all_checked ); ?> <?php disabled( $disabled ); ?> name="<?php echo $base_name; ?>[<?php echo $post_type_slug; ?>][<?php echo $taxonomy_slug; ?>][]" id="in-<?php echo $taxonomy_slug; ?>-all"> <strong><?php _e( 'All', INCSUB_SBE_LANG_DOMAIN ); ?></strong></label></li>
+									<?php 
+										$walker = new Walker_SBE_Terms_Checklist;
+
+										sbe_terms_checklist( 
+											0, 
+											array( 
+												'taxonomy' => $taxonomy_slug,
+												'walker' => $walker,
+												'disabled' => $disabled,
+												'taxonomy_slug' => $taxonomy_slug,
+												'post_type_slug' => $post_type_slug,
+												'base_name' => $base_name,
+												'selected_cats' => $selected_cats
+											) 
+										); ?>
+								</ul>
+							</div>
+									
+						</div>
+					</div>
+				</div>
+			</div>
+		<?php
+	}
+
+
+
 
 	public function render_subscription_page_section() {
 		?><p><?php _e( 'You can select a page where users will be able to subscribe/unsubscribe to any post type', INCSUB_SBE_LANG_DOMAIN ); ?></p><?php
@@ -650,11 +679,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				$new_settings['day_of_week'] = $default_settings['day_of_week'];
 			}
 
-			// Post types
-			if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
-				$new_settings['post_types'] = $input['post_types'];
-			}
-
 			// Management Page
 			if ( isset( $input['manage_subs_page'] ) ) {
 				$new_settings['manage_subs_page'] = absint( $input['manage_subs_page'] );
@@ -667,6 +691,36 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			$new_settings['get_notifications'] = isset( $input['get_notifications'] );
 
 			$new_settings['get_notifications_role'] = $input['get_notifications_role'];
+		}
+
+		if ( isset( $input['submit_settings_content'] ) ) {
+			// Post types
+			if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
+				$new_settings['post_types'] = $input['post_types'];
+			}
+
+			//Taxonomies
+			if ( ! empty( $input['tax_input'] ) ) {
+				$new_settings['taxonomies'] = array();
+
+				foreach ( $input['tax_input'] as $post_type_slug => $taxonomies ) {
+					foreach ( $taxonomies as $tax_slug => $taxonomy_items ) {
+						if ( ! in_array( $post_type_slug, $new_settings['post_types'] ) ) {
+							$new_settings['taxonomies'][ $post_type_slug ][ $tax_slug ] = array( 'all' );
+							continue;
+						}
+
+						if ( in_array( 'all', $taxonomy_items ) ) {
+							$new_settings['taxonomies'][ $post_type_slug ][ $tax_slug ] = array( 'all' );
+						}
+						else {
+							$new_settings['taxonomies'][ $post_type_slug ][ $tax_slug ] = $taxonomy_items;
+						}
+					}
+					
+				}
+
+			}
 		}
 
 		if ( isset( $input['submit_settings_template'] ) || isset( $input['remove-logo'] ) || isset( $input['submit_test_email'] ) || isset( $input['submit_refresh_changes'] ) ) {
