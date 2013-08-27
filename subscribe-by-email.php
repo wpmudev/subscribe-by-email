@@ -87,6 +87,19 @@ class Incsub_Subscribe_By_Email {
 		self::$admin_export_subscribers_page = new Incsub_Subscribe_By_Email_Export_Subscribers_Page();
 		self::$admin_settings_page = new Incsub_Subscribe_By_Email_Admin_Settings_Page();
 		self::$admin_sent_emails_page = new Incsub_Subscribe_By_Email_Sent_Emails_Page();
+
+		$this->init_follow_button();
+	}
+
+	public function init_follow_button() {
+		if ( ! is_admin() ) {
+			$settings = incsub_sbe_get_settings();
+
+			if ( ! $settings['follow_button'] )
+				return;
+
+			new Incsub_Subscribe_By_Email_Follow_Button( $settings );
+		}
 	}
 
 
@@ -145,6 +158,7 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/walker-terms-checklist.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'model/model.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/widget.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/follow-button.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/manage-subscription.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers.php' );
 	}

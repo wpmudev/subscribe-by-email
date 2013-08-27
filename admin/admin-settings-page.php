@@ -119,6 +119,9 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			add_settings_section( 'user-subs-page-settings', __( 'Subscription page', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscription_page_section' ), $this->get_menu_slug() );
 			add_settings_field( 'user-subs-page', __( 'Subscribers Management Page', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscription_page_field' ), $this->get_menu_slug(), 'user-subs-page-settings' ); 
+
+			add_settings_section( 'follow-button', __( 'Follow button', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			add_settings_field( 'follow-button-field', __( 'Display a follow button?', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_field' ), $this->get_menu_slug(), 'follow-button' ); 
 		}
 		elseif ( $this->get_current_tab() == 'content' ) {
 			$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
@@ -469,6 +472,15 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		<?php
 	}
 
+	public function render_follow_button_field() {
+		?>	
+			<label>
+				<input type="checkbox" name="<?php echo $this->settings_name; ?>[follow_button]" <?php checked( $this->settings['follow_button'] ); ?> /> 
+				<?php _e( 'Will place a follow button permanently in the bottom right of your site.', INCSUB_SBE_LANG_DOMAIN ); ?>
+			</label>
+		<?php
+	}
+
 
 
 
@@ -703,6 +715,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				$new_settings['mails_batch_size'] = absint( $input['mail_batches'] );
 
 			$new_settings['get_notifications'] = isset( $input['get_notifications'] );
+
+			$new_settings['follow_button'] = isset( $input['follow_button'] );
 
 			$new_settings['get_notifications_role'] = $input['get_notifications_role'];
 		}

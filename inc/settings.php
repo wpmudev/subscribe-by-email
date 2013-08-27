@@ -141,6 +141,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'manage_subs_page' => 0,
 			'get_notifications' => false,
 			'get_notifications_role' => 'administrator',
+			'follow_button' => false,
 
 			'allow_categories' => false,
 			'post_types' => array( 'post' ),
