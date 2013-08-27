@@ -88,12 +88,13 @@ function sbe_terms_checklist($post_id = 0, $args = array()) {
 		'popular_cats' => false,
 		'walker' => null,
 		'taxonomy' => 'category',
-		'checked_ontop' => true,
+		'checked_ontop' => false,
 		'disabled' => false,
 		'taxonomy_slug' => '',
 		'post_type_slug' => '',
 		'base_name' => 'tax_input',
-		'indent' => true
+		'indent' => true,
+		'tax_in' => 'all'
 	);
 	$args = apply_filters( 'wp_terms_checklist_args', $args, $post_id );
 
@@ -114,6 +115,7 @@ function sbe_terms_checklist($post_id = 0, $args = array()) {
 	$args['post_type_slug'] = $post_type_slug;
 	$args['base_name'] = $base_name;
 	$args['indent'] = $indent;
+	$args['tax_in'] = $tax_in;
 
 	if ( is_array( $selected_cats ) )
 		$args['selected_cats'] = $selected_cats;

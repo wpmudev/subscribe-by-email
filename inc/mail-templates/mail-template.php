@@ -510,12 +510,53 @@ class Incsub_Subscribe_By_Email_Template {
 		$user_taxonomies = ! $user_settings || ! isset( $user_settings['taxonomies'] ) ? $this->settings['taxonomies'] : $user_settings['taxonomies'];
 
 		$user_content = array();
-		foreach ( $this->content as $post ) {
-			if ( ! in_array( $post->post_type, $user_post_types ) )
-				continue;
-			
-			
-			$user_content[] = $post;
+
+		if ( ! $this->settings['allow_categories'] ) {
+			// Removing content based on post types
+			foreach ( $this->content as $post ) {
+				if ( ! in_array( $post->post_type, $user_post_types ) )
+					continue;
+
+				$user_content[] = $post;
+			}
+		}
+		else {
+			// Removing content based on taxonomies
+			foreach ( $this->content as $the_post ) {
+				if ( ! in_array( $the_post->post_type, $user_post_types ) )
+					continue;
+
+				$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
+				$post_type_taxonomies = $settings_handler->get_taxonomies_by_post_type( $the_post->post_type );
+
+				$has_term = false;
+
+				foreach ( $post_type_taxonomies as $tax_slug => $taxonomy ) {
+					$terms_list = get_the_terms( $the_post, $tax_slug );
+
+					if ( empty( $terms_list ) ) {
+						break;
+					}
+
+					if ( ! isset( $user_taxonomies[ $the_post->post_type ] ) || ! is_array( $user_taxonomies[ $the_post->post_type ] ) ) {
+						break;
+					}
+
+					foreach ( $terms_list as $term ) {
+						if ( ! in_array( $term->term_id, $user_taxonomies[ $the_post->post_type ][ $tax_slug ] ) ) {
+							continue;
+						}
+						else {
+							$has_term = true;
+							break;
+						}
+					}
+
+				}
+
+				if ( $has_term )
+					$user_content[] = $the_post;
+			}
 		}
 
 		return $user_content;

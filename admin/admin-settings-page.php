@@ -122,20 +122,24 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		}
 		elseif ( $this->get_current_tab() == 'content' ) {
 			$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
-			$post_types = $settings_handler->get_post_types();
-			//do_dump($post_types);
-			
-			foreach ( $post_types as $post_type_slug => $post_type ) {
-				add_settings_section( 'post-type-' . $post_type_slug . '-settings', $post_type->labels->name, null, $this->get_menu_slug() );
-				add_settings_field( 'post-types' . $post_type_slug . '-send-content-field', __( 'Send this post type', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_send_content_field' ), $this->get_menu_slug(), 'post-type-' . $post_type_slug . '-settings', array( 'post_type_slug' => $post_type_slug, 'post_type_name' => $post_type->labels->name ) ); 	
 
-				$taxonomies = $settings_handler->get_taxonomies_by_post_type( $post_type_slug );
-				foreach ( $taxonomies as $tax_slug => $taxonomy ) {
-					add_settings_field( 'post-types' . $post_type_slug . '-tax-' . $tax_slug, $taxonomy->labels->name, array( &$this, 'render_send_content_taxonomy_field' ), $this->get_menu_slug(), 'post-type-' . $post_type_slug . '-settings', array( 'taxonomy_slug' => $tax_slug, 'taxonomy' => $taxonomy, 'post_type_slug' => $post_type_slug ) ); 	
+			add_settings_section( 'allow-categories-section', '', null, $this->get_menu_slug() );
+			add_settings_field( 'allow-categories', __( 'Allow subscribing by categories/taxonomies', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_allow_categories_field' ), $this->get_menu_slug(), 'allow-categories-section' ); 
+
+			$post_types = $settings_handler->get_post_types();
+			
+				foreach ( $post_types as $post_type_slug => $post_type ) {
+					add_settings_section( 'post-type-' . $post_type_slug . '-settings', $post_type->labels->name, null, $this->get_menu_slug() );
+					add_settings_field( 'post-types' . $post_type_slug . '-send-content-field', __( 'Send this post type', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_send_content_field' ), $this->get_menu_slug(), 'post-type-' . $post_type_slug . '-settings', array( 'post_type_slug' => $post_type_slug, 'post_type_name' => $post_type->labels->name ) ); 	
+
+					if ( $this->settings['allow_categories'] ) {
+						$taxonomies = $settings_handler->get_taxonomies_by_post_type( $post_type_slug );
+						foreach ( $taxonomies as $tax_slug => $taxonomy ) {
+							add_settings_field( 'post-types' . $post_type_slug . '-tax-' . $tax_slug, $taxonomy->labels->name, array( &$this, 'render_send_content_taxonomy_field' ), $this->get_menu_slug(), 'post-type-' . $post_type_slug . '-settings', array( 'taxonomy_slug' => $tax_slug, 'taxonomy' => $taxonomy, 'post_type_slug' => $post_type_slug ) ); 	
+						}
+					}
+					
 				}
-				
-			}
-			//add_settings_field( 'post-types', __( 'Posts Types', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_posts_types_field' ), $this->get_menu_slug(), 'posts-settings' ); 
 		}
 		elseif ( $this->get_current_tab() == 'template' ) {
 			add_settings_section( 'logo-settings', __( 'Logo', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
@@ -399,6 +403,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		}
 
 		?>
+			<p><?php printf( __( 'Let the user choose between these %s:', INCSUB_SBE_LANG_DOMAIN ), $taxonomy->labels->name ); ?></p>
 			<div id="poststuff" style="width:280px;margin-left:0;padding-top:0">
         		<div id="<?php echo $taxonomy_slug; ?>-categorydiv" class="postbox ">
 					<h3 class="hndle"><span><?php echo $taxonomy->labels->name; ?></span></h3>
@@ -429,6 +434,15 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 					</div>
 				</div>
 			</div>
+		<?php
+	}
+
+	public function render_allow_categories_field() {
+		?>
+			<label>
+				<input type="checkbox" name="<?php echo $this->settings_name; ?>[allow_categories]" id="allow-categories" <?php checked( $this->settings['allow_categories'] ); ?>> 
+				<span class="description"><?php _e( 'Check this option if you want your users to subscribe to categories/taxonomies', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+			</label>
 		<?php
 	}
 
@@ -697,6 +711,14 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			// Post types
 			if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
 				$new_settings['post_types'] = $input['post_types'];
+			}
+
+			// Allow categories
+			if ( isset( $input['allow_categories'] ) ) {
+				$new_settings['allow_categories'] = true;
+			}
+			else {
+				$new_settings['allow_categories'] = false;				
 			}
 
 			//Taxonomies

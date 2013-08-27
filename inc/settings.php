@@ -70,7 +70,7 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 		$this->settings = wp_parse_args( $current_settings, $this->get_default_settings() );
 
 		// Get all post types
-		$args=array(
+		$args = array(
 		  'publicly_queryable'   => true,
 		); 
 		$this->post_types = get_post_types( $args, 'object' );
@@ -138,11 +138,14 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'frequency' => 'inmediately',
 			'time' => 0,
 			'day_of_week' => 0,
-			'post_types' => array( 'post' ),
-			'taxonomies' => array( 'post' => array( 'categories' => array( 'all' ) ) ),
 			'manage_subs_page' => 0,
 			'get_notifications' => false,
 			'get_notifications_role' => 'administrator',
+
+			'allow_categories' => false,
+			'post_types' => array( 'post' ),
+			'taxonomies' => array( 'post' => array( 'categories' => array( 'all' ) ) ),
+
 			'logo' => '',
 			'logo_width' => 200,
 			'featured_image' => false,
@@ -191,6 +194,12 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 
 	public function get_taxonomies_by_post_type( $post_type_slug ) {
 		return isset( $this->taxonomies[ $post_type_slug ] ) ? $this->taxonomies[ $post_type_slug ] : array();
+	}
+
+	public function get_selected_taxonomies_by_post_type( $post_type_slug ) {
+		$taxonomies = array();
+		if ( isset( $this->settings['taxonomies'][ $post_type_slug ] ) && in_array( 'all', $this->settings['taxonomies'][ $post_type_slug ] ) )
+			return $this->get_taxonomies_by_post_type( $post_type_slug );
 	}
 
 }

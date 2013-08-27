@@ -6,5 +6,10 @@
 }
 
 .taxonomies-box {
-	padding:20px 0;
+}
+
+.post-type-box {
+	border-bottom:1px solid #DEDEDE;
+	margin-bottom:30px;
+	padding-bottom:30px;
 }
