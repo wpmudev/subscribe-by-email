@@ -5,13 +5,18 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
-2.4 - ??
+2.4 - 2013/08/29
 ----------------------------------------------------------------------
 * Improved performance (settings just loaded when needed)
 * Added Confirm Subscription action in Subscribers Table
 * Added subscribers counter in widget
 * Added "Never" option in frequency digest sending
 * New settings: Logo width( with Slider ), notifications, From Sender text in header
+* New feature: Follow button
+* New feature: Send digests based on categories
+* Added new tab in Settings page to set the mail contents
+* Added auto-opt in options.
+* Set the subscribed placeholder in widget
 
 2.3 - 2013/07/26
 ----------------------------------------------------------------------

@@ -96,7 +96,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			wp_enqueue_style( 'farbtastic' );
 
 			if ( 'template' == $this->get_current_tab() )
-				wp_enqueue_style( 'jquery-ui-css', INCSUB_SBE_ASSETS_URL .'css/jquery-ui/jquery-ui-1.10.3.custom.min' );
+				wp_enqueue_style( 'jquery-ui-css', INCSUB_SBE_ASSETS_URL .'css/jquery-ui/jquery-ui-1.10.3.custom.min.css' );
 		}
 	}
 
