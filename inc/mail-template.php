@@ -49,7 +49,7 @@ class Incsub_Subscribe_By_Email_Template {
 			}
 
 
-			
+
 			for ( $i = 1; $i <= $post_count; $i++ ) {
 				$rand = rand( 200, 300 );
 				?>
@@ -64,7 +64,7 @@ class Incsub_Subscribe_By_Email_Template {
 					</div>
 					<div style="clear:both;"></div>
 					<div <?php echo $meta_style; ?>>
-						<?php printf( __( 'by %s on %s', INCSUB_SBE_LANG_DOMAIN ), 'author', date_i18n( $date_format ) ); ?>
+						<?php printf( __( 'by %s on %s' ), 'author', date_i18n( $date_format ) ); ?>
 					</div>
 					<div style="clear:both;"></div>
 				<?php
@@ -81,9 +81,9 @@ class Incsub_Subscribe_By_Email_Template {
 				add_filter( 'excerpt_length', array( &$this, 'set_excerpt_length' ), 80 );
 
 				foreach ( $user_content as $content_post ):
-					
+
 					$post = $content_post;
-					
+
 					// Setup a post data as if we were inside the Loop
 					setup_postdata( $post );
 					?>
@@ -98,7 +98,7 @@ class Incsub_Subscribe_By_Email_Template {
 						</div>
 						<div style="clear:both;"></div>
 						<div <?php echo $meta_style; ?>>
-							<?php printf( __( 'by %s on %s', INCSUB_SBE_LANG_DOMAIN ), get_the_author(), get_the_date( $date_format ) ); ?>
+							<?php printf( __( 'by %s on %s' ), get_the_author(), get_the_date( $date_format ) ); ?>
 						</div>
 						<div style="clear:both;"></div>
 					<?php
@@ -115,9 +115,9 @@ class Incsub_Subscribe_By_Email_Template {
 
 	/**
 	 * Sets the excerpt more link
-	 * 
+	 *
 	 * @param String $more Current more
-	 * 
+	 *
 	 * @return String new more
 	 */
 	public function set_excerpt_length( $length ) {
@@ -126,9 +126,9 @@ class Incsub_Subscribe_By_Email_Template {
 
 	/**
 	 * Sets the excerpt length
-	 * 
+	 *
 	 * @param Integer $length Current length
-	 * 
+	 *
 	 * @return Integer new length
 	 */
 	public function set_excerpt_more( $more ) {
@@ -166,7 +166,7 @@ class Incsub_Subscribe_By_Email_Template {
 						$subject_length = $subject_length + strlen( $title );
 						if ( $subject_length >= Incsub_Subscribe_By_Email::$max_subject_length )
 							break;
-						
+
 						$titles_count++;
 					}
 				}
@@ -183,7 +183,7 @@ class Incsub_Subscribe_By_Email_Template {
 
 	/**
 	 * The user can set the content manually
-	 * 
+	 *
 	 * @param Integer/Array $posts_ids List of posts IDs or just an integer
 	 */
 	public function set_posts( $posts_ids ) {
@@ -195,7 +195,7 @@ class Incsub_Subscribe_By_Email_Template {
 			$this->posts_ids = $posts_ids;
 		}
 
-		$this->content = get_posts(  
+		$this->content = get_posts(
 			array(
 				'numberposts'		=>	count( $this->posts_ids ),
 				'offset'			=>	0,
@@ -203,69 +203,15 @@ class Incsub_Subscribe_By_Email_Template {
 				'order'				=>	'DESC',
 				'include'			=>	$this->posts_ids,
 				'post_type'			=>	$this->settings['post_types'],
-				'post_status'		=>	'publish' 
+				'post_status'		=>	'publish'
 			)
 		);
 
 	}
 
-	private function filter_content_by_taxonomies() {
-		if ( ! empty( $this->content ) ) {
-			// Filtering by taxonomies
-			$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
-			$settings = incsub_sbe_get_settings();
-
-			$is_content = true;
-			foreach( $this->content as $post_key => $the_post ) {
-				$post_type_taxonomies = $settings_handler->get_taxonomies_by_post_type( $the_post->post_type );
-
-				if ( ! isset( $settings['taxonomies'][ $the_post->post_type ] ) ) {
-					$is_content = false;
-					break;
-				}
-
-				foreach ( $post_type_taxonomies as $tax_slug => $taxonomy ) {
-					if ( ! isset( $settings['taxonomies'][ $the_post->post_type ][ $tax_slug ] ) ) {
-						$is_content = false;
-						break;
-					}
-
-					if ( in_array( 'all', $settings['taxonomies'][ $the_post->post_type ][ $tax_slug ] ) ) {
-						$is_content = true;
-						break;
-					}
-
-					$terms_list = get_the_terms( $the_post, $tax_slug );
-
-					if ( empty( $terms_list ) ) {
-						$is_content = false;
-						continue;
-					}
-
-					foreach ( $terms_list as $term ) {
-						if ( ! in_array( $term->term_id, $settings['taxonomies'][ $the_post->post_type ][ $tax_slug ] ) ) {
-							$is_content = false;
-							continue;
-						}
-						else {
-							$is_content = true;
-							break;
-						}
-					}
-				}
-
-				if ( ! $is_content )
-					unset( $this->content[ $post_key ] );
-
-			}
-			
-
-		}
-	}
-
 	/**
 	 * Set the contents depending on the frequency
-	 * 
+	 *
 	 * @return WP_Query Object
 	 */
 	private function set_content() {
@@ -278,17 +224,16 @@ class Incsub_Subscribe_By_Email_Template {
 				'post_status' => array( 'publish' )
 			)
 		);
-
 		$this->content = $query->posts;
 		remove_filter( 'posts_where', array( &$this, 'set_wp_query_filter' ) );
-		
+
 	}
 
 	/**
 	 * Sets the filter for WP_Query depending on the frequency
-	 * 
+	 *
 	 * @param String $where Current Where sentence
-	 * 
+	 *
 	 * @return String new WHERE sentence
 	 */
 	public function set_wp_query_filter( $where = '' ) {
@@ -313,20 +258,20 @@ class Incsub_Subscribe_By_Email_Template {
 	/**
 	 * Render the mail template
 	 *
-	 * @param Boolean if the content must be returned or echoed 
-	 * 
+	 * @param Boolean if the content must be returned or echoed
+	 *
 	 * @return String
 	 */
-	 
+
 	public function render_mail_template( $user_content = array(), $echo = true, $key = '' ) {
 
 		$this->set_subject( $user_content );
-		
+
 		$font_style = "style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif !important;\"";
 		$table_style = 'style="width: 100%;"';
 		$column_style = 'style="display: block!important; max-width: 600px!important; margin: 0 auto!important; clear: both!important;"';
 		$column_wrap_style = 'style="padding: 15px; max-width: 600px; margin: 0 auto; display: block;"';
-		$blogname_style = 'style="text-decoration:none !important; margin: 0!important; padding:0;font-weight: 900; font-size: 14px; text-transform: uppercase; color: ' . $this->settings['header_text_color'] . ' !important;"';
+		$blogname_style = 'style="text-decoration:none !important; margin: 0!important; padding:0;font-weight: 900; font-size: 14px; text-transform: uppercase; color: ' . $this->settings['header_text_color'] . ' !important;"';	 	    	  	    			
 		$subject_style = 'style="font-weight: 500; font-size: 27px;line-height: 1.1; margin-bottom: 15px; color: #000 !important;"';
 		$lead_style = 'style="font-size: 17px;margin-bottom: 10px; font-weight: normal; font-size: 14px; line-height: 1.6;"';
 		$footer_style = 'style="font-size:11px;color:#666 !important;"';
@@ -345,11 +290,9 @@ class Incsub_Subscribe_By_Email_Template {
 									<table <?php echo $table_style; ?> bgcolor="<?php echo $this->settings['header_color']; ?>">
 										<tbody>
 											<tr>
-												<td><a href="<?php echo get_home_url(); ?>"><img style="max-width:<?php echo $this->settings['logo_width']; ?>px;" src="<?php echo $this->settings['logo']; ?>"></a></td>
+												<td><a href="<?php echo get_home_url(); ?>"><img style="max-width:200px;" src="<?php echo $this->settings['logo']; ?>"></a></td>
 												<td align="right">
-													<?php if ( $this->settings['show_blog_name'] ): ?>
-														<h6><a <?php echo $blogname_style; ?> href="<?php echo get_home_url(); ?>"><?php echo $this->settings['from_sender']; ?></a></h6>
-													<?php endif; ?>
+													<h6><a <?php echo $blogname_style; ?> href="<?php echo get_home_url(); ?>"><?php echo $this->settings['from_sender']; ?></a></h6>
 												</td>
 											</tr>
 										</tbody>
@@ -373,7 +316,7 @@ class Incsub_Subscribe_By_Email_Template {
 													<h2 <?php echo $subject_style; ?>><?php echo $this->subject; ?></h2>
 													<p <?php echo $lead_style; ?>><?php echo wpautop( $this->settings['header_text'] ); ?></p>
 													<hr/>
-													<?php $this->the_content( $user_content ); ?>												
+													<?php $this->the_content( $user_content ); ?>
 												</td>
 											</tr>
 										</tbody>
@@ -381,7 +324,7 @@ class Incsub_Subscribe_By_Email_Template {
 								</div><!-- /content -->
 							</td>
 							<td></td>
-						</tr>	
+						</tr>
 					</tbody>
 				</table>
 				<table <?php echo $table_style; ?>>
@@ -397,7 +340,7 @@ class Incsub_Subscribe_By_Email_Template {
 													<p>
 														<?php printf( __( 'You are subscribed to email updates from <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), get_home_url(), get_bloginfo( 'name' ) ); ?>  <br/>
 														<?php if ( $this->settings['manage_subs_page'] ): ?>
-															<?php printf( __( 'To manage your subscriptions, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sub_key', $key, get_permalink( $this->settings['manage_subs_page'] ) ) ) ); ?> <br/>	
+															<?php printf( __( 'To manage your subscriptions, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sub_key', $key, get_permalink( $this->settings['manage_subs_page'] ) ) ) ); ?> <br/>
 														<?php endif; ?>
 														<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sbe_unsubscribe', $key, get_home_url() ) ) ); ?>
 													</p>
@@ -409,7 +352,7 @@ class Incsub_Subscribe_By_Email_Template {
 								</div><!-- /content -->
 							</td>
 							<td></td>
-						</tr>	
+						</tr>
 					</tbody>
 				</table>
 			</div>
@@ -424,7 +367,7 @@ class Incsub_Subscribe_By_Email_Template {
 	/**
 	 * Some emails will be cropped if the content is exactly the same.
 	 * Each time we send a test email we'll pouplate it with different content
-	 * 
+	 *
 	 * @return String
 	 */
 	private function generate_lorem() {
@@ -455,10 +398,10 @@ class Incsub_Subscribe_By_Email_Template {
 
 	}
 
-	
+
 	/**
 	 * Send the mail based on the template
-	 * 
+	 *
 	 * @param Array $to List of emails
 	 * @param Integer $log_id If we have to continue sending mails from a log that did not finish last time
 	 */
@@ -481,8 +424,6 @@ class Incsub_Subscribe_By_Email_Template {
 
 		if ( ! $this->dummy && empty( $this->posts_ids ) )
 			$this->set_content();
-
-		$this->filter_content_by_taxonomies();
 
 		// We are going to try to send the mail to all subscribers
 		$sent_to_all_subscribers = true;
@@ -507,16 +448,16 @@ class Incsub_Subscribe_By_Email_Template {
 
 
 			$content = $this->render_mail_template( $user_content, false, $key );
-			
+
 			if ( ! $this->dummy ) {
 				wp_mail( $mail['email'], $this->subject, $content );
-				
+
 				// Creating a new log or incrementiung an existing one
 				if ( $mails_sent == 0 && ! isset( $mail_log_id ) )
 					$mail_log_id = $model->add_new_mail_log( $this->subject );
 				else
 					$model->increment_mail_log( $mail_log_id );
-					
+
 				$mails_sent++;
 
 				if ( $mails_sent == absint( $this->settings['mails_batch_size'] ) ) {
@@ -540,7 +481,7 @@ class Incsub_Subscribe_By_Email_Template {
 					break;
 				}
 			}
-			else {			
+			else {
 				wp_mail( $mail['email'], $this->subject, $content );
 			}
 		}
@@ -565,8 +506,6 @@ class Incsub_Subscribe_By_Email_Template {
 		$user_post_types = ! $user_settings ? $this->settings['post_types'] : $user_settings['post_types'];
 
 		$user_content = array();
-
-		// Removing content based on post types
 		foreach ( $this->content as $post ) {
 			if ( ! in_array( $post->post_type, $user_post_types ) )
 				continue;
@@ -575,7 +514,7 @@ class Incsub_Subscribe_By_Email_Template {
 		}
 
 		return $user_content;
-		
+
 	}
 
 
@@ -586,7 +525,7 @@ class Incsub_Subscribe_By_Email_Template {
 		return 'text/html';
 	}
 
-	
+
 	function set_mail_from( $content_type ) {
 	  return $this->settings['from_email'];
 	}
@@ -595,6 +534,6 @@ class Incsub_Subscribe_By_Email_Template {
 	  return $this->settings['from_sender'];
 	}
 
-	
+
 
 }

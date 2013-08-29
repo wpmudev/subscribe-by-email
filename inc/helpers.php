@@ -117,7 +117,7 @@ function sbe_terms_checklist($post_id = 0, $args = array()) {
 	$args['indent'] = $indent;
 	$args['tax_in'] = $tax_in;
 
-	if ( is_array( $selected_cats ) )
+	if ( 'select-all' === $selected_cats || is_array( $selected_cats ) )
 		$args['selected_cats'] = $selected_cats;
 	elseif ( $post_id )
 		$args['selected_cats'] = wp_get_object_terms($post_id, $taxonomy, array_merge($args, array('fields' => 'ids')));

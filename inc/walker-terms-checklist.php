@@ -34,7 +34,7 @@ class Walker_SBE_Terms_Checklist extends Walker {
 		}
 		else {
 			$class = ' class="settings-term"';
-			$output .= "\n<li id='{$taxonomy}-{$category->term_id}'$class>" . '<label class="selectit"><input value="' . $category->term_id . '" class="settings-term-checkbox ' . $post_type_slug . '-checkbox" type="checkbox" name="' . $base_name . '[' . $post_type_slug . '][' . $taxonomy_slug  . '][]" id="in-'.$taxonomy.'-' . $category->term_id . '"' . checked( in_array( $category->term_id, $selected_cats ) || $selected_cats == 'select-all', true, false ) . disabled( $args['disabled'] == true, true, false ) . ' /> ' . esc_html( $category->name ) . '</label>';
+			$output .= "\n<li id='{$taxonomy}-{$category->term_id}'$class>" . '<label class="selectit"><input value="' . $category->term_id . '" class="settings-term-checkbox ' . $post_type_slug . '-checkbox" type="checkbox" name="' . $base_name . '[' . $post_type_slug . '][' . $taxonomy_slug  . '][]" id="in-'.$taxonomy.'-' . $category->term_id . '"' . checked( $selected_cats === 'select-all' || ( is_array( $selected_cats ) && in_array( $category->term_id, $selected_cats ) ), true, false ) . disabled( $args['disabled'] == true, true, false ) . ' /> ' . esc_html( $category->name ) . '</label>';
 		}
 	}
 

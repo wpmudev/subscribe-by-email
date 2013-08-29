@@ -98,8 +98,8 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	     
 	    if ( $title )
 	     	echo $before_title . $title . $after_title; 
-	    
-	    $message = $instance['autopt'] ? __( 'Thank you, your email has been added to the mailing.', INCSUB_SBE_LANG_DOMAIN ) : __( 'Thank you, your email will be added to the mailing list once you click on the link in the confirmation email.', INCSUB_SBE_LANG_DOMAIN );
+
+	    $message = $instance['subscribed_placeholder'];
 	    $model = Incsub_Subscribe_By_Email_Model::get_instance();
 
 	    ?>
@@ -109,7 +109,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		        </p>
 	        	<p class="subscribe-by-email-error"><?php _e( 'Please, insert a valid email.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
         		<p class="subscribe-by-email-updated"><?php echo $message; ?></p>
-	        	<input type="text" class="subscribe-by-email-field" name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>">
+	        	<input type="email" class="subscribe-by-email-field" name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>">
 	        	<?php if ( $instance['show_count'] ): ?>
 	        		<?php $count = $model->get_active_subscribers_count(); ?>
 		        	<p>
@@ -137,6 +137,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		$instance['button_text'] = sanitize_text_field( $new_instance['button_text'] );
 		$instance['autopt'] = ! empty( $new_instance['autopt'] ) ? true : false;
 		$instance['show_count'] = ! empty( $new_instance['show_count'] ) ? true : false;
+		$instance['subscribed_placeholder'] = sanitize_text_field( $new_instance['subscribed_placeholder'] );
 
 		return $instance;
 	}
@@ -154,7 +155,8 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			'text' => __( 'Completely spam free, opt out any time.', INCSUB_SBE_LANG_DOMAIN ), 
 			'button_text' => __( 'Subscribe', INCSUB_SBE_LANG_DOMAIN  ),
 			'autopt' => false,
-			'show_count' => false
+			'show_count' => false,
+			'subscribed_placeholder' => __( 'Thank you, your email has been added to the mailing.', INCSUB_SBE_LANG_DOMAIN )
 		);
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
 		<p>
@@ -168,6 +170,10 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		<p>
 			<label for="<?php echo $this->get_field_id( 'button_text' ); ?>"><?php _e('Subscribe button text:', INCSUB_SBE_LANG_DOMAIN); ?></label>
 			<input type="text" class="widefat" id="<?php echo $this->get_field_id( 'button_text' ); ?>" name="<?php echo $this->get_field_name( 'button_text' ); ?>" value="<?php echo esc_attr( $instance['button_text'] ); ?>" />
+		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'subscribed_placeholder' ); ?>"><?php _e( 'Text displayed when a user subscribes:', INCSUB_SBE_LANG_DOMAIN); ?></label>
+			<input type="text" class="widefat" id="<?php echo $this->get_field_id( 'subscribed_placeholder' ); ?>" name="<?php echo $this->get_field_name( 'subscribed_placeholder' ); ?>" value="<?php echo esc_attr( $instance['subscribed_placeholder'] ); ?>" />
 		</p>
 		<p>
 			<input type="checkbox" id="<?php echo $this->get_field_id( 'show_count' ); ?>" name="<?php echo $this->get_field_name( 'show_count' ); ?>" value="1" <?php checked( $instance['show_count'] ); ?> /> 

@@ -143,7 +143,6 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'get_notifications_role' => 'administrator',
 			'follow_button' => false,
 
-			'allow_categories' => false,
 			'post_types' => array( 'post' ),
 			'taxonomies' => array( 'post' => array( 'categories' => array( 'all' ) ) ),
 
