@@ -44,7 +44,6 @@ Regards,
 		$content = str_replace( '###SUBSCRIBER_EMAIL###', $this->subscriber_email, $content );
 
 		$admin_emails = $this->get_administrators_emails();
-		do_dump($admin_emails);
 
 		foreach ( $admin_emails as $email )
 			wp_mail( $email, $subject, $content );
@@ -75,7 +74,6 @@ Regards,
 		$content = str_replace( '###SUBSCRIBER_EMAIL###', $this->subscriber_email, $content );
 
 		$admin_emails = $this->get_administrators_emails();
-		do_dump($admin_emails);
 
 		foreach ( $admin_emails as $email )
 			wp_mail( $email, $subject, $content );
