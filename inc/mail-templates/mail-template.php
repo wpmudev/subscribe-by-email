@@ -207,6 +207,7 @@ class Incsub_Subscribe_By_Email_Template {
 			)
 		);
 
+
 	}
 
 	private function filter_content_by_taxonomies() {
@@ -221,7 +222,8 @@ class Incsub_Subscribe_By_Email_Template {
 
 				if ( ! isset( $settings['taxonomies'][ $the_post->post_type ] ) ) {
 					$is_content = false;
-					break;
+					unset( $this->content[ $post_key ] );
+					continue;
 				}
 
 				foreach ( $post_type_taxonomies as $tax_slug => $taxonomy ) {

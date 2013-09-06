@@ -144,7 +144,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'follow_button' => false,
 
 			'post_types' => array( 'post' ),
-			'taxonomies' => array( 'post' => array( 'categories' => array( 'all' ) ) ),
+			'taxonomies' => array( 'post' => array( 'category' => array( 'all' ) ) ),
 
 			'logo' => '',
 			'logo_width' => 200,
