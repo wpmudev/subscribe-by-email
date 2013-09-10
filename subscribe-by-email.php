@@ -179,11 +179,13 @@ class Incsub_Subscribe_By_Email {
 	 * Upgrade settings and tables to the new version
 	 */
 	public function maybe_upgrade() {
-		$current_version = get_option( 'incsub_sbe_version', '1.0.0' );
 
-		// We're going to join all options into one
-		if ( 0 > version_compare( $current_version, '2.0' ) ) {
+		$current_version = get_option( 'incsub_sbe_version' );
 
+		if ( ! $current_version )
+			$current_version = '1.0'; // This is the first version that includes some upgradings
+
+		if ( version_compare( $current_version, '1.0', '<=' ) ) {
 			$new_settings = array();
 
 			$new_settings['auto-subscribe'] = false;
@@ -201,14 +203,22 @@ class Incsub_Subscribe_By_Email {
 			$model->upgrade_schema();				
 
 			incsub_sbe_update_settings( $new_settings );
-			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 		}
 
-		if ( 0 > version_compare( $current_version, INCSUB_SBE_VERSION ) ) {
-			$model = Incsub_Subscribe_By_Email_Model::get_instance();
-			$model->create_squema();
-			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+
+		if ( version_compare( $current_version, '2.4.5', '<' ) ) {
+			$settings = incsub_sbe_get_settings();
+			if ( isset( $settings['taxonomies']['post']['categories'] ) ) {
+				$categories = $settings['taxonomies']['post']['categories'];
+				$settings['taxonomies']['post']['category'] = $categories;
+				unset( $settings['taxonomies']['post']['categories'] );
+				incsub_sbe_update_settings( $settings );
+			}
+
+			
 		}
+
+		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 	}
 
 
@@ -516,4 +526,6 @@ class Incsub_Subscribe_By_Email {
 }
 
 new Incsub_Subscribe_By_Email();
+
+
 
