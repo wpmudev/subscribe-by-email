@@ -217,7 +217,7 @@ class Incsub_Subscribe_By_Email_Model {
             $result = $wpdb->insert( 
                 $this->subscriptions_table, 
                 array( 
-                    'subscription_email' => $email, 
+                    'subscriptdion_email' => $email, 
                     'subscription_note' => $note, 
                     'subscription_created' => time(), 
                     'subscription_type' => $type,

@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Ignacio (Incsub)
-Version:2.4.3
+Version:2.4.4
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -215,6 +215,23 @@ class Incsub_Subscribe_By_Email {
 				$settings['taxonomies']['post']['category'] = $categories;
 				unset( $settings['taxonomies']['post']['categories'] );
 				incsub_sbe_update_settings( $settings );
+			}
+
+			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+
+		}
+
+		if ( version_compare( $current_version, '2.4.4', '<' ) ) {
+			$settings = incsub_sbe_get_settings();
+
+			delete_transient( self::$freq_daily_transient_slug );
+			delete_transient( self::$freq_weekly_transient_slug );
+			if ( 'weekly' == $settings['frequency'] ) {
+				self::set_next_week_schedule_time( $settings['day_of_week'] );
+			}
+			
+			if ( 'daily' == $settings['frequency'] ) {
+				self::set_next_day_schedule_time( $settings['time'] );
 			}
 
 			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
@@ -459,13 +476,17 @@ class Incsub_Subscribe_By_Email {
 	public function process_scheduled_subscriptions() {
 		$settings = incsub_sbe_get_settings();
 
-		if ( 'weekly' == $settings['frequency'] && ! get_transient( self::$freq_weekly_transient_slug ) ) {
-			self::set_next_week_schedule_time( $settings['day_of_week'] );
-			$this->send_mails();
+		if ( 'weekly' == $settings['frequency'] && $next_time = get_option( self::$freq_weekly_transient_slug ) ) {
+			if ( current_time( 'timestamp' ) > $next_time ) {
+				self::set_next_week_schedule_time( $settings['day_of_week'] );
+				$this->send_mails();
+			}
 		}
-		elseif ( 'daily' == $settings['frequency'] && ! get_transient( self::$freq_daily_transient_slug ) ) {
-			self::set_next_day_schedule_time( $settings['time'] );
-			$this->send_mails();
+		elseif ( 'daily' == $settings['frequency'] && $next_time = get_option( self::$freq_daily_transient_slug ) ) {
+			if ( current_time( 'timestamp' ) > $next_time ) {
+				self::set_next_day_schedule_time( $settings['time'] );
+				$this->send_mails();
+			}
 		}
 
 	}
@@ -501,10 +522,9 @@ class Incsub_Subscribe_By_Email {
 		}
 
 		$next_time = strtotime( 'next ' . $day );
-		$seconds_to_next_week = $next_time - time();
 		
-		set_transient( self::$freq_weekly_transient_slug, 'weekly', $seconds_to_next_week );
-		delete_transient( self::$freq_daily_transient_slug );
+		update_option( self::$freq_weekly_transient_slug, $next_time );
+		delete_option( self::$freq_daily_transient_slug );
 
 	}
 
@@ -514,14 +534,27 @@ class Incsub_Subscribe_By_Email {
 	 * @param Integer $time Hour of a day 
 	 */
 	public static function set_next_day_schedule_time( $time ) {
-		$today = date( 'Y-m-d', time() );
+		$today = date( 'Y-m-d', current_time( 'timestamp' ) );
 		$today_at_time = $today . ' ' . str_pad( $time, 2, 0, STR_PAD_LEFT ) . ':00:00';
 		$today_at_time_unix = strtotime( $today_at_time );
 		$next_time = strtotime( '+1 day', $today_at_time_unix );
-		$seconds_to_next_day = $next_time - time();
+		$next_time_mysql = date( 'Y-m-d H:i:s', $next_time );
 
-		set_transient( self::$freq_daily_transient_slug, 'daily', $seconds_to_next_day );
-		delete_transient( self::$freq_weekly_transient_slug );
+		update_option( self::$freq_daily_transient_slug, $next_time );
+		delete_option( self::$freq_weekly_transient_slug );
+	}
+
+	public static function get_next_scheduled_date() {
+		$settings = incsub_sbe_get_settings();
+		if ( 'daily' == $settings['frequency'] && $time = get_option( self::$freq_daily_transient_slug ) ) {
+			return date_i18n( get_option('date_format', 'Y-m-d' ) . ' ' . get_option( 'time_format', 'H:i:s') , $time );
+		}
+
+		if ( 'weekly' == $settings['frequency'] && $time = get_option( self::$freq_weekly_transient_slug ) ) {
+			return date_i18n( get_option('date_format', 'Y-m-d' ) . ' ' . get_option( 'time_format', 'H:i:s') , $time );
+		}
+
+		
 	}
 
 

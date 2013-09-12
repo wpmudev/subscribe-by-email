@@ -357,6 +357,13 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 					</select>
 				</label>
 			</div>
+			
+			<?php $next_scheduled = Incsub_Subscribe_By_Email::get_next_scheduled_date(); ?>
+			<?php if ( $next_scheduled ): ?>
+				<p><?php _e( 'Next digest will be sent on:', INCSUB_SBE_LANG_DOMAIN ); ?> <code><?php echo $next_scheduled; ?></code></p>
+			<?php endif; ?>
+
+
 		<?php
 	}
 
