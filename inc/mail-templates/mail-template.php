@@ -302,13 +302,13 @@ class Incsub_Subscribe_By_Email_Template {
 		if ( 'weekly' == $this->settings['frequency'] )
 			$days = $this->get_last_x_days_time( 7 );
 
-		$where .= " AND post_date > '" . date( 'Y-m-d', $days ) . "'";
+		$where .= " AND post_date > '" . date( 'Y-m-d H:i:s', $days ) . "'";
 
 		return $where;
 	}
 
 	private function get_last_x_days_time( $days ) {
-		return strtotime( '-' . $days . ' days' );
+		return strtotime( '-' . $days . ' days', current_time( 'timestamp' ) );
 	}
 
 
