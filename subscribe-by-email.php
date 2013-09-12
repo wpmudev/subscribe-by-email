@@ -123,7 +123,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.4.3' );
+		define( 'INCSUB_SBE_VERSION', '2.4.4' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -562,5 +562,3 @@ class Incsub_Subscribe_By_Email {
 }
 
 new Incsub_Subscribe_By_Email();
-
-

@@ -7,7 +7,8 @@
  */
 function incsub_sbe_get_settings() {
 	$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
-	return $settings_handler->get_settings();
+	$default = incsub_sbe_get_default_settings();
+	return wp_parse_args( $settings_handler->get_settings(), $default );
 }
 
 /**

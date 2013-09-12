@@ -20,7 +20,7 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 	private $settings_slug = 'incsub_sbe_settings';
 
 	public function __construct() {
-		add_action( 'admin_init', array( &$this, 'set_settings' ), 1 );
+		$this->set_settings();
 	}
 
 
@@ -41,7 +41,6 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 	public function set_settings() {
 
 		global $wp_locale;
-
 
 		$this->settings_slug = 'incsub_sbe_settings';
 

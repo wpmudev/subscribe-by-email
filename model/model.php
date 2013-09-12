@@ -20,9 +20,11 @@ class Incsub_Subscribe_By_Email_Model {
 
 	public function __construct() {
         global $wpdb;
-
+        
         $this->subscriptions_table = $wpdb->prefix . 'subscriptions';
         $this->subscriptions_log_table = $wpdb->prefix . 'subscriptions_log_table';
+
+        $this->create_squema();
 
     }
 
@@ -217,7 +219,7 @@ class Incsub_Subscribe_By_Email_Model {
             $result = $wpdb->insert( 
                 $this->subscriptions_table, 
                 array( 
-                    'subscriptdion_email' => $email, 
+                    'subscription_email' => $email, 
                     'subscription_note' => $note, 
                     'subscription_created' => time(), 
                     'subscription_type' => $type,
