@@ -52,17 +52,21 @@ class Incsub_Subscribe_By_Email_Model {
 
         $sql = "CREATE TABLE $this->subscriptions_table (
               subscription_ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-              subscription_email text NOT NULL,
+              subscription_email varchar(100) NOT NULL,
               subscription_type varchar(200) NOT NULL,
               subscription_created bigint(20) NOT NULL,
               subscription_note varchar(200) NOT NULL,
               confirmation_flag tinyint(1) DEFAULT 0,
               user_key varchar(50) NOT NULL,
-              subscription_settings text NOT NULL,
-              PRIMARY KEY  (subscription_ID)
+              subscription_settings text DEFAULT '',
+              PRIMARY KEY  (subscription_ID),
+              UNIQUE KEY subscription_email (subscription_email)
             )  ENGINE=MyISAM $db_charset_collate;";
        
         dbDelta($sql);
+
+        $alter = "ALTER TABLE $this->subscriptions_table MODIFY COLUMN subscription_settings text DEFAULT ''";
+        $wpdb->query( $alter );
 
     }
 
@@ -224,7 +228,8 @@ class Incsub_Subscribe_By_Email_Model {
                     'subscription_created' => time(), 
                     'subscription_type' => $type,
                     'user_key' => $this->generate_user_key( $email ),
-                    'confirmation_flag' => $flag
+                    'confirmation_flag' => $flag,
+                    'subscription_settings' => ''
                 ),
                 array(
                     '%s',
@@ -232,7 +237,8 @@ class Incsub_Subscribe_By_Email_Model {
                     '%d',
                     '%s',
                     '%s',
-                    '%d'
+                    '%d',
+                    '%s'
                 )
             );
 
