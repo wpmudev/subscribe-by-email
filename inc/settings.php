@@ -21,6 +21,7 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 
 	public function __construct() {
 		$this->set_settings();
+		add_action( 'init', array( &$this, 'set_settings' ) );
 	}
 
 

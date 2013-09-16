@@ -59,7 +59,7 @@ class Incsub_Subscribe_By_Email_Template {
 					<div <?php echo $text_float; ?>>
 						<h3 style="margin-top:0;"><a <?php echo $title_style; ?> href="#" target="_blank">Lorem Ipsum</a></h3>
 						<p <?php echo $text_style; ?>>
-							<?php echo $this->generate_lorem(); ?> <a <?php echo $link_style; ?> href="#">Continue reading...</a>
+							<?php echo $this->generate_lorem(); ?> <a <?php echo $link_style; ?> href="#"><?php _e( 'Continue reading...', INCSUB_SBE_LANG_DOMAIN ); ?></a>
 						</p>
 					</div>
 					<div style="clear:both;"></div>
