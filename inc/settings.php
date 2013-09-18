@@ -111,15 +111,23 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 
 	public function get_default_settings() {
 
-		if ( is_multisite() ) {
-			$site_url = get_home_url( get_current_blog_id() );
+		global $current_site;
+
+		$blog_details = get_blog_details();
+
+		if ( is_multisite() && is_subdomain_install() ) {
+			$base_domain = $blog_details->domain;
+		}
+		elseif ( is_multisite() && ! is_subdomain_install() ) {
+			$base_domain = $blog_details->path;
+			$base_domain = preg_replace( '/^\//', '', $base_domain );
+			$base_domain = preg_replace( '/\/$/', '', $base_domain );
+			$base_domain = str_replace( '/', '.', $base_domain );
 		}
 		else {
-			$site_url = get_home_url();
+			$base_domain = $blog_details->domain;
 		}
 
-		$base_domain = str_replace( 'http://', '', $site_url );
-		$base_domain = str_replace( 'https://', '', $base_domain );
 
 		$subscribe_email_content = __( 'Howdy.
 

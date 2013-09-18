@@ -190,9 +190,10 @@ class Incsub_Subscribe_By_Email {
 
 			$new_settings['auto-subscribe'] = false;
 
-			$new_settings['from_email'] = get_option( 'subscribe_by_email_instant_notification_from', get_option('admin_email') );
+			$defaults = incsub_sbe_get_default_settings();
+			$new_settings['from_email'] = get_option( 'subscribe_by_email_instant_notification_from', $defaults['from_email'] );
 
-			$new_settings['subject'] = get_option( 'subscribe_by_email_instant_notification_subject', get_bloginfo( 'name' ) . __( ': New post' ) );
+			$new_settings['subject'] = get_option( 'subscribe_by_email_instant_notification_subject', $defaults['subject'] );
 
 			$new_settings['subject'] = str_replace( 'BLOGNAME', get_bloginfo( 'name' ), $new_settings['subject'] );
 			$new_settings['subject'] = str_replace( 'EXCERPT', '', $new_settings['subject'] );
