@@ -37,7 +37,7 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 		$style = isset( $_GET['sbe-followsubs'] ) ? 'style="bottom:0px;"' : 'style="bottom:-1500px"';
 		?>
 			<div id="sbe-follow" <?php echo $style; ?> class="<?php echo isset( $_GET['sbe-followsubs'] ) ? 'sbe-opened' : ''; ?>">
-				<a class="sbe-follow-link" href="#sbe-follow-wrap"> <span>Follow</span></a>
+				<a class="sbe-follow-link" href="#sbe-follow-wrap"> <span><?php _e( 'Follow', INCSUB_SBE_LANG_DOMAIN ); ?></span></a>
 				<div id="sbe-follow-wrap">
 
 					<?php if ( isset( $_GET['sbe-followsubs'] ) && 'true' == $_GET['sbe-followsubs'] ): ?>
