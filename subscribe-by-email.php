@@ -400,6 +400,8 @@ class Incsub_Subscribe_By_Email {
 
 		if ( ! get_transient( self::$pending_mails_transient_slug ) ) {
 
+			set_transient( self::$pending_mails_transient_slug, 'next', self::$time_between_batches );
+
 			$model = Incsub_Subscribe_By_Email_Model::get_instance();
 			$mail_log = $model->get_remaining_batch_mail();
 
@@ -412,7 +414,6 @@ class Incsub_Subscribe_By_Email {
 				$this->send_mails( $posts_ids, $emails_from, $log_id );	
 			}
 
-			set_transient( self::$pending_mails_transient_slug, 'next', self::$time_between_batches );
 		}
 		
 	}
