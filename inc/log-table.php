@@ -26,14 +26,33 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
     }
 
     function column_recipients( $item ) {
+        $emails_list = maybe_unserialize( $item['mails_list'] );
+        if ( is_array( $emails_list ) && ! empty( $emails_list ) ) {
+            $count = 0;
+            foreach ( $emails_list as $email ) {
+                if ( $email['status'] != false )
+                    $count++;
+            }
+            $link = add_query_arg( 'log_id', $item['id'], Incsub_Subscribe_By_Email::$admin_sent_emails_page->get_permalink() );
+            return $count . ' <a href="' . $link . '">' . __( 'Details &rarr;', INCSUB_SBE_LANG_DOMAIN ) . '</a>';
+        }
         return $item['mail_recipients'];
+    }
+
+    function column_status( $item ) {
+        if ( empty( $item['mail_settings'] ) )
+            return __( 'Finished', INCSUB_SBE_LANG_DOMAIN );
+        else
+            return '<span style="color:#DF2929; font-weight:bold;">' . __( 'Pending', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
     }
 
     function get_columns(){
         $columns = array(
             'subject'   => __( 'Subject', INCSUB_SBE_LANG_DOMAIN ),
             'recipients'    => __( 'Recipients no.', INCSUB_SBE_LANG_DOMAIN ),
+            'status'   => __( 'Status', INCSUB_SBE_LANG_DOMAIN ),
             'date'   => __( 'Date', INCSUB_SBE_LANG_DOMAIN )
+           
         );
         return $columns;
     }

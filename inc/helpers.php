@@ -158,3 +158,23 @@ function sbe_terms_checklist($post_id = 0, $args = array()) {
 	echo call_user_func_array(array(&$walker, 'walk'), array($categories, 0, $args));
 }
 
+function incsub_sbe_log( $message ) {        
+    // full path to log file
+    $file = INCSUB_SBE_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'sbe_log.log';
+
+    /* backtrace */
+    $bTrace = debug_backtrace(); // assoc array
+
+    /* Build the string containing the complete log line. */
+    $line = PHP_EOL.sprintf('[%s, <%s>, (%d)]==> %s', 
+                            date("Y/m/d h:i:s", mktime()),
+                            basename($bTrace[0]['file']), 
+                            $bTrace[0]['line'], 
+                            $message );
+    
+    // log to file
+    file_put_contents( $file, $line, FILE_APPEND );
+    
+    return true;
+}
+

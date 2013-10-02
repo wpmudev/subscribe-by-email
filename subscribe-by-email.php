@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Ignacio (Incsub)
-Version: 2.4.6
+Version: 2.4.7b
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -123,7 +123,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.4.6' );
+		define( 'INCSUB_SBE_VERSION', '2.4.7b' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -132,7 +132,10 @@ class Incsub_Subscribe_By_Email {
 		define( 'INCSUB_SBE_ASSETS_URL', INCSUB_SBE_PLUGIN_URL . 'assets/' );
 
 		define( 'INCSUB_SBE_PLUGIN_FILE', plugin_basename( __FILE__ ) );
-		
+
+		if ( ! defined( 'INCSUB_SBE_DEBUG' ) )
+			define( 'INCSUB_SBE_DEBUG', false );
+
 	}
 
 	/**
@@ -234,6 +237,16 @@ class Incsub_Subscribe_By_Email {
 			if ( 'daily' == $settings['frequency'] ) {
 				self::set_next_day_schedule_time( $settings['time'] );
 			}
+
+			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+
+		}
+
+		if ( version_compare( $current_version, '2.4.7b', '<' ) ) {
+			$model = Incsub_Subscribe_By_Email_Model::get_instance();
+			$model->create_squema();
+
+			$model->upgrade_247b();
 
 			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 
@@ -428,24 +441,29 @@ class Incsub_Subscribe_By_Email {
 		
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 
-		$emails_list = $model->get_email_list();
-
-		if ( $email_from ) {
-
-			$last_id = 0;
-
-			// We need to know where did we finish last time
-			foreach ( $emails_list as $key => $email ) {
-				$last_id = $key;
-				if ( absint( $email_from ) == absint( $email['id'] ) ) {
-					$last_id++;
-					break;
-				}
-			}
-
-			// Just need the rest of the mails
-			$emails_list = array_slice( $emails_list, absint( $last_id ) );
+		if ( $log_id ) {
+			$emails_list = $model->get_log_emails_list( $log_id );
 		}
+		else {
+			$emails_list = $model->get_email_list();
+		}
+
+		//if ( $email_from ) {
+//
+		//	$last_id = 0;
+//
+		//	// We need to know where did we finish last time
+		//	foreach ( $emails_list as $key => $email ) {
+		//		$last_id = $key;
+		//		if ( absint( $email_from ) == absint( $email['id'] ) ) {
+		//			$last_id++;
+		//			break;
+		//		}
+		//	}
+//
+		//	// Just need the rest of the mails
+		//	$emails_list = array_slice( $emails_list, absint( $last_id ) );
+		//}
 
 		$settings = incsub_sbe_get_settings();
 		$mail_template = new Incsub_Subscribe_By_Email_Template( $settings, false );

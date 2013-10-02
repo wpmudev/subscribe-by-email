@@ -471,8 +471,9 @@ class Incsub_Subscribe_By_Email_Template {
 		if ( is_string( $to ) )
 			$to = array( 0 => array( 'email' => $to ) );
 
-		if ( $log_id )
+		if ( $log_id ) {
 			$mail_log_id = absint( $log_id );
+		}
 
 		add_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
 		add_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
@@ -488,36 +489,54 @@ class Incsub_Subscribe_By_Email_Template {
 
 		// We are going to try to send the mail to all subscribers
 		$sent_to_all_subscribers = true;
-		foreach ( $to as $mail ) {
+		foreach ( $to as $mail_key => $mail ) {
+
+			$jump_user = false;
+
+			if ( $mail_log_id && $mail['status'] != false ) {
+				continue;
+			}
 
 			$key = $model->get_user_key( $mail['email'] );
-			if ( empty( $key ) && ! $this->dummy )
-				continue;
+			if ( empty( $key ) && ! $this->dummy ) {
+				$mail['status'] = __( 'User key undefined', INCSUB_SBE_LANG_DOMAIN );
+				$jump_user = true;
+				$key = false;
+			}
 			elseif ( $this->dummy )
 				$key = '';
 
-			if ( ! $this->dummy ) {
+			if ( ! $this->dummy && $key ) {
 				// The user may not want to get some types of posts
 				$user_content = $this->remove_user_content( $key );
 
-				if ( empty( $user_content ) )
-					continue;
+				if ( empty( $user_content ) ) {
+					$mail['status'] = __( 'User content empty', INCSUB_SBE_LANG_DOMAIN );
+					$jump_user = true;
+				}
+					
 			}
 			else {
 				$user_content = array();
 			}
 
-
-			$content = $this->render_mail_template( $user_content, false, $key );
+			if ( $key !== false )
+				$content = $this->render_mail_template( $user_content, false, $key );
 			
 			if ( ! $this->dummy ) {
-				wp_mail( $mail['email'], $this->subject, $content );
+
+				if ( ! $jump_user ) {
+					wp_mail( $mail['email'], $this->subject, $content );
+				}
 				
 				// Creating a new log or incrementiung an existing one
-				if ( $mails_sent == 0 && ! isset( $mail_log_id ) )
-					$mail_log_id = $model->add_new_mail_log( $this->subject );
-				else
-					$model->increment_mail_log( $mail_log_id );
+				if ( $mails_sent == 0 && ! isset( $mail_log_id ) ) {
+					$mail_log_id = $model->add_new_mail_log( $to, $this->subject );
+					$model->increment_mail_log( $mail_log_id, $mail );
+				}
+				else {
+					$model->increment_mail_log( $mail_log_id, $mail );
+				}
 					
 				$mails_sent++;
 
@@ -548,9 +567,8 @@ class Incsub_Subscribe_By_Email_Template {
 		}
 
 		// If we have sent the mail to all subscribers we won't need the settings in that log for the future
-		if ( $sent_to_all_subscribers && isset( $mail_log_id ) ) {
+		if ( isset( $mail_log_id ) )
 			$model->clear_mail_log_settings( $mail_log_id );
-		}
 
 
 		remove_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );

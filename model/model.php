@@ -92,6 +92,7 @@ class Incsub_Subscribe_By_Email_Model {
               mail_recipients int(8) NOT NULL,
               mail_date bigint(20) NOT NULL,
               mail_settings text DEFAULT '',
+              mails_list text DEFAULT '',
               PRIMARY KEY  (id)
             )  ENGINE=MyISAM $db_charset_collate;";
        
@@ -120,6 +121,32 @@ class Incsub_Subscribe_By_Email_Model {
             );
         }
         
+    }
+
+    public function upgrade_247b() {
+        global $wpdb;
+
+        $results = $wpdb->get_results( "SELECT * FROM $this->subscriptions_log_table WHERE mail_settings != '' AND ( mails_list = '' OR mails_list IS NULL )");
+
+        $emails_list = $this->get_email_list();
+        foreach ( $emails_list as $key => $email_details ) {
+            $emails_list[ $key ]['status'] = false;
+        }
+        foreach ( $results as $result ) {
+            $new_emails_list = $emails_list;
+            foreach ( $emails_list as $key => $email ) {
+                $last_id = $key;
+                if ( absint( $result->mail_recipients ) == absint( $key ) ) {
+                    break;
+                }
+                else {
+                    $new_emails_list[ $key ]['status'] = true;
+                }
+            }
+            $this->update_log_emails_list( $result->id, $new_emails_list );
+        }
+        unset( $new_email_list );
+        unset( $emails_list );
     }
 
     private function generate_user_key( $email ) {
@@ -339,21 +366,33 @@ class Incsub_Subscribe_By_Email_Model {
     }
 
 
-    public function add_new_mail_log( $subject ) {
+    public function add_new_mail_log( $to, $subject ) {
         global $wpdb;
+
+        $emails = array();
+        foreach ( $to as $email_details ) {
+            $status = isset( $email_details['status'] ) ? $email_details['status'] : false;
+            $emails[ $email_details['id'] ] = array(
+                'id' => $email_details['id'],
+                'email' => $email_details['email'],
+                'status' => $status
+            );
+        }
 
         $wpdb->insert( 
             $this->subscriptions_log_table,
             array( 
                 'mail_subject' => $subject,
-                'mail_recipients' => 1,
+                'mail_recipients' => 0,
                 'mail_date' => time(),
-                'mail_settings' => ''
+                'mail_settings' => '',
+                'mails_list' => maybe_serialize( $emails )
             ),
             array(
                 '%s',
                 '%d',
                 '%d',
+                '%s',
                 '%s'
             )
         );
@@ -365,7 +404,7 @@ class Incsub_Subscribe_By_Email_Model {
     public function get_remaining_batch_mail() {
         global $wpdb;
 
-        return $wpdb->get_row( "SELECT * FROM $this->subscriptions_log_table WHERE mail_settings != ''", ARRAY_A );
+        return $wpdb->get_row( "SELECT id, mail_recipients, mail_date, mail_settings FROM $this->subscriptions_log_table WHERE mail_settings != ''", ARRAY_A );
     }
 
     public function set_mail_log_settings( $id, $settings ) {
@@ -383,20 +422,78 @@ class Incsub_Subscribe_By_Email_Model {
     public function clear_mail_log_settings( $id ) {
         global $wpdb;
 
+        $emails_list = $this->get_log_emails_list( $id );
+        $finished = true;
+        foreach ( $emails_list as $email_details ) {
+            if ( $email_details['status'] == false ) {
+                $finished = false;
+                break;
+            }
+        }        
+
+        if ( $finished ) {
+            $wpdb->update(
+                $this->subscriptions_log_table,
+                array( 'mail_settings' => '' ),
+                array( 'id' => $id ),
+                array( '%s' ),
+                array( '%d' )
+            );
+        }
+    }
+
+    public function increment_mail_log( $id, $email_sent ) {
+        global $wpdb;
+
+        $emails_list = $this->get_log_emails_list( $id );
+        if ( isset( $emails_list[ $email_sent['id'] ] ) ) {
+
+            if ( $email_sent['status'] != false ) {
+                $emails_list[ $email_sent['id'] ]['status'] = $email_sent['status'];
+            }
+            else {
+                if ( $emails_list[ $email_sent['id'] ]['status'] == false )
+                    $emails_list[ $email_sent['id'] ]['status'] = true;
+            }
+
+
+
+            $this->update_log_emails_list( $id, $emails_list );
+        }
+
+        $wpdb->query( $wpdb->prepare( "UPDATE $this->subscriptions_log_table SET mail_recipients = mail_recipients + 1 WHERE id = %d", $id ) );
+
+        unset( $emails_list );
+
+    }
+
+    public function get_log_emails_list( $id ) {
+        global $wpdb;
+
+        $emails_list = $wpdb->get_var( $wpdb->prepare( "SELECT mails_list FROM $this->subscriptions_log_table WHERE id = %d", $id ) );
+        return maybe_unserialize( $emails_list );
+    }
+
+    public function update_log_emails_list( $id, $emails_list ) {
+        global $wpdb;
+
         $wpdb->update(
             $this->subscriptions_log_table,
-            array( 'mail_settings' => '' ),
+            array( 'mails_list' => maybe_serialize( $emails_list ) ),
             array( 'id' => $id ),
             array( '%s' ),
             array( '%d' )
         );
     }
 
-    public function increment_mail_log( $id ) {
+    public function set_log_email_status( $id, $mail, $message ) {
         global $wpdb;
 
-        $wpdb->query( $wpdb->prepare( "UPDATE $this->subscriptions_log_table SET mail_recipients = mail_recipients + 1 WHERE id = %d", $id ) );
-
+        $this->get_log_emails_list( $id );
+        if ( isset( $emails_list[ $email_sent['id'] ] ) ) {
+            $emails_list[ $email_sent['id'] ] = $message;
+            $this->update_log_emails_list( $id, $emails_list );
+        }
     }
 
     public function get_log( $current_page, $per_page, $sort = array(), $search = false ) {
@@ -425,6 +522,12 @@ class Incsub_Subscribe_By_Email_Model {
         );
         
         return $results;
+    }
+
+    public function get_single_log( $id ) {
+        global $wpdb;
+
+        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_log_table WHERE id = %d", $id ) );
     }
 
 
