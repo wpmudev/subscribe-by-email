@@ -137,7 +137,7 @@ class Incsub_Subscribe_By_Email_Template {
 
 	public function set_subject( $user_content ) {
 
-		if ( $this->dummy && strpos( $this->subject, '%title%' ) ) {
+		if ( $this->dummy && strpos( $this->subject, '%title%' ) > -1 ) {
 			if ( 'inmediately' == $this->settings['frequency'] )
 				$this->subject = str_replace( '%title%', 'Lorem Ipsum', $this->subject );
 			else
@@ -150,7 +150,7 @@ class Incsub_Subscribe_By_Email_Template {
 				$titles[] = $content_post->post_title;
 			}
 
-			if ( strpos( $this->subject, '%title%' ) ) {
+			if ( strpos( $this->subject, '%title%' ) > -1 ) {
 				$this->subject = trim( $this->subject );
 
 				// Now we count how many characters we have in the subject right now
