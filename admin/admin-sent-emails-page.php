@@ -48,7 +48,7 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 					<p><strong>Emails sent:</strong> <?php echo $emails_sent; ?></p>
 					<p><strong>Emails pending:</strong> <?php echo $emails_pending; ?></p>
 					<p><strong>Total:</strong> <?php echo $total; ?></p>
-					<p><strong>Emails details:</strong>
+					<h3>Emails details:</h3>
 						<ul>
 						<?php foreach ( $emails_list as $email ): ?>
 							<li>
