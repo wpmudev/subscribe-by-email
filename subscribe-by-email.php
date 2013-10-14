@@ -155,6 +155,7 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-sent-emails-page.php' );
 
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/settings.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/content-generator.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/confirmation-mail-template.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
@@ -424,7 +425,7 @@ class Incsub_Subscribe_By_Email {
 				$posts_ids = $mail_settings['posts_ids'];
 				$log_id = $mail_log['id'];
 
-				$this->send_mails( $posts_ids, $emails_from, $log_id );	
+				$this->send_mails( $posts_ids, $log_id );	
 			}
 
 		}
@@ -437,7 +438,7 @@ class Incsub_Subscribe_By_Email {
 	 * @param Array $posts_ids A list of posts IDs to send. If not provided,
 	 * the mail template will select them automatically
 	 */
-	public function send_mails( $posts_ids = array(), $email_from = false, $log_id = false ) {
+	public function send_mails( $posts_ids = array(), $log_id = false ) {
 		
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 
@@ -448,28 +449,14 @@ class Incsub_Subscribe_By_Email {
 			$emails_list = $model->get_email_list();
 		}
 
-		//if ( $email_from ) {
-//
-		//	$last_id = 0;
-//
-		//	// We need to know where did we finish last time
-		//	foreach ( $emails_list as $key => $email ) {
-		//		$last_id = $key;
-		//		if ( absint( $email_from ) == absint( $email['id'] ) ) {
-		//			$last_id++;
-		//			break;
-		//		}
-		//	}
-//
-		//	// Just need the rest of the mails
-		//	$emails_list = array_slice( $emails_list, absint( $last_id ) );
-		//}
-
 		$settings = incsub_sbe_get_settings();
-		$mail_template = new Incsub_Subscribe_By_Email_Template( $settings, false );
-
+		$args = $settings;
 		if ( ! empty( $posts_ids ) )
-			$mail_template->set_posts( $posts_ids );
+			$args['post_ids'] = $posts_ids;
+		else
+			$args['post_ids'] = array();
+
+		$mail_template = new Incsub_Subscribe_By_Email_Template( $args, false );
 
 		$mail_template->send_mail( $emails_list, $log_id );
 	}

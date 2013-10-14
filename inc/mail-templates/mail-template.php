@@ -12,18 +12,25 @@ class Incsub_Subscribe_By_Email_Template {
 	// The user can send a list of posts to be send
 	private $post_ids;
 
+	private $content_generator;
+
 	public function __construct( $settings, $dummy = false ) {
 		$this->settings = $settings;
 		$this->dummy = $dummy;
-		$this->posts_ids = array();
-		$this->content = array();
 		$this->subject = $this->settings['subject'];
+
+		$this->content_generator = new Incsub_Subscribe_By_Email_Content_Generator( $this->settings['frequency'], $this->settings['post_types'], $this->dummy );
+		if ( ! empty( $settings['post_ids'] ) ) {
+			$this->content_generator->set_posts_ids( $settings['post_ids'] );
+		}
+
+		$this->set_content();
 	}
 
 	/**
 	 * Render the content
 	 */
-	public function the_content( $user_content ) {
+	public function the_content( $content ) {
 
 		$text_float = ( $this->settings['featured_image'] ) ? 'style="float:left;width: 394px;"' : '';
 		$meta_float = ( $this->settings['featured_image'] ) ? 'float:right;' : 'float:none;';
@@ -38,79 +45,49 @@ class Incsub_Subscribe_By_Email_Template {
 		$date_format = get_option( 'date_format', get_site_option( 'date_format', 'Y-m-d' ) );
 		$date_format = ( empty( $date_format ) ) ? 'Y-m-d' : $date_format;
 
-		if ( $this->dummy ) {
-			if ( 'inmediately' == $this->settings['frequency'] ) {
-				$this->subject = 'Lorem Ipsum';
-				$post_count = 1;
-			}
-			else {
-				$this->subject = 'Lorem Ipsum; Lorem Ipsum; Lorem Ipsum;';
-				$post_count = 3;
-			}
+		if ( ! empty( $content ) ) {
 
+			// We need this global or the_title(), the_excerpt... willl not work properly
+			global $post;
 
-			
-			for ( $i = 1; $i <= $post_count; $i++ ) {
-				$rand = rand( 200, 300 );
+			add_filter( 'excerpt_more', array( &$this, 'set_excerpt_more' ), 80 );
+			add_filter( 'excerpt_length', array( &$this, 'set_excerpt_length' ), 80 );
+
+			foreach ( $content as $content_post ):
+				
+				$post = $content_post;
+				
+				// Setup a post data as if we were inside the Loop
+				setup_postdata( $post );
+
+				$permalink = ! $this->dummy ? get_permalink() : '#';
+				$title = ! $this->dummy ? get_the_title() : 'Lorem Ipsum';
 				?>
-					<?php if ( $this->settings['featured_image'] ): ?>
+					<?php if ( ! $this->dummy && $this->settings['featured_image'] && has_post_thumbnail() ): ?>
+						<?php the_post_thumbnail( 'thumbnail', $attr = array( 'style' => $featured_image_style ) ); ?>
+					<?php elseif ( $this->dummy && $this->settings['featured_image'] ): ?>
 						<div style="<?php echo $featured_image_style_dummy; ?>"></div>
 					<?php endif; ?>
 					<div <?php echo $text_float; ?>>
-						<h3 style="margin-top:0;"><a <?php echo $title_style; ?> href="#" target="_blank">Lorem Ipsum</a></h3>
-						<p <?php echo $text_style; ?>>
-							<?php echo $this->generate_lorem(); ?> <a <?php echo $link_style; ?> href="#"><?php _e( 'Continue reading...', INCSUB_SBE_LANG_DOMAIN ); ?></a>
-						</p>
+						<h3 style="margin-top:0;"><a <?php echo $title_style; ?> href="<?php echo $permalink; ?>" target="_blank"><?php echo $title; ?></a></h3>
+						<div <?php echo $text_style; ?>>
+							<?php the_excerpt(); ?>
+						</div>
 					</div>
 					<div style="clear:both;"></div>
 					<div <?php echo $meta_style; ?>>
-						<?php printf( __( 'by %s on %s', INCSUB_SBE_LANG_DOMAIN ), 'author', date_i18n( $date_format ) ); ?>
+						<?php printf( __( 'by %s on %s', INCSUB_SBE_LANG_DOMAIN ), get_the_author(), get_the_date( $date_format ) ); ?>
 					</div>
 					<div style="clear:both;"></div>
 				<?php
-			}
+			endforeach;
+			remove_filter( 'excerpt_more', array( &$this, 'set_excerpt_more' ), 80 );
+			remove_filter( 'excerpt_length', array( &$this, 'set_excerpt_length' ), 80 );
 		}
-		else {
 
-			if ( ! empty( $user_content ) ) {
+		// Just in case...
+		wp_reset_postdata();
 
-				// We need this global or the_title(), the_excerpt... willl not work properly
-				global $post;
-
-				add_filter( 'excerpt_more', array( &$this, 'set_excerpt_more' ), 80 );
-				add_filter( 'excerpt_length', array( &$this, 'set_excerpt_length' ), 80 );
-
-				foreach ( $user_content as $content_post ):
-					
-					$post = $content_post;
-					
-					// Setup a post data as if we were inside the Loop
-					setup_postdata( $post );
-					?>
-						<?php if ( $this->settings['featured_image'] && has_post_thumbnail() ): ?>
-							<?php the_post_thumbnail( 'thumbnail', $attr = array( 'style' => $featured_image_style ) ); ?>
-						<?php endif; ?>
-						<div <?php echo $text_float; ?>>
-							<h3 style="margin-top:0;"><a <?php echo $title_style; ?> href="<?php the_permalink(); ?>" target="_blank"><?php the_title(); ?></a></h3>
-							<div <?php echo $text_style; ?>>
-								<?php the_excerpt(); ?>
-							</div>
-						</div>
-						<div style="clear:both;"></div>
-						<div <?php echo $meta_style; ?>>
-							<?php printf( __( 'by %s on %s', INCSUB_SBE_LANG_DOMAIN ), get_the_author(), get_the_date( $date_format ) ); ?>
-						</div>
-						<div style="clear:both;"></div>
-					<?php
-				endforeach;
-				remove_filter( 'excerpt_more', array( &$this, 'set_excerpt_more' ), 80 );
-				remove_filter( 'excerpt_length', array( &$this, 'set_excerpt_length' ), 80 );
-			}
-
-			// Just in case...
-			wp_reset_postdata();
-
-		}
 	}
 
 	/**
@@ -181,135 +158,7 @@ class Incsub_Subscribe_By_Email_Template {
 		}
 	}
 
-	/**
-	 * The user can set the content manually
-	 * 
-	 * @param Integer/Array $posts_ids List of posts IDs or just an integer
-	 */
-	public function set_posts( $posts_ids ) {
-
-		if ( is_integer( $posts_ids ) ) {
-			$this->posts_ids = array( $posts_ids );
-		}
-		elseif ( is_array( $posts_ids ) ) {
-			$this->posts_ids = $posts_ids;
-		}
-
-		$this->content = get_posts(  
-			array(
-				'numberposts'		=>	count( $this->posts_ids ),
-				'offset'			=>	0,
-				'orderby'			=>	'post_date',
-				'order'				=>	'DESC',
-				'include'			=>	$this->posts_ids,
-				'post_type'			=>	$this->settings['post_types'],
-				'post_status'		=>	'publish' 
-			)
-		);
-
-
-	}
-
-	private function filter_content_by_taxonomies() {
-		if ( ! empty( $this->content ) ) {
-			// Filtering by taxonomies
-			$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
-			$settings = incsub_sbe_get_settings();
-
-			$is_content = true;
-			foreach( $this->content as $post_key => $the_post ) {
-				$post_type_taxonomies = $settings_handler->get_taxonomies_by_post_type( $the_post->post_type );
-
-				if ( ! isset( $settings['taxonomies'][ $the_post->post_type ] ) ) {
-					$is_content = false;
-					unset( $this->content[ $post_key ] );
-					continue;
-				}
-
-				foreach ( $post_type_taxonomies as $tax_slug => $taxonomy ) {
-					if ( ! isset( $settings['taxonomies'][ $the_post->post_type ][ $tax_slug ] ) ) {
-						$is_content = false;
-						break;
-					}
-
-					if ( in_array( 'all', $settings['taxonomies'][ $the_post->post_type ][ $tax_slug ] ) ) {
-						$is_content = true;
-						break;
-					}
-
-					$terms_list = get_the_terms( $the_post, $tax_slug );
-
-					if ( empty( $terms_list ) ) {
-						$is_content = false;
-						continue;
-					}
-
-					foreach ( $terms_list as $term ) {
-						if ( ! in_array( $term->term_id, $settings['taxonomies'][ $the_post->post_type ][ $tax_slug ] ) ) {
-							$is_content = false;
-							continue;
-						}
-						else {
-							$is_content = true;
-							break;
-						}
-					}
-				}
-
-				if ( ! $is_content )
-					unset( $this->content[ $post_key ] );
-
-			}
-			
-
-		}
-	}
-
-	/**
-	 * Set the contents depending on the frequency
-	 * 
-	 * @return WP_Query Object
-	 */
-	private function set_content() {
-		add_filter( 'posts_where', array( &$this, 'set_wp_query_filter' ) );
-		$query = new WP_Query(
-			array(
-				'post_type' => $this->settings['post_types'],
-				'nopaging ' => true,
-				'posts_per_page' => -1,
-				'post_status' => array( 'publish' )
-			)
-		);
-
-		$this->content = $query->posts;
-		remove_filter( 'posts_where', array( &$this, 'set_wp_query_filter' ) );
-		
-	}
-
-	/**
-	 * Sets the filter for WP_Query depending on the frequency
-	 * 
-	 * @param String $where Current Where sentence
-	 * 
-	 * @return String new WHERE sentence
-	 */
-	public function set_wp_query_filter( $where = '' ) {
-
-		$days = 1;
-		if ( 'daily' == $this->settings['frequency'] )
-			$days = $this->get_last_x_days_time( 1 );
-
-		if ( 'weekly' == $this->settings['frequency'] )
-			$days = $this->get_last_x_days_time( 7 );
-
-		$where .= " AND post_date > '" . date( 'Y-m-d H:i:s', $days ) . "'";
-
-		return $where;
-	}
-
-	private function get_last_x_days_time( $days ) {
-		return strtotime( '-' . $days . ' days', current_time( 'timestamp' ) );
-	}
+	
 
 
 	/**
@@ -321,9 +170,12 @@ class Incsub_Subscribe_By_Email_Template {
 	 */
 	 
 	public function render_mail_template( $user_content = array(), $echo = true, $key = '' ) {
+		
+		if ( $this->dummy )
+			$user_content = $this->content;
 
 		$this->set_subject( $user_content );
-		
+
 		$font_style = "style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif !important;\"";
 		$table_style = 'style="width: 100%;"';
 		$column_style = 'style="display: block!important; max-width: 600px!important; margin: 0 auto!important; clear: both!important;"';
@@ -422,42 +274,10 @@ class Incsub_Subscribe_By_Email_Template {
 			return ob_get_clean();
 	}
 
-
-	/**
-	 * Some emails will be cropped if the content is exactly the same.
-	 * Each time we send a test email we'll pouplate it with different content
-	 * 
-	 * @return String
-	 */
-	private function generate_lorem() {
-		$rand = rand( 1, 6 );
-		$text = '';
-		switch ( $rand ) {
-			case 1:
-				$text = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nulla, adipisci, eius, maxime ullam odio velit eos libero dignissimos a blanditiis nobis ducimus esse ut necessitatibus.';
-				break;
-			case 2:
-				$text = 'Alias, ab, veritatis, impedit non vitae maiores aperiam laboriosam commodi sapiente vel tempora aut debitis neque dolores dolorem. Dolore, dolorum, eos aut quis repellendus repudiandae.';
-				break;
-			case 3:
-				$text = 'Quam, voluptatibus, labore deleniti quas illo perspiciatis modi illum qui ipsam accusantium necessitatibus doloremque praesentium rem quae odio iste reprehenderit! Harum, natus.';
-				break;
-			case 4:
-				$text = 'Eveniet, necessitatibus beatae provident mollitia molestias quos tempore velit quibusdam itaque repellat nihil natus distinctio iure error delectus omnis nisi eligendi accusamus.';
-				break;
-			case 5:
-				$text = 'Vero, cumque, mollitia fuga quia harum maxime ut placeat ipsam ullam repellendus aspernatur odio. Architecto, tempora, voluptas, magni, facere deleniti dolorum nihil laborum.';
-				break;
-			case 6:
-				$text = 'Fuga, error dicta architecto alias corporis aperiam. Id, quidem, ea, laborum veniam numquam alias magni est quaerat a molestias quos voluptas debitis quia beatae sunt et sapiente.';
-				break;
-		}
-
-		return $text;
-
+	public function set_content( $log_id = false ) {
+		$this->content = $this->content_generator->get_content( $log_id );
 	}
 
-	
 	/**
 	 * Send the mail based on the template
 	 * 
@@ -471,6 +291,7 @@ class Incsub_Subscribe_By_Email_Template {
 		if ( is_string( $to ) )
 			$to = array( 0 => array( 'email' => $to ) );
 
+		$mail_log_id = 0;
 		if ( $log_id ) {
 			$mail_log_id = absint( $log_id );
 		}
@@ -481,11 +302,6 @@ class Incsub_Subscribe_By_Email_Template {
 
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 		$mails_sent = 0;
-
-		if ( ! $this->dummy && empty( $this->posts_ids ) )
-			$this->set_content();
-
-		$this->filter_content_by_taxonomies();
 
 		// We are going to try to send the mail to all subscribers
 		$sent_to_all_subscribers = true;
@@ -503,12 +319,13 @@ class Incsub_Subscribe_By_Email_Template {
 				$jump_user = true;
 				$key = false;
 			}
-			elseif ( $this->dummy )
+			elseif ( $this->dummy ) {
 				$key = '';
+			}
 
 			if ( ! $this->dummy && $key ) {
 				// The user may not want to get some types of posts
-				$user_content = $this->remove_user_content( $key );
+				$user_content = $this->content_generator->filter_user_content( $key );
 
 				if ( empty( $user_content ) ) {
 					$mail['status'] = __( 'User content empty', INCSUB_SBE_LANG_DOMAIN );
@@ -530,8 +347,9 @@ class Incsub_Subscribe_By_Email_Template {
 				}
 				
 				// Creating a new log or incrementiung an existing one
-				if ( $mails_sent == 0 && ! isset( $mail_log_id ) ) {
+				if ( $mails_sent == 0 && $mail_log_id == 0 ) {
 					$mail_log_id = $model->add_new_mail_log( $to, $this->subject );
+					$mail['status'] = true;
 					$model->increment_mail_log( $mail_log_id, $mail );
 				}
 				else {
@@ -548,7 +366,7 @@ class Incsub_Subscribe_By_Email_Template {
 					// Now saving the data to send the rest of the mails later
 					$mail_settings = array(
 						'email_from' => $mail['id'],
-						'posts_ids' => $this->posts_ids
+						'posts_ids' => $this->content_generator->get_posts_ids()
 					);
 
 					$mail_settings = maybe_serialize( $mail_settings );
@@ -567,7 +385,7 @@ class Incsub_Subscribe_By_Email_Template {
 		}
 
 		// If we have sent the mail to all subscribers we won't need the settings in that log for the future
-		if ( isset( $mail_log_id ) )
+		if ( $sent_to_all_subscribers )
 			$model->clear_mail_log_settings( $mail_log_id );
 
 
@@ -577,26 +395,7 @@ class Incsub_Subscribe_By_Email_Template {
 
 	}
 
-	private function remove_user_content( $key ) {
-		$model = Incsub_Subscribe_By_Email_Model::get_instance();
-		$user_settings = $model->get_subscriber_settings( $key );
-
-		// These are the post types that the user wants to get
-		$user_post_types = ! $user_settings ? $this->settings['post_types'] : $user_settings['post_types'];
-
-		$user_content = array();
-
-		// Removing content based on post types
-		foreach ( $this->content as $post ) {
-			if ( ! in_array( $post->post_type, $user_post_types ) )
-				continue;
-
-			$user_content[] = $post;
-		}
-
-		return $user_content;
-		
-	}
+	
 
 
 	/*************************/

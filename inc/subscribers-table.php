@@ -61,13 +61,27 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         return $item['subscription_note'];
     }
 
+    function column_subscribed_to( $item ) {
+        $result = array();
+
+        foreach ( $item['subscription_settings'] as $post_type_slug ) {
+            $cpt = get_post_type_object( $post_type_slug );
+            if ( $cpt ) {
+                $result[] = $cpt->labels->name;
+            }
+        }
+        
+        return implode( ', ', $result );
+    }
+
     function get_columns(){
         $columns = array(
             'cb'                    => '<input type="checkbox" />', //Render a checkbox instead of text
             'email'                 => __( 'Email', INCSUB_SBE_LANG_DOMAIN ),
             'created'               => __( 'Created', INCSUB_SBE_LANG_DOMAIN ),
             'note'                  => __( 'Note', INCSUB_SBE_LANG_DOMAIN ),
-            'subscription_type'  	=> __( 'Subscription Type', INCSUB_SBE_LANG_DOMAIN )
+            'subscription_type'     => __( 'Subscription Type', INCSUB_SBE_LANG_DOMAIN ),
+            'subscribed_to'  	    => __( 'Subscribed to', INCSUB_SBE_LANG_DOMAIN )
         );
         return $columns;
     }
@@ -161,18 +175,33 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
 
         $model = Incsub_Subscribe_By_Email_Model::get_instance();
 
+        $settings = incsub_sbe_get_settings();
+        $post_types = $settings['post_types'];
+
         $search = false;
         if ( isset( $_POST['s'] ) )
             $search = $_POST['s'];
 
         $subscribers = $model->get_subscribers( $current_page, $per_page, $sortable, $search );
 
-        $this->items = $subscribers['subscribers'];               
+        foreach ( $subscribers['subscribers'] as $subscriber ) {
+            $subscriber_settings = $subscriber['subscription_settings'];
+            if ( $subscriber_settings ) {
+                $subscriber_settings = maybe_unserialize( $subscriber_settings );
+                $subscriber_settings = $subscriber_settings['post_types'];
+            }
+            else {
+                $subscriber_settings = $post_types;
+            }
+            $item = $subscriber;
+            $item['subscription_settings'] = $subscriber_settings;
+            $this->items[] = $item;
+        }
 
         $this->set_pagination_args( array(
             'total_items' => $subscribers['total'],                 
             'per_page'    => $per_page,              
-            'total_pages' => ceil($subscribers['total']/$per_page)  
+            'total_pages' => ceil( $subscribers['total'] / $per_page )  
         ) );
     }
 }

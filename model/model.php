@@ -172,7 +172,7 @@ class Incsub_Subscribe_By_Email_Model {
         if ( ! empty ( $search ) )
             $query .= sprintf( "WHERE subscription_email LIKE '%s'", '%' . esc_sql( $search ) . '%' );
 
-        $total = $wpdb->get_var( str_replace( 'SELECT *', 'SELECT COUNT(*)', $query) );
+        $total = $wpdb->get_var( str_replace( 'SELECT *', 'SELECT COUNT(subscription_ID)', $query) );
 
         if ( $sort['email'][1] )
             $query .= " ORDER BY " . $sort['email'][0] . " " . $sort['email'][1];
@@ -183,7 +183,7 @@ class Incsub_Subscribe_By_Email_Model {
         if ( $sort['subscription_type'][1] )
           $query .= " ORDER BY " . $sort['subscription_type'][0] . " " . $sort['subscription_type'][1];
 
-        $query .= " LIMIT " . intval( ( $current_page - 1 ) * $per_page) . ", " . intval( $per_page );
+        $query .= " LIMIT " . intval( ( $current_page - 1 ) * $per_page ) . ", " . intval( $per_page );
 
         $subscriptions = $wpdb->get_results( $query, ARRAY_A );
 
@@ -404,7 +404,8 @@ class Incsub_Subscribe_By_Email_Model {
     public function get_remaining_batch_mail() {
         global $wpdb;
 
-        return $wpdb->get_row( "SELECT id, mail_recipients, mail_date, mail_settings FROM $this->subscriptions_log_table WHERE mail_settings != ''", ARRAY_A );
+        $query = "SELECT id, mail_recipients, mail_date, mail_settings FROM $this->subscriptions_log_table WHERE mail_settings != ''";
+        return $wpdb->get_row( $query, ARRAY_A );
     }
 
     public function set_mail_log_settings( $id, $settings ) {

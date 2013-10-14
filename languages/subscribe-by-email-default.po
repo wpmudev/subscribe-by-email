@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Subscribe By Email\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-26 17:04+0100\n"
-"PO-Revision-Date: 2013-07-26 17:05+0100\n"
+"POT-Creation-Date: 2013-10-11 16:08+0100\n"
+"PO-Revision-Date: 2013-10-11 16:08+0100\n"
 "Last-Translator: Ignacio <igmoweb@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -13,55 +13,19 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../subscribe-by-email.php:166
-msgid "Immediately when a new post is published"
-msgstr ""
-
-#: ../subscribe-by-email.php:167
-msgid "Send a weekly digest with all posts from the previous week"
-msgstr ""
-
-#: ../subscribe-by-email.php:168
-msgid "Send a daily digest with all posts from the previous 24 hours"
-msgstr ""
-
-#: ../subscribe-by-email.php:179
-msgid "Awaiting confirmation"
-msgstr ""
-
-#: ../subscribe-by-email.php:180
-msgid "Email confirmed"
-msgstr "CONFIRMADI"
-
-#: ../subscribe-by-email.php:194
-msgid ""
-"Howdy.\n"
-"\n"
-"You recently signed up to be notified of new posts on my blog. This means\n"
-"once you confirm below, you will receive an email when posts are published.\n"
-"\n"
-"To activate, click confirm below. If you believe this is an error, ignore this message\n"
-"and nothing more will happen."
-msgstr ""
-
-#: ../subscribe-by-email.php:207
-#: ../subscribe-by-email.php:256
-msgid ": New post"
-msgstr ""
-
-#: ../subscribe-by-email.php:364
+#: ../subscribe-by-email.php:316
 msgid "Sorry, your subscription no longer exists, please subscribe again."
 msgstr ""
 
-#: ../subscribe-by-email.php:367
+#: ../subscribe-by-email.php:319
 msgid "Thank you, your subscription has been confirmed."
 msgstr ""
 
-#: ../subscribe-by-email.php:383
+#: ../subscribe-by-email.php:336
 msgid "Your email subscription has been succesfully cancelled."
 msgstr ""
 
-#: ../subscribe-by-email.php:396
+#: ../subscribe-by-email.php:356
 msgid "Go to site"
 msgstr ""
 
@@ -98,7 +62,7 @@ msgid "Subscribe a single user"
 msgstr ""
 
 #: ../admin/admin-add-subscribers-page.php:76
-#: ../inc/subscribers-table.php:62
+#: ../inc/subscribers-table.php:67
 msgid "Email"
 msgstr ""
 
@@ -112,8 +76,8 @@ msgid "Do not send a confirmation email"
 msgstr ""
 
 #: ../admin/admin-add-subscribers-page.php:92
-#: ../front/widget.php:88
-#: ../front/widget.php:140
+#: ../front/widget.php:95
+#: ../front/widget.php:156
 msgid "Subscribe"
 msgstr ""
 
@@ -182,7 +146,7 @@ msgid "Subscribers"
 msgstr ""
 
 #: ../admin/admin-page.php:69
-#: ../admin/admin-settings-page.php:156
+#: ../admin/admin-settings-page.php:191
 msgid "You do not have enough permissions to access to this page"
 msgstr ""
 
@@ -191,206 +155,282 @@ msgstr ""
 msgid "Sent Emails"
 msgstr ""
 
-#: ../admin/admin-sent-emails-page.php:33
+#: ../admin/admin-sent-emails-page.php:47
+#: ../inc/log-table.php:44
+msgid "Finished"
+msgstr ""
+
+#: ../admin/admin-sent-emails-page.php:47
+#: ../inc/log-table.php:46
+msgid "Pending"
+msgstr ""
+
+#: ../admin/admin-sent-emails-page.php:78
 msgid "Search by subject"
 msgstr ""
 
 #: ../admin/admin-settings-page.php:20
-#: ../admin/admin-settings-page.php:102
+#: ../admin/admin-settings-page.php:110
 msgid "General Settings"
 msgstr ""
 
 #: ../admin/admin-settings-page.php:21
+msgid "Contents"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:22
 msgid "Mail template"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:26
 #: ../admin/admin-settings-page.php:27
-#: ../admin/admin-settings-page.php:50
+#: ../admin/admin-settings-page.php:28
+#: ../admin/admin-settings-page.php:51
 msgid "Settings"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:50
+#: ../admin/admin-settings-page.php:51
 msgid "Subscribe by Email Settings Page"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:74
+#: ../admin/admin-settings-page.php:79
 msgid "Upload a logo"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:75
-#: ../admin/admin-settings-page.php:374
+#: ../admin/admin-settings-page.php:80
+#: ../admin/admin-settings-page.php:485
 msgid "Upload logo"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:105
+#: ../admin/admin-settings-page.php:113
 msgid "Notification From Sender"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:106
+#: ../admin/admin-settings-page.php:114
 msgid "Notification From Email"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:107
+#: ../admin/admin-settings-page.php:115
 msgid "Mail subject"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:108
+#: ../admin/admin-settings-page.php:116
 msgid "Email Frequency"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:109
+#: ../admin/admin-settings-page.php:117
 msgid "Mail batches"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:111
-msgid "Posts Settings"
-msgstr ""
-
-#: ../admin/admin-settings-page.php:112
-msgid "Posts Types"
-msgstr ""
-
-#: ../admin/admin-settings-page.php:114
-msgid "Subscription page"
-msgstr ""
-
-#: ../admin/admin-settings-page.php:115
-msgid "Subscribers Management Page"
-msgstr ""
-
 #: ../admin/admin-settings-page.php:118
-msgid "Styling Settings"
-msgstr ""
-
-#: ../admin/admin-settings-page.php:119
-msgid "Logo for notifications"
+msgid "Get notifications"
 msgstr ""
 
 #: ../admin/admin-settings-page.php:120
-msgid "Show featured images"
+msgid "Subscription page"
 msgstr ""
 
 #: ../admin/admin-settings-page.php:121
-msgid "Header color"
-msgstr ""
-
-#: ../admin/admin-settings-page.php:122
-msgid "Header text color"
+msgid "Subscribers Management Page"
 msgstr ""
 
 #: ../admin/admin-settings-page.php:123
-msgid "Header text"
+msgid "Follow button"
 msgstr ""
 
 #: ../admin/admin-settings-page.php:124
+msgid "Display a follow button?"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:133
+msgid "Send this post type"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:143
+msgid "Logo"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:144
+msgid "Logo for notifications"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:145
+msgid "Logo max width in pixels"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:147
+msgid "Header"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:148
+msgid "Header color"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:149
+msgid "Header text color"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:150
+msgid "Subtitle text"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:151
+msgid "Show From Sender"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:153
+msgid "Footer"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:154
 msgid "Footer text"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:125
+#: ../admin/admin-settings-page.php:156
+msgid "Subscribe Email"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:157
 msgid "Subscribe Email Content"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:127
+#: ../admin/admin-settings-page.php:159
+msgid "Other options"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:160
+msgid "Show featured images"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:162
 msgid "Email preview"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:197
+#: ../admin/admin-settings-page.php:232
 msgid "Settings updated"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:226
+#: ../admin/admin-settings-page.php:261
 msgid "Yes"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:230
+#: ../admin/admin-settings-page.php:265
 msgid "No"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:232
+#: ../admin/admin-settings-page.php:267
 msgid "Subscribe users without sending a confirmation mail."
 msgstr ""
 
-#: ../admin/admin-settings-page.php:253
+#: ../admin/admin-settings-page.php:288
 msgid "Recommended: no-reply@yourdomain.com as spam filters may block other addresses."
 msgstr ""
 
-#: ../admin/admin-settings-page.php:263
+#: ../admin/admin-settings-page.php:298
 msgid "You can use the <strong>%title%</strong> wildcard to show the latest post title/s, they will be shortened to no more than 50 charactes"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:273
+#: ../admin/admin-settings-page.php:308
 #, php-format
 msgid "Send %s mails every %d minutes (maximum)."
 msgstr ""
 
-#: ../admin/admin-settings-page.php:274
+#: ../admin/admin-settings-page.php:309
 #, php-format
 msgid "If you are experiencing problems when sending mails, your server may be limiting the email volume. Try reducing this number. Mails will be sent every %d minutes in groups of X mails."
 msgstr ""
 
-#: ../admin/admin-settings-page.php:291
+#: ../admin/admin-settings-page.php:317
+msgid "If checked, the following role will get email notifications when there's a new subscriber or when someone ends their subscription"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:341
 msgid "What time should the digest email be sent?"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:298
+#: ../admin/admin-settings-page.php:348
 #, php-format
 msgid "The time now is %s"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:302
+#: ../admin/admin-settings-page.php:352
 msgid "What day of the week should the digest email be sent?"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:318
+#: ../admin/admin-settings-page.php:363
+msgid "Next digest will be sent on:"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:375
 msgid "Check those Post Types that you want to send to your subscribers."
 msgstr ""
 
-#: ../admin/admin-settings-page.php:345
+#: ../admin/admin-settings-page.php:383
+#, php-format
+msgid "%s will be included in the digests"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:411
+#, php-format
+msgid "Choose between these %s:"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:419
+msgid "All"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:447
 msgid "You can select a page where users will be able to subscribe/unsubscribe to any post type"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:351
+#: ../admin/admin-settings-page.php:453
 msgid "--Select a page--"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:359
+#: ../admin/admin-settings-page.php:461
 msgid "After a page is selected, the management form will be appended to the content of the page"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:360
+#: ../admin/admin-settings-page.php:462
 msgid "Users will receive a link to this page via email."
 msgstr ""
 
-#: ../admin/admin-settings-page.php:377
+#: ../admin/admin-settings-page.php:470
+msgid "Will place a follow button permanently in the bottom right of your site."
+msgstr ""
+
+#: ../admin/admin-settings-page.php:488
 msgid "Remove logo"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:389
+#: ../admin/admin-settings-page.php:525
 msgid "If your theme allows it, the featured image for each post will appear to the left of the post excerpt."
 msgstr ""
 
-#: ../admin/admin-settings-page.php:437
+#: ../admin/admin-settings-page.php:569
+msgid "If checked, the From Sender Text will appear on the header"
+msgstr ""
+
+#: ../admin/admin-settings-page.php:586
 msgid "Refresh changes"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:438
+#: ../admin/admin-settings-page.php:587
 msgid "Send a test mail to:"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:449
+#: ../admin/admin-settings-page.php:598
 msgid "Restore template to default"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:499
+#: ../admin/admin-settings-page.php:648
 msgid "Notification From Email is not a valid email"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:505
+#: ../admin/admin-settings-page.php:654
 msgid "Notification From Sender cannot be empty"
 msgstr ""
 
-#: ../admin/admin-settings-page.php:512
+#: ../admin/admin-settings-page.php:661
 msgid "Mail subject cannot be empty"
 msgstr ""
 
@@ -403,19 +443,60 @@ msgstr ""
 msgid "Search by email"
 msgstr ""
 
-#: ../front/manage-subscription.php:24
+#: ../front/follow-button.php:29
+#: ../front/widget.php:71
+msgid "User subscribed"
+msgstr ""
+
+#: ../front/follow-button.php:29
+msgid "Follow Button"
+msgstr ""
+
+#: ../front/follow-button.php:40
+msgid "Follow"
+msgstr ""
+
+#: ../front/follow-button.php:45
+msgid "Thank you! A confirmation email is on the way..."
+msgstr ""
+
+#: ../front/follow-button.php:49
+msgid "Follow this blog"
+msgstr ""
+
+#: ../front/follow-button.php:54
+msgid "Get every new post delivered right to your inbox."
+msgstr ""
+
+#: ../front/follow-button.php:56
+msgid "Get a weekly email of all new posts."
+msgstr ""
+
+#: ../front/follow-button.php:58
+msgid "Get a daily email of all new posts."
+msgstr ""
+
+#: ../front/follow-button.php:62
+msgid "Your email"
+msgstr ""
+
+#: ../front/follow-button.php:69
+msgid "Subscribe me!"
+msgstr ""
+
+#: ../front/manage-subscription.php:32
 msgid "This page will show details of your email subscriptions. To see the options available to you, click the link in any newsletter email you have received from us"
 msgstr ""
 
-#: ../front/manage-subscription.php:59
+#: ../front/manage-subscription.php:69
 msgid "Settings saved"
 msgstr ""
 
-#: ../front/manage-subscription.php:68
+#: ../front/manage-subscription.php:78
 msgid "Please select which post types you wish to be notified about."
 msgstr ""
 
-#: ../front/manage-subscription.php:79
+#: ../front/manage-subscription.php:91
 msgid "Submit settings"
 msgstr ""
 
@@ -424,7 +505,7 @@ msgid "This widget allows visitors to subscribe to receive email updates when a 
 msgstr ""
 
 #: ../front/widget.php:24
-#: ../front/widget.php:138
+#: ../front/widget.php:154
 msgid "Subscribe by Email"
 msgstr ""
 
@@ -452,98 +533,113 @@ msgstr ""
 msgid "ex: john@hotmail.com"
 msgstr ""
 
-#: ../front/widget.php:71
-msgid "User subscribed"
-msgstr ""
-
-#: ../front/widget.php:95
-msgid "Thank you, your email has been added to the mailing."
-msgstr ""
-
-#: ../front/widget.php:95
-msgid "Thank you, your email will be added to the mailing list once you click on the link in the confirmation email."
-msgstr ""
-
-#: ../front/widget.php:102
+#: ../front/widget.php:110
 msgid "Please, insert a valid email."
 msgstr ""
 
-#: ../front/widget.php:104
+#: ../front/widget.php:112
 msgid "ex: someone@mydomain.com"
 msgstr ""
 
-#: ../front/widget.php:139
+#: ../front/widget.php:155
 msgid "Completely spam free, opt out any time."
 msgstr ""
 
-#: ../front/widget.php:145
+#: ../front/widget.php:159
+msgid "Thank you, your email has been added to the mailing."
+msgstr ""
+
+#: ../front/widget.php:163
 msgid "Title:"
 msgstr ""
 
-#: ../front/widget.php:149
+#: ../front/widget.php:167
 msgid "Text:"
 msgstr ""
 
-#: ../front/widget.php:153
+#: ../front/widget.php:171
 msgid "Subscribe button text:"
 msgstr ""
 
-#: ../front/widget.php:158
+#: ../front/widget.php:175
+msgid "Text displayed when a user subscribes:"
+msgstr ""
+
+#: ../front/widget.php:180
+msgid "Show number of subscribers"
+msgstr ""
+
+#: ../front/widget.php:184
 msgid "Auto-opt In (it will not send a confirmation email to the user)"
 msgstr ""
 
-#: ../inc/confirmation-mail-template.php:51
+#: ../inc/dash-notifications.php:57
 #, php-format
-msgid "Subscribe to posts on <a href=\"%s\">%s</a>"
+msgid "Easily get updates, support, and one-click WPMU DEV plugin/theme installations right from in your dashboard - <strong><a href=\"%s\" title=\"Install Now &raquo;\">install the free WPMU DEV Dashboard plugin</a></strong>. &nbsp;&nbsp;&nbsp;<small><a href=\"http://premium.wpmudev.org/wpmu-dev/update-notifications-plugin-information/\">(find out more)</a></small>"
 msgstr ""
 
-#: ../inc/confirmation-mail-template.php:73
+#: ../inc/dash-notifications.php:61
 #, php-format
-msgid ""
-"<p><strong>Blog Name:</strong> %s</p>\n"
-"<p><strong>Blog URL:</strong> <a href=\"%s\">%s</a></p>\n"
-"<a %s href=\"%s\">Confirm subscription</a>"
+msgid "Updates, Support, Premium Plugins, Community - <strong><a href=\"%s\" title=\"Activate Now &raquo;\">activate the WPMU DEV Dashboard plugin now</a></strong>."
 msgstr ""
 
-#: ../inc/confirmation-mail-template.php:115
-msgid "Please confirm subscription"
+#: ../inc/log-table.php:37
+msgid "Details &rarr;"
 msgstr ""
 
-#: ../inc/log-table.php:34
+#: ../inc/log-table.php:51
 msgid "Subject"
 msgstr ""
 
-#: ../inc/log-table.php:35
+#: ../inc/log-table.php:52
 msgid "Recipients no."
 msgstr ""
 
-#: ../inc/log-table.php:36
+#: ../inc/log-table.php:53
+msgid "Status"
+msgstr ""
+
+#: ../inc/log-table.php:54
 msgid "Date"
 msgstr ""
 
-#: ../inc/mail-template.php:67
-#: ../inc/mail-template.php:101
-#, php-format
-msgid "by %s on %s"
+#: ../inc/settings.php:50
+msgid "Inmediately when a new post is published"
 msgstr ""
 
-#: ../inc/mail-template.php:135
-msgid "Read more..."
+#: ../inc/settings.php:51
+msgid "Send a weekly digest with all posts from the previous week"
 msgstr ""
 
-#: ../inc/mail-template.php:341
-#, php-format
-msgid "You are subscribed to email updates from <a href=\"%s\">%s</a>"
+#: ../inc/settings.php:52
+msgid "Send a daily digest with all posts from the previous 24 hours"
 msgstr ""
 
-#: ../inc/mail-template.php:343
-#, php-format
-msgid "To manage your subscriptions, <a href=\"%s\">click here</a>."
+#: ../inc/settings.php:53
+msgid "Never"
 msgstr ""
 
-#: ../inc/mail-template.php:345
-#, php-format
-msgid "To stop receiving these emails, <a href=\"%s\">click here</a>."
+#: ../inc/settings.php:64
+msgid "Awaiting confirmation"
+msgstr ""
+
+#: ../inc/settings.php:65
+msgid "Email confirmed"
+msgstr "CONFIRMADI"
+
+#: ../inc/settings.php:136
+msgid ""
+"Howdy.\n"
+"\n"
+"You recently signed up to be notified of new posts on my blog. This means\n"
+"once you confirm below, you will receive an email when posts are published.\n"
+"\n"
+"To activate, click confirm below. If you believe this is an error, ignore this message\n"
+"and nothing more will happen."
+msgstr ""
+
+#: ../inc/settings.php:149
+msgid ": New post"
 msgstr ""
 
 #: ../inc/subscribers-table.php:31
@@ -556,6 +652,7 @@ msgid "Cancel subscription"
 msgstr ""
 
 #: ../inc/subscribers-table.php:38
+#: ../inc/subscribers-table.php:42
 #, php-format
 msgid "<span><a class=\"trash\" href=\"%s\">%s</a></span>"
 msgstr ""
@@ -564,27 +661,120 @@ msgstr ""
 msgid "Resend confirmation mail"
 msgstr ""
 
-#: ../inc/subscribers-table.php:63
+#: ../inc/subscribers-table.php:44
+msgid "Confirm Subscription"
+msgstr ""
+
+#: ../inc/subscribers-table.php:68
 msgid "Created"
 msgstr ""
 
-#: ../inc/subscribers-table.php:64
+#: ../inc/subscribers-table.php:69
 msgid "Note"
 msgstr ""
 
-#: ../inc/subscribers-table.php:65
+#: ../inc/subscribers-table.php:70
 msgid "Subscription Type"
 msgstr ""
 
-#: ../inc/subscribers-table.php:72
+#: ../inc/subscribers-table.php:77
 msgid "Cancel subscriptions"
 msgstr ""
 
-#: ../inc/subscribers-table.php:101
+#: ../inc/subscribers-table.php:106
 msgid "Subscription(s) deleted"
 msgstr ""
 
-#: ../inc/subscribers-table.php:110
+#: ../inc/subscribers-table.php:115
 msgid "Confirmation mail sent"
+msgstr ""
+
+#: ../inc/subscribers-table.php:129
+msgid "Subscription confirmed"
+msgstr ""
+
+#: ../inc/mail-templates/administrators-notices.php:28
+#, php-format
+msgid "[%s] New Subscriber"
+msgstr ""
+
+#: ../inc/mail-templates/administrators-notices.php:30
+msgid ""
+"Dear user,\n"
+"\n"
+"A new user (###SUBSCRIBER_EMAIL###) has subscribed to your subcribers list.\n"
+"\n"
+"Click this link to manage your subscribers:\n"
+"###SBE_SUBSCRIBERS_URL###\n"
+"\n"
+"Regards,\n"
+"###BLOGNAME###"
+msgstr ""
+
+#: ../inc/mail-templates/administrators-notices.php:58
+#, php-format
+msgid "[%s] Subscriber removed"
+msgstr ""
+
+#: ../inc/mail-templates/administrators-notices.php:60
+msgid ""
+"Dear user,\n"
+"\n"
+"A user (###SUBSCRIBER_EMAIL###) has removed from your subcribers list.\n"
+"\n"
+"Click this link to manage your subscribers:\n"
+"###SBE_SUBSCRIBERS_URL###\n"
+"\n"
+"Regards,\n"
+"###BLOGNAME###"
+msgstr ""
+
+#: ../inc/mail-templates/confirmation-mail-template.php:51
+#, php-format
+msgid "Subscribe to posts on <a href=\"%s\">%s</a>"
+msgstr ""
+
+#: ../inc/mail-templates/confirmation-mail-template.php:73
+#, php-format
+msgid ""
+"<p><strong>Blog Name:</strong> %s</p>\n"
+"<p><strong>Blog URL:</strong> <a href=\"%s\">%s</a></p>\n"
+"<a %s href=\"%s\">Confirm subscription</a>"
+msgstr ""
+
+#: ../inc/mail-templates/confirmation-mail-template.php:115
+msgid "Please confirm subscription"
+msgstr ""
+
+#: ../inc/mail-templates/mail-template.php:78
+#, php-format
+msgid "by %s on %s"
+msgstr ""
+
+#: ../inc/mail-templates/mail-template.php:111
+msgid "Read more..."
+msgstr ""
+
+#: ../inc/mail-templates/mail-template.php:304
+#, php-format
+msgid "You are subscribed to email updates from <a href=\"%s\">%s</a>"
+msgstr ""
+
+#: ../inc/mail-templates/mail-template.php:306
+#, php-format
+msgid "To manage your subscriptions, <a href=\"%s\">click here</a>."
+msgstr ""
+
+#: ../inc/mail-templates/mail-template.php:308
+#, php-format
+msgid "To stop receiving these emails, <a href=\"%s\">click here</a>."
+msgstr ""
+
+#: ../inc/mail-templates/mail-template.php:375
+msgid "User key undefined"
+msgstr ""
+
+#: ../inc/mail-templates/mail-template.php:387
+msgid "User content empty"
 msgstr ""
 

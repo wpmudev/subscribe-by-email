@@ -42,33 +42,37 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 				        $emails_pending = count( $emails_list ) - $emails_sent;
 				        $total = count( $emails_list );
 					?>
-					<h3><?php echo $log->mail_subject; ?></h3>
-					<p><strong>Date:</strong> <?php echo date_i18n( 'Y-m-d H:i:s' ); ?></p>
-					<p><strong>Status:</strong> <?php echo empty( $log->mail_settings ) ? __( 'Finished', INCSUB_SBE_LANG_DOMAIN ) : __( 'Pending', INCSUB_SBE_LANG_DOMAIN ); ?></p>
-					<p><strong>Emails sent:</strong> <?php echo $emails_sent; ?></p>
-					<p><strong>Emails pending:</strong> <?php echo $emails_pending; ?></p>
-					<p><strong>Total:</strong> <?php echo $total; ?></p>
-					<h3>Emails details:</h3>
-						<ul>
-						<?php foreach ( $emails_list as $email ): ?>
-							<li>
-								<strong><?php echo $email['email']; ?></strong>: 
-								<?php
-									if ( $email['status'] === true ) {
-										echo 'Sent';
-									}
-									elseif ( $email['status'] === false ) {
-										echo 'Still pending';
-									}
-									else {
-										echo $email['status'];
-									}
-								?>
+					<h3><?php echo esc_html( $log->mail_subject ); ?></h3>
 
-							</li>
+					<table class="form-table">
+						<?php ob_start(); ?>
+						<?php echo date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $log->mail_date ); ?>
+						<?php $this->render_row( __( 'Date', INCSUB_SBE_LANG_DOMAIN ), ob_get_clean() ); ?>
+
+						<?php $this->render_row( __( 'Status', INCSUB_SBE_LANG_DOMAIN ), empty( $log->mail_settings ) ? __( 'Finished', INCSUB_SBE_LANG_DOMAIN ) : __( 'Pending', INCSUB_SBE_LANG_DOMAIN ) ); ?>
+
+						<?php $this->render_row( __( 'Emails sent', INCSUB_SBE_LANG_DOMAIN ), $emails_sent ); ?>
+
+						<?php $this->render_row( __( 'Emails pending', INCSUB_SBE_LANG_DOMAIN ), $emails_pending ); ?>
+
+						<?php $this->render_row( __( 'Total', INCSUB_SBE_LANG_DOMAIN ), $total ); ?>
+					</table>
+
+					<table class="form-table">
+						<h3><?php _e( 'Emails details', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+						<?php foreach ( $emails_list as $email ): ?>
+							<?php
+								if ( $email['status'] === true )
+									$status = '<span style="color:green">' . __( 'Sent', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
+								elseif ( $email['status'] === false )
+									$status = '<span style="color:red">' . __( 'Still pending', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
+								else
+									$status = '<span style="color:green">' . $email['status'] . '</span>';
+							?>
+							<?php $this->render_row( $email['email'], $status ); ?>
+								
 						<?php endforeach; ?> 
-						</ul>
-					</p>
+					</table>
 
 				<?php else: ?>
 					<?php 
@@ -82,6 +86,19 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 				<?php endif; ?>
 			</form>
 				
+		<?php
+	}
+
+	protected function render_row( $title, $content ) {
+		?>
+			<tr valign="top">
+				<th scope="row"><label for="site_name"><?php echo $title; ?></label></th>
+				<td>
+					<?php 
+						echo $content;
+					?>
+				</td>
+			</tr>
 		<?php
 	}
 
