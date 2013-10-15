@@ -236,10 +236,3 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 	}
 
 }
-
-?>
-
-
-
-
-
