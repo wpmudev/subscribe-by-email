@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Ignacio (Incsub)
-Version: 2.4.7b
+Version: 2.4.7RC1
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -123,7 +123,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.4.7b' );
+		define( 'INCSUB_SBE_VERSION', '2.4.7RC1' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -249,6 +249,33 @@ class Incsub_Subscribe_By_Email {
 
 			$model->upgrade_247b();
 
+			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+
+		}
+
+		if ( version_compare( $current_version, '2.4.7RC1', '<' ) ) {
+			$settings = incsub_sbe_get_settings();
+
+			$post_types = $settings['post_types'];
+			$taxonomies = $settings['taxonomies'];
+
+			$new_taxonomies = $taxonomies;
+			foreach ( $post_types as $post_type ) {
+				$post_type_taxonomies = get_object_taxonomies( $post_type );
+				if ( ! array_key_exists( $post_type, $taxonomies ) && ! empty( $post_type_taxonomies ) ) {
+					foreach ( $post_type_taxonomies as $taxonomy_slug ) {
+						$taxonomy = get_taxonomy( $taxonomy_slug );
+
+						if ( $taxonomy->hierarchical ) {
+							$new_taxonomies[ $post_type ][ $taxonomy_slug ] = array( 'all' );
+						}
+					}
+					
+				}
+			}
+
+			$settings['taxonomies'] = $new_taxonomies;
+			incsub_sbe_update_settings( $settings );
 			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 
 		}

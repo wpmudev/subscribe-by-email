@@ -22,7 +22,7 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
     }
 
     function column_date( $item ) { 
-        return date_i18n( get_option( 'date_format' ), (int)$item['mail_date'] );
+        return date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int)$item['mail_date'] );
     }
 
     function column_recipients( $item ) {
@@ -48,11 +48,9 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
 
     function get_columns(){
         $columns = array(
-            'subject'   => __( 'Subject', INCSUB_SBE_LANG_DOMAIN ),
+            'date'   => __( 'Date', INCSUB_SBE_LANG_DOMAIN ),
             'recipients'    => __( 'Recipients no.', INCSUB_SBE_LANG_DOMAIN ),
-            'status'   => __( 'Status', INCSUB_SBE_LANG_DOMAIN ),
-            'date'   => __( 'Date', INCSUB_SBE_LANG_DOMAIN )
-           
+            'status'   => __( 'Status', INCSUB_SBE_LANG_DOMAIN )
         );
         return $columns;
     }

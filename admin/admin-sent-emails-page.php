@@ -41,8 +41,9 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 				        }
 				        $emails_pending = count( $emails_list ) - $emails_sent;
 				        $total = count( $emails_list );
+
 					?>
-					<h3><?php echo esc_html( $log->mail_subject ); ?></h3>
+					<h3><?php _e( 'Digest details', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
 
 					<table class="form-table">
 						<?php ob_start(); ?>
@@ -51,9 +52,9 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 
 						<?php $this->render_row( __( 'Status', INCSUB_SBE_LANG_DOMAIN ), empty( $log->mail_settings ) ? __( 'Finished', INCSUB_SBE_LANG_DOMAIN ) : __( 'Pending', INCSUB_SBE_LANG_DOMAIN ) ); ?>
 
-						<?php $this->render_row( __( 'Emails sent', INCSUB_SBE_LANG_DOMAIN ), $emails_sent ); ?>
+						<?php $this->render_row( __( 'Tried to send', INCSUB_SBE_LANG_DOMAIN ), $emails_sent ); ?>
 
-						<?php $this->render_row( __( 'Emails pending', INCSUB_SBE_LANG_DOMAIN ), $emails_pending ); ?>
+						<?php $this->render_row( __( 'Still pending', INCSUB_SBE_LANG_DOMAIN ), $emails_pending ); ?>
 
 						<?php $this->render_row( __( 'Total', INCSUB_SBE_LANG_DOMAIN ), $total ); ?>
 					</table>
@@ -67,7 +68,7 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 								elseif ( $email['status'] === false )
 									$status = '<span style="color:red">' . __( 'Still pending', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
 								else
-									$status = '<span style="color:green">' . $email['status'] . '</span>';
+									$status = '<span style="color:red">' . $email['status'] . '</span>';
 							?>
 							<?php $this->render_row( $email['email'], $status ); ?>
 								

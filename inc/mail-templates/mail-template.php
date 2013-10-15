@@ -309,7 +309,7 @@ class Incsub_Subscribe_By_Email_Template {
 
 			$jump_user = false;
 
-			if ( $mail_log_id && $mail['status'] != false ) {
+			if ( $mail_log_id && isset( $mail['status'] ) && $mail['status'] != false ) {
 				continue;
 			}
 
@@ -349,13 +349,14 @@ class Incsub_Subscribe_By_Email_Template {
 				// Creating a new log or incrementiung an existing one
 				if ( $mails_sent == 0 && $mail_log_id == 0 ) {
 					$mail_log_id = $model->add_new_mail_log( $to, $this->subject );
-					$mail['status'] = true;
+					if ( ! isset( $mail['status'] ) )
+						$mail['status'] = true;
 					$model->increment_mail_log( $mail_log_id, $mail );
 				}
 				else {
 					$model->increment_mail_log( $mail_log_id, $mail );
 				}
-					
+				
 				$mails_sent++;
 
 				if ( $mails_sent == absint( $this->settings['mails_batch_size'] ) ) {
