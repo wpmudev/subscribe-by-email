@@ -1,5 +1,8 @@
 <?php
 
+function incsub_sbe_get_model() {
+	return Incsub_Subscribe_By_Email_Model::get_instance();
+}
 /**
  * Get the plugin settings
  * 

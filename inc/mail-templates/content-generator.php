@@ -66,6 +66,13 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 			foreach( $this->content as $post_key => $the_post ) {
 				$post_type_taxonomies = $settings_handler->get_taxonomies_by_post_type( $the_post->post_type );
 				
+				if ( empty( $post_type_taxonomies ) ) {
+					// If the post type does not have any taxonomy
+					// then it will be part of the content
+					$is_content = true;
+					continue;
+				}
+				
 				if ( ! isset( $settings['taxonomies'][ $the_post->post_type ] ) ) {
 					$is_content = false;
 					unset( $this->content[ $post_key ] );

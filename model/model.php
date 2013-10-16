@@ -384,7 +384,7 @@ class Incsub_Subscribe_By_Email_Model {
             array( 
                 'mail_subject' => $subject,
                 'mail_recipients' => 0,
-                'mail_date' => time(),
+                'mail_date' => current_time( 'timestamp' ),
                 'mail_settings' => '',
                 'mails_list' => maybe_serialize( $emails )
             ),
