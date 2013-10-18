@@ -58,14 +58,14 @@ class Incsub_Subscribe_By_Email_Model {
               subscription_note varchar(200) NOT NULL,
               confirmation_flag tinyint(1) DEFAULT 0,
               user_key varchar(50) NOT NULL,
-              subscription_settings text DEFAULT '',
+              subscription_settings text,
               PRIMARY KEY  (subscription_ID),
               UNIQUE KEY subscription_email (subscription_email)
             )  ENGINE=MyISAM $db_charset_collate;";
        
         dbDelta($sql);
 
-        $alter = "ALTER TABLE $this->subscriptions_table MODIFY COLUMN subscription_settings text DEFAULT ''";
+        $alter = "ALTER TABLE $this->subscriptions_table MODIFY COLUMN subscription_settings text";
         $wpdb->query( $alter );
 
     }

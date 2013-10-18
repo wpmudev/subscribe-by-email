@@ -47,7 +47,7 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 
 		// The user can choose between these options
 		$this->frequency = array(
-			'inmediately' 	=> __( 'Inmediately when a new post is published', INCSUB_SBE_LANG_DOMAIN ),
+			'inmediately' 	=> __( 'Immediately when a new post is published', INCSUB_SBE_LANG_DOMAIN ),
 			'weekly'		=> __( 'Send a weekly digest with all posts from the previous week', INCSUB_SBE_LANG_DOMAIN ),
 			'daily'			=> __( 'Send a daily digest with all posts from the previous 24 hours', INCSUB_SBE_LANG_DOMAIN ),
 			'never'			=> __( 'Never', INCSUB_SBE_LANG_DOMAIN )

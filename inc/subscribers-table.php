@@ -64,10 +64,12 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
     function column_subscribed_to( $item ) {
         $result = array();
 
-        foreach ( $item['subscription_settings'] as $post_type_slug ) {
-            $cpt = get_post_type_object( $post_type_slug );
-            if ( $cpt ) {
-                $result[] = $cpt->labels->name;
+        if ( $item['confirmation_flag'] ) {
+            foreach ( $item['subscription_settings'] as $post_type_slug ) {
+                $cpt = get_post_type_object( $post_type_slug );
+                if ( $cpt ) {
+                    $result[] = $cpt->labels->name;
+                }
             }
         }
         

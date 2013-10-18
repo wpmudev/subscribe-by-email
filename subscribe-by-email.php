@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Ignacio (Incsub)
-Version: 2.4.7RC1
+Version: 2.4.7RC2
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -123,7 +123,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.4.7RC1' );
+		define( 'INCSUB_SBE_VERSION', '2.4.7RC2' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -244,6 +244,7 @@ class Incsub_Subscribe_By_Email {
 		}
 
 		if ( version_compare( $current_version, '2.4.7b', '<' ) ) {
+
 			$model = Incsub_Subscribe_By_Email_Model::get_instance();
 			$model->create_squema();
 
@@ -254,6 +255,7 @@ class Incsub_Subscribe_By_Email {
 		}
 
 		if ( version_compare( $current_version, '2.4.7RC1', '<' ) ) {
+
 			$settings = incsub_sbe_get_settings();
 
 			$post_types = $settings['post_types'];
@@ -276,8 +278,15 @@ class Incsub_Subscribe_By_Email {
 
 			$settings['taxonomies'] = $new_taxonomies;
 			incsub_sbe_update_settings( $settings );
+
 			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 
+		}
+
+		if ( version_compare( $current_version, '2.4.7RC2', '<' ) ) {
+			$model = incsub_sbe_get_model();
+			$model->create_squema();
+			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 		}
 
 
