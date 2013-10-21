@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Subscribe By Email\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-10-11 16:08+0100\n"
-"PO-Revision-Date: 2013-10-11 16:08+0100\n"
+"POT-Creation-Date: 2013-10-21 18:28+0100\n"
+"PO-Revision-Date: 2013-10-21 18:28+0100\n"
 "Last-Translator: Ignacio <igmoweb@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -13,19 +13,19 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../subscribe-by-email.php:316
+#: ../subscribe-by-email.php:353
 msgid "Sorry, your subscription no longer exists, please subscribe again."
 msgstr ""
 
-#: ../subscribe-by-email.php:319
+#: ../subscribe-by-email.php:356
 msgid "Thank you, your subscription has been confirmed."
 msgstr ""
 
-#: ../subscribe-by-email.php:336
+#: ../subscribe-by-email.php:373
 msgid "Your email subscription has been succesfully cancelled."
 msgstr ""
 
-#: ../subscribe-by-email.php:356
+#: ../subscribe-by-email.php:393
 msgid "Go to site"
 msgstr ""
 
@@ -62,7 +62,7 @@ msgid "Subscribe a single user"
 msgstr ""
 
 #: ../admin/admin-add-subscribers-page.php:76
-#: ../inc/subscribers-table.php:67
+#: ../inc/subscribers-table.php:82
 msgid "Email"
 msgstr ""
 
@@ -155,17 +155,52 @@ msgstr ""
 msgid "Sent Emails"
 msgstr ""
 
-#: ../admin/admin-sent-emails-page.php:47
+#: ../admin/admin-sent-emails-page.php:46
+msgid "Digest details"
+msgstr ""
+
+#: ../admin/admin-sent-emails-page.php:51
+#: ../inc/log-table.php:51
+msgid "Date"
+msgstr ""
+
+#: ../admin/admin-sent-emails-page.php:53
+#: ../inc/log-table.php:53
+msgid "Status"
+msgstr ""
+
+#: ../admin/admin-sent-emails-page.php:53
 #: ../inc/log-table.php:44
 msgid "Finished"
 msgstr ""
 
-#: ../admin/admin-sent-emails-page.php:47
+#: ../admin/admin-sent-emails-page.php:53
 #: ../inc/log-table.php:46
 msgid "Pending"
 msgstr ""
 
-#: ../admin/admin-sent-emails-page.php:78
+#: ../admin/admin-sent-emails-page.php:55
+msgid "Tried to send"
+msgstr ""
+
+#: ../admin/admin-sent-emails-page.php:57
+#: ../admin/admin-sent-emails-page.php:69
+msgid "Still pending"
+msgstr ""
+
+#: ../admin/admin-sent-emails-page.php:59
+msgid "Total"
+msgstr ""
+
+#: ../admin/admin-sent-emails-page.php:63
+msgid "Emails details"
+msgstr ""
+
+#: ../admin/admin-sent-emails-page.php:67
+msgid "Sent"
+msgstr ""
+
+#: ../admin/admin-sent-emails-page.php:83
 msgid "Search by subject"
 msgstr ""
 
@@ -587,24 +622,12 @@ msgstr ""
 msgid "Details &rarr;"
 msgstr ""
 
-#: ../inc/log-table.php:51
-msgid "Subject"
-msgstr ""
-
 #: ../inc/log-table.php:52
 msgid "Recipients no."
 msgstr ""
 
-#: ../inc/log-table.php:53
-msgid "Status"
-msgstr ""
-
-#: ../inc/log-table.php:54
-msgid "Date"
-msgstr ""
-
 #: ../inc/settings.php:50
-msgid "Inmediately when a new post is published"
+msgid "Immediately when a new post is published"
 msgstr ""
 
 #: ../inc/settings.php:51
@@ -665,31 +688,35 @@ msgstr ""
 msgid "Confirm Subscription"
 msgstr ""
 
-#: ../inc/subscribers-table.php:68
+#: ../inc/subscribers-table.php:83
 msgid "Created"
 msgstr ""
 
-#: ../inc/subscribers-table.php:69
+#: ../inc/subscribers-table.php:84
 msgid "Note"
 msgstr ""
 
-#: ../inc/subscribers-table.php:70
+#: ../inc/subscribers-table.php:85
 msgid "Subscription Type"
 msgstr ""
 
-#: ../inc/subscribers-table.php:77
+#: ../inc/subscribers-table.php:86
+msgid "Subscribed to"
+msgstr ""
+
+#: ../inc/subscribers-table.php:93
 msgid "Cancel subscriptions"
 msgstr ""
 
-#: ../inc/subscribers-table.php:106
+#: ../inc/subscribers-table.php:122
 msgid "Subscription(s) deleted"
 msgstr ""
 
-#: ../inc/subscribers-table.php:115
+#: ../inc/subscribers-table.php:131
 msgid "Confirmation mail sent"
 msgstr ""
 
-#: ../inc/subscribers-table.php:129
+#: ../inc/subscribers-table.php:145
 msgid "Subscription confirmed"
 msgstr ""
 
@@ -746,35 +773,35 @@ msgstr ""
 msgid "Please confirm subscription"
 msgstr ""
 
-#: ../inc/mail-templates/mail-template.php:78
+#: ../inc/mail-templates/mail-template.php:79
 #, php-format
 msgid "by %s on %s"
 msgstr ""
 
-#: ../inc/mail-templates/mail-template.php:111
+#: ../inc/mail-templates/mail-template.php:112
 msgid "Read more..."
 msgstr ""
 
-#: ../inc/mail-templates/mail-template.php:304
+#: ../inc/mail-templates/mail-template.php:252
 #, php-format
 msgid "You are subscribed to email updates from <a href=\"%s\">%s</a>"
 msgstr ""
 
-#: ../inc/mail-templates/mail-template.php:306
+#: ../inc/mail-templates/mail-template.php:254
 #, php-format
 msgid "To manage your subscriptions, <a href=\"%s\">click here</a>."
 msgstr ""
 
-#: ../inc/mail-templates/mail-template.php:308
+#: ../inc/mail-templates/mail-template.php:256
 #, php-format
 msgid "To stop receiving these emails, <a href=\"%s\">click here</a>."
 msgstr ""
 
-#: ../inc/mail-templates/mail-template.php:375
+#: ../inc/mail-templates/mail-template.php:318
 msgid "User key undefined"
 msgstr ""
 
-#: ../inc/mail-templates/mail-template.php:387
+#: ../inc/mail-templates/mail-template.php:331
 msgid "User content empty"
 msgstr ""
 

@@ -5,6 +5,18 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.4.7 - 2013/10/21
+----------------------------------------------------------------------
+Removing default value from a text column in DB 
+Fixed "Inmediately" typo
+CPTs without any taxonomy were not being sent
+Fixed error on sending categories that were not saved yet
+Splitted functionality from templates and content generator
+Improved logging system
+Improved logs screen layout 
+Added new column on subscribers table 
+Fixed issue with %title% wildcard
+
 2.4.6 - 2013/09/23
 ----------------------------------------------------------------------
 * Fixed fatal error for single sites
