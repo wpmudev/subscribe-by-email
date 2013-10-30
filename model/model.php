@@ -424,6 +424,10 @@ class Incsub_Subscribe_By_Email_Model {
         global $wpdb;
 
         $emails_list = $this->get_log_emails_list( $id );
+
+        if ( empty( $emails_list ) )
+            return;
+        
         $finished = true;
         foreach ( $emails_list as $email_details ) {
             if ( $email_details['status'] == false ) {

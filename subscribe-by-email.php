@@ -57,8 +57,6 @@ class Incsub_Subscribe_By_Email {
 
 		add_action( 'widgets_init', array( &$this, 'widget_init' ) );
 
-		// add_action( 'add_user_to_blog', array( &$this, 'add_user_to_blog' ), 10, 3 );
-
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
 
 		add_action( 'plugins_loaded', array( &$this, 'load_text_domain' ) );
@@ -272,7 +270,6 @@ class Incsub_Subscribe_By_Email {
 							$new_taxonomies[ $post_type ][ $taxonomy_slug ] = array( 'all' );
 						}
 					}
-					
 				}
 			}
 
