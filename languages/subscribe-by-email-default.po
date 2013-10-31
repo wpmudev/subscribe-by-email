@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Subscribe By Email\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-10-21 18:28+0100\n"
-"PO-Revision-Date: 2013-10-21 18:28+0100\n"
+"POT-Creation-Date: 2013-10-31 17:56+0100\n"
+"PO-Revision-Date: 2013-10-31 17:56+0100\n"
 "Last-Translator: Ignacio <igmoweb@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -13,19 +13,19 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../subscribe-by-email.php:353
+#: ../subscribe-by-email.php:348
 msgid "Sorry, your subscription no longer exists, please subscribe again."
 msgstr ""
 
-#: ../subscribe-by-email.php:356
+#: ../subscribe-by-email.php:351
 msgid "Thank you, your subscription has been confirmed."
 msgstr ""
 
-#: ../subscribe-by-email.php:373
+#: ../subscribe-by-email.php:368
 msgid "Your email subscription has been succesfully cancelled."
 msgstr ""
 
-#: ../subscribe-by-email.php:393
+#: ../subscribe-by-email.php:388
 msgid "Go to site"
 msgstr ""
 
