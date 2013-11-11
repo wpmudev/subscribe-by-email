@@ -93,6 +93,7 @@ class Incsub_Subscribe_By_Email_Model {
               mail_date bigint(20) NOT NULL,
               mail_settings text DEFAULT '',
               mails_list text DEFAULT '',
+              max_email_ID bigint(20) NOT NULL,
               PRIMARY KEY  (id)
             )  ENGINE=MyISAM $db_charset_collate;";
        
@@ -174,13 +175,13 @@ class Incsub_Subscribe_By_Email_Model {
 
         $total = $wpdb->get_var( str_replace( 'SELECT *', 'SELECT COUNT(subscription_ID)', $query) );
 
-        if ( $sort['email'][1] )
+        if ( ! empty( $sort['email'][1] ) )
             $query .= " ORDER BY " . $sort['email'][0] . " " . $sort['email'][1];
 
-        if ( $sort['created'][1] )
+        if ( ! empty( $sort['created'][1] ) )
           $query .= " ORDER BY " . $sort['created'][0] . " " . $sort['created'][1];
 
-        if ( $sort['subscription_type'][1] )
+        if ( ! empty( $sort['subscription_type'][1] ) )
           $query .= " ORDER BY " . $sort['subscription_type'][0] . " " . $sort['subscription_type'][1];
 
         $query .= " LIMIT " . intval( ( $current_page - 1 ) * $per_page ) . ", " . intval( $per_page );
@@ -194,6 +195,8 @@ class Incsub_Subscribe_By_Email_Model {
         
         return $results;
     }
+
+
 
     public function get_all_subscribers( $count = false ) {
         global $wpdb;
@@ -366,18 +369,10 @@ class Incsub_Subscribe_By_Email_Model {
     }
 
 
-    public function add_new_mail_log( $to, $subject ) {
+    public function add_new_mail_log( $subject ) {
         global $wpdb;
 
-        $emails = array();
-        foreach ( $to as $email_details ) {
-            $status = isset( $email_details['status'] ) ? $email_details['status'] : false;
-            $emails[ $email_details['id'] ] = array(
-                'id' => $email_details['id'],
-                'email' => $email_details['email'],
-                'status' => $status
-            );
-        }
+        $max_id = $wpdb->get_var( "SELECT MAX(subscription_ID) max_id FROM $this->subscriptions_table" );
 
         $wpdb->insert( 
             $this->subscriptions_log_table,
@@ -386,19 +381,33 @@ class Incsub_Subscribe_By_Email_Model {
                 'mail_recipients' => 0,
                 'mail_date' => current_time( 'timestamp' ),
                 'mail_settings' => '',
-                'mails_list' => maybe_serialize( $emails )
+                'mails_list' => '',
+                'max_email_ID' => $max_id
             ),
             array(
                 '%s',
                 '%d',
                 '%d',
                 '%s',
-                '%s'
+                '%s',
+                '%d'
             )
         );
 
         return $wpdb->insert_id;
 
+    }
+
+    public function update_mail_log_subject( $log_id, $subject ) {
+        global $wpdb;
+
+        $wpdb->update(
+            $this->subscriptions_log_table,
+            array( 'mail_subject' => $subject ),
+            array( 'id' => $log_id ),
+            array( '%s' ),
+            array( '%d' )
+        );
     }
 
     public function get_remaining_batch_mail() {
@@ -422,61 +431,56 @@ class Incsub_Subscribe_By_Email_Model {
 
     public function clear_mail_log_settings( $id ) {
         global $wpdb;
+      
 
-        $emails_list = $this->get_log_emails_list( $id );
+        $wpdb->update(
+            $this->subscriptions_log_table,
+            array( 'mail_settings' => '' ),
+            array( 'id' => $id ),
+            array( '%s' ),
+            array( '%d' )
+        );
 
-        if ( empty( $emails_list ) )
-            return;
-        
-        $finished = true;
-        foreach ( $emails_list as $email_details ) {
-            if ( $email_details['status'] == false ) {
-                $finished = false;
-                break;
-            }
-        }        
-
-        if ( $finished ) {
-            $wpdb->update(
-                $this->subscriptions_log_table,
-                array( 'mail_settings' => '' ),
-                array( 'id' => $id ),
-                array( '%s' ),
-                array( '%d' )
-            );
-        }
     }
 
-    public function increment_mail_log( $id, $email_sent ) {
+    public function increment_mail_log( $id ) {
         global $wpdb;
-
-        $emails_list = $this->get_log_emails_list( $id );
-        if ( isset( $emails_list[ $email_sent['id'] ] ) ) {
-
-            if ( $email_sent['status'] != false ) {
-                $emails_list[ $email_sent['id'] ]['status'] = $email_sent['status'];
-            }
-            else {
-                if ( $emails_list[ $email_sent['id'] ]['status'] == false )
-                    $emails_list[ $email_sent['id'] ]['status'] = true;
-            }
-
-
-
-            $this->update_log_emails_list( $id, $emails_list );
-        }
 
         $wpdb->query( $wpdb->prepare( "UPDATE $this->subscriptions_log_table SET mail_recipients = mail_recipients + 1 WHERE id = %d", $id ) );
 
-        unset( $emails_list );
-
     }
 
-    public function get_log_emails_list( $id ) {
+    public function _get_log_emails_list( $id ) {
         global $wpdb;
 
         $emails_list = $wpdb->get_var( $wpdb->prepare( "SELECT mails_list FROM $this->subscriptions_log_table WHERE id = %d", $id ) );
         return maybe_unserialize( $emails_list );
+    }
+
+    public function get_log_emails_list( $log_id, $batch_size ) {
+        global $wpdb;
+
+        $log = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_log_table WHERE id = %d", $log_id ) );
+
+        if ( empty( $log ) )
+            return false;
+
+        $continue_from = $log->mail_recipients;
+        $end_on = $log->max_email_ID;
+
+        $subscribers = $wpdb->get_col( 
+            $wpdb->prepare( 
+                "SELECT subscription_email FROM $this->subscriptions_table 
+                WHERE confirmation_flag = 1 
+                AND subscription_ID <= %d
+                LIMIT %d, %d",
+                $end_on,
+                $continue_from,
+                $batch_size 
+            )
+        );
+
+        return $subscribers;
     }
 
     public function update_log_emails_list( $id, $emails_list ) {
@@ -565,5 +569,11 @@ class Incsub_Subscribe_By_Email_Model {
             array( '%s' ),
             array( '%s' )
         );
+    }
+
+    public function drop_schema() {
+        global $wpdb;
+        $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_table" );
+        $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_log_table" );
     }
 }

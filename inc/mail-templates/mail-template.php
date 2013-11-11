@@ -14,6 +14,8 @@ class Incsub_Subscribe_By_Email_Template {
 
 	private $content_generator;
 
+	private $logger = null;
+
 	public function __construct( $settings, $dummy = false ) {
 		$this->settings = $settings;
 		$this->dummy = $dummy;
@@ -281,41 +283,40 @@ class Incsub_Subscribe_By_Email_Template {
 	/**
 	 * Send the mail based on the template
 	 * 
-	 * @param Array $to List of emails
-	 * @param Integer $log_id If we have to continue sending mails from a log that did not finish last time
+	 * @param Integer $log_id log ID
 	 */
-	public function send_mail( $to, $log_id = false ) {
+	public function send_mail( $log_id ) {
 
-		$to = ( ! $to ) ? array() : $to;
-
-		if ( is_string( $to ) )
-			$to = array( 0 => array( 'email' => $to ) );
-
-		$mail_log_id = 0;
-		if ( $log_id ) {
+		if ( is_integer( $log_id ) )
 			$mail_log_id = absint( $log_id );
+		else
+			return false;
+
+		$model = Incsub_Subscribe_By_Email_Model::get_instance();
+
+		if ( $mail_log_id ) {
+			$emails_list = $model->get_log_emails_list( $mail_log_id, absint( $this->settings['mails_batch_size'] ) );
+			if ( $emails_list === false )
+				return false;
 		}
 
 		add_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
 		add_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		add_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
 
-		$model = Incsub_Subscribe_By_Email_Model::get_instance();
+		
 		$mails_sent = 0;
 
 		// We are going to try to send the mail to all subscribers
 		$sent_to_all_subscribers = true;
-		foreach ( $to as $mail_key => $mail ) {
+		foreach ( $emails_list as $mail ) {
 
 			$jump_user = false;
-
-			if ( $mail_log_id && isset( $mail['status'] ) && $mail['status'] != false ) {
-				continue;
-			}
+			$status = true;
 
 			$key = $model->get_user_key( $mail['email'] );
 			if ( empty( $key ) && ! $this->dummy ) {
-				$mail['status'] = __( 'User key undefined', INCSUB_SBE_LANG_DOMAIN );
+				$status = __( 'User key undefined', INCSUB_SBE_LANG_DOMAIN );
 				$jump_user = true;
 				$key = false;
 			}
@@ -328,7 +329,7 @@ class Incsub_Subscribe_By_Email_Template {
 				$user_content = $this->content_generator->filter_user_content( $key );
 
 				if ( empty( $user_content ) ) {
-					$mail['status'] = __( 'User content empty', INCSUB_SBE_LANG_DOMAIN );
+					$status = __( 'User content empty', INCSUB_SBE_LANG_DOMAIN );
 					$jump_user = true;
 				}
 					
@@ -346,16 +347,19 @@ class Incsub_Subscribe_By_Email_Template {
 					wp_mail( $mail['email'], $this->subject, $content );
 				}
 				
-				// Creating a new log or incrementiung an existing one
-				if ( $mails_sent == 0 && $mail_log_id == 0 ) {
-					$mail_log_id = $model->add_new_mail_log( $to, $this->subject );
-					if ( ! isset( $mail['status'] ) )
-						$mail['status'] = true;
-					$model->increment_mail_log( $mail_log_id, $mail );
+				if ( $status === true )
+					$status == __( 'Sent', INCSUB_SBE_LANG_DOMAIN );
+
+				// Creating a new log or incrementing an existing one
+				if ( $mails_sent == 0 ) {
+					$model->update_mail_log_subject( $mail_log_id, $this->subject );
 				}
-				else {
-					$model->increment_mail_log( $mail_log_id, $mail );
-				}
+
+				if ( $this->logger == null )
+					$this->logger = new Subscribe_By_Email_Logger( $mail_log_id );
+
+				$model->increment_mail_log( $mail_log_id );
+				$this->logger->write( $mail, $status );
 				
 				$mails_sent++;
 
@@ -366,7 +370,6 @@ class Incsub_Subscribe_By_Email_Template {
 
 					// Now saving the data to send the rest of the mails later
 					$mail_settings = array(
-						'email_from' => $mail['id'],
 						'posts_ids' => $this->content_generator->get_posts_ids()
 					);
 

@@ -124,6 +124,7 @@ class Incsub_Subscribe_By_Email {
 		define( 'INCSUB_SBE_VERSION', '2.4.8' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+		define( 'INCSUB_SBE_LOGS_DIR', WP_CONTENT_DIR . '/subscribe-by-email-logs' );
 
 		define( 'INCSUB_SBE_LANG_DOMAIN', 'subscribe-by-email' );
 
@@ -164,6 +165,9 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/follow-button.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/manage-subscription.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/logger.php' );
+
+
 	}
 
 	public function activate() {
@@ -452,10 +456,10 @@ class Incsub_Subscribe_By_Email {
 			$mail_log = $model->get_remaining_batch_mail();
 
 			if ( ! empty( $mail_log ) ) {
+
 				$mail_settings = maybe_unserialize( $mail_log['mail_settings'] );
-				$emails_from = absint( $mail_settings['email_from'] );
 				$posts_ids = $mail_settings['posts_ids'];
-				$log_id = $mail_log['id'];
+				$log_id = absint( $mail_log['id'] );
 
 				$this->send_mails( $posts_ids, $log_id );	
 			}
@@ -474,13 +478,6 @@ class Incsub_Subscribe_By_Email {
 		
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 
-		if ( $log_id ) {
-			$emails_list = $model->get_log_emails_list( $log_id );
-		}
-		else {
-			$emails_list = $model->get_email_list();
-		}
-
 		$settings = incsub_sbe_get_settings();
 		$args = $settings;
 		if ( ! empty( $posts_ids ) )
@@ -490,7 +487,13 @@ class Incsub_Subscribe_By_Email {
 
 		$mail_template = new Incsub_Subscribe_By_Email_Template( $args, false );
 
-		$mail_template->send_mail( $emails_list, $log_id );
+		if ( ! $log_id )
+			$log_id = $model->add_new_mail_log( '' );
+
+
+		$mail_template->send_mail( $log_id );
+
+		return $log_id;
 	}
 
 	/**
@@ -600,4 +603,5 @@ class Incsub_Subscribe_By_Email {
 
 }
 
-new Incsub_Subscribe_By_Email();
+global $subscribe_by_email_plugin;
+$subscribe_by_email_plugin = new Incsub_Subscribe_By_Email();

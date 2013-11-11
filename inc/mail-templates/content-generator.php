@@ -42,6 +42,10 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 
 			$content = $query->posts;
 			remove_filter( 'posts_where', array( &$this, 'set_wp_query_filter' ) );
+
+			foreach ( $content as $post ) {
+				$this->post_ids[] = $post->ID;
+			}
 		}
 		else {
 			$content = $this->get_dummy_content();
