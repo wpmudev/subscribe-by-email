@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Ignacio (Incsub)
-Version: 2.4.8
+Version: 2.4.9
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -51,6 +51,7 @@ class Incsub_Subscribe_By_Email {
 		
 		add_action( 'transition_post_status', array( &$this, 'process_instant_subscriptions' ), 2, 3);
 		add_action( 'init', array( &$this, 'process_scheduled_subscriptions' ), 2, 3);
+		add_action( 'init', array( &$this, 'maybe_delete_logs' ) );
 
 		register_activation_hook( __FILE__, array( &$this, 'activate' ) );
 		register_deactivation_hook( __FILE__, array( &$this, 'deactivate' ) );
@@ -121,7 +122,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.4.8' );
+		define( 'INCSUB_SBE_VERSION', '2.4.9' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'INCSUB_SBE_LOGS_DIR', WP_CONTENT_DIR . '/subscribe-by-email-logs' );
@@ -142,8 +143,6 @@ class Incsub_Subscribe_By_Email {
 	 */
 	private function includes() {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/subscribers-table.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/log-table.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/uninstall.php' );
 			
 
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-page.php' );
@@ -288,6 +287,20 @@ class Incsub_Subscribe_By_Email {
 			$model = incsub_sbe_get_model();
 			$model->create_squema();
 			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+		}
+
+		if ( version_compare( $current_version, '2.4.9', '<' ) ) {
+
+			set_transient( 'incsub_sbe_updating', true, 1800 );
+			$model = incsub_sbe_get_model();
+			$model->create_squema();
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
+			incsub_sbe_upgrade_249();
+
+			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+
+			delete_transient( 'incsub_sbe_updating' );
+
 		}
 		
 	}
@@ -509,6 +522,9 @@ class Incsub_Subscribe_By_Email {
 	public function process_instant_subscriptions( $new_status, $old_status, $post ) {
 		$settings = incsub_sbe_get_settings();
 
+		if ( get_transient( 'incsub_sbe_updating' ) )
+			return;
+
 		if ( in_array( $post->post_type, $settings['post_types'] ) && $new_status != $old_status && 'publish' == $new_status && $settings['frequency'] == 'inmediately' ) {
 			//send emails
 			$this->send_mails( array( $post->ID ) );	
@@ -517,6 +533,9 @@ class Incsub_Subscribe_By_Email {
 
 	public function process_scheduled_subscriptions() {
 		$settings = incsub_sbe_get_settings();
+
+		if ( get_transient( 'incsub_sbe_updating' ) )
+			return;
 
 		if ( 'weekly' == $settings['frequency'] && $next_time = get_option( self::$freq_weekly_transient_slug ) ) {
 			if ( current_time( 'timestamp' ) > $next_time ) {
@@ -597,6 +616,27 @@ class Incsub_Subscribe_By_Email {
 		}
 
 		
+	}
+
+	public function maybe_delete_logs() {
+		if ( get_transient( 'incsub_sbe_updating' ) )
+			return;
+
+		if ( ! get_transient( 'incsub_sbe_check_logs' ) ) {
+			$settings = incsub_sbe_get_settings();
+			$model = incsub_sbe_get_model();
+
+			$days_old = absint( $settings['keep_logs_for'] );
+			$timestamp_old = current_time( 'timestamp' ) - ( $days_old * 24 * 60 * 60 );
+			$logs_ids = $model->get_old_logs_ids( $timestamp_old );
+
+			$model->delete_log( $logs_ids );
+			
+			foreach ( $logs_ids as $log_id ) {
+				Subscribe_By_Email_Logger::delete_log( $log_id );
+			}
+			set_transient( 'incsub_sbe_check_logs', true, 86400 ); // We'll check every day
+		}
 	}
 
 

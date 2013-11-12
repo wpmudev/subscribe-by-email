@@ -19,7 +19,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		$this->tabs = array(
 			'general' => __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ),
 			'content' => __( 'Contents', INCSUB_SBE_LANG_DOMAIN ),
-			'template' => __( 'Mail template', INCSUB_SBE_LANG_DOMAIN )
+			'template' => __( 'Mail template', INCSUB_SBE_LANG_DOMAIN ),
+			'logs' => __( 'Logs', INCSUB_SBE_LANG_DOMAIN )
 		);
 
 		$args = array(
@@ -160,6 +161,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			add_settings_field( 'featured-images', __( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_featured_image' ), $this->get_menu_slug(), 'other-styling-settings' ); 
 
 			add_settings_section( 'email-preview', __( 'Email preview', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_preview_section' ), $this->get_menu_slug() );
+		}
+		elseif ( $this->get_current_tab() == 'logs' ) {
+			add_settings_section( 'logs-settings', __( 'Logo', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			add_settings_field( 'keep-logs-for', __( 'Keep logs files during', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_keep_logs_for_field' ), $this->get_menu_slug(), 'logs-settings' ); 
 		}
 
 	}
@@ -613,6 +618,12 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		<?php
 	}
 
+	public function render_keep_logs_for_field() {
+		?>
+			<input type="number" class="small-text" size="2" name="<?php echo $this->settings_name; ?>[keep_logs_for]" value="<?php echo absint( $this->settings['keep_logs_for'] ); ?>" /> <?php _e( 'Days', INCSUB_SBE_LANG_DOMAIN ); ?> <br/><span class="description"><?php _e( '31 max.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+		<?php
+	}
+
 
 	/**
 	 * Sanitizes the settings and return the values to be saved
@@ -807,6 +818,22 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				}
 			}
 
+		}
+
+		if ( isset( $input['submit_settings_logs'] ) ) {
+			if ( ! empty( $input['keep_logs_for'] ) ) {
+				$option = absint( $input['keep_logs_for'] );
+				if ( $option > 31 ) {
+					$new_settings['keep_logs_for'] = 31;
+				}
+				elseif ( $option < 1 ) {
+					$new_settings['keep_logs_for'] = 1;	
+				}
+				else {
+					$new_settings['keep_logs_for'] = $option;
+				}
+			}
+				
 		}
 
 		return $new_settings;

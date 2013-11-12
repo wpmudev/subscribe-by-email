@@ -23,6 +23,14 @@ class Subscribe_By_Email_Logger {
 		return true;
 	}
 
+	public function touch() {
+		global $wp_filesystem;
+
+		$wp_filesystem->touch( $this->filename );
+		
+		return true;
+	}
+
 	public function create_logs_folder() {
 		global $wp_filesystem;
 
@@ -63,5 +71,16 @@ class Subscribe_By_Email_Logger {
 
 	public static function read_line( $fp ) {
 		return fgets( $fp );
+	}
+
+	public static function delete_log( $log_id ) {
+		global $wp_filesystem;
+
+		if ( null == $wp_filesystem )
+			WP_Filesystem();
+
+		$filename = self::get_filename( $log_id );
+
+		$wp_filesystem->delete( $filename );
 	}
 }

@@ -287,8 +287,11 @@ class Incsub_Subscribe_By_Email_Template {
 	 */
 	public function send_mail( $log_id ) {
 
+		$mail_log_id = false;
 		if ( is_integer( $log_id ) )
 			$mail_log_id = absint( $log_id );
+		elseif ( is_string( $log_id ) && $this->dummy )
+			$emails_list = array( $log_id );
 		else
 			return false;
 
@@ -314,9 +317,9 @@ class Incsub_Subscribe_By_Email_Template {
 			$jump_user = false;
 			$status = true;
 
-			$key = $model->get_user_key( $mail['email'] );
+			$key = $model->get_user_key( $mail );
 			if ( empty( $key ) && ! $this->dummy ) {
-				$status = __( 'User key undefined', INCSUB_SBE_LANG_DOMAIN );
+				$status = 2;
 				$jump_user = true;
 				$key = false;
 			}
@@ -329,7 +332,7 @@ class Incsub_Subscribe_By_Email_Template {
 				$user_content = $this->content_generator->filter_user_content( $key );
 
 				if ( empty( $user_content ) ) {
-					$status = __( 'User content empty', INCSUB_SBE_LANG_DOMAIN );
+					$status = 3;
 					$jump_user = true;
 				}
 					
@@ -344,11 +347,11 @@ class Incsub_Subscribe_By_Email_Template {
 			if ( ! $this->dummy ) {
 
 				if ( ! $jump_user ) {
-					wp_mail( $mail['email'], $this->subject, $content );
+					wp_mail( $mail, $this->subject, $content );
 				}
 				
 				if ( $status === true )
-					$status == __( 'Sent', INCSUB_SBE_LANG_DOMAIN );
+					$status = 1;
 
 				// Creating a new log or incrementing an existing one
 				if ( $mails_sent == 0 ) {
@@ -384,12 +387,12 @@ class Incsub_Subscribe_By_Email_Template {
 				}
 			}
 			else {			
-				wp_mail( $mail['email'], $this->subject, $content );
+				wp_mail( $mail, $this->subject, $content );
 			}
 		}
 
 		// If we have sent the mail to all subscribers we won't need the settings in that log for the future
-		if ( $sent_to_all_subscribers )
+		if ( $sent_to_all_subscribers && ! $this->dummy )
 			$model->clear_mail_log_settings( $mail_log_id );
 
 

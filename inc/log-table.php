@@ -17,38 +17,37 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
         
     }
 
-    function column_subject( $item ) {        
-        return $item['mail_subject'];
-    }
 
     function column_date( $item ) { 
         return date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int)$item['mail_date'] );
     }
 
     function column_recipients( $item ) {
-        $emails_list = maybe_unserialize( $item['mails_list'] );
-        if ( is_array( $emails_list ) && ! empty( $emails_list ) ) {
-            $count = 0;
-            foreach ( $emails_list as $email ) {
-                if ( $email['status'] != false )
-                    $count++;
-            }
+        $log_file = Subscribe_By_Email_Logger::open_log( $item['id'] );
+        if ( absint( $item['mail_recipients'] ) != 0 && is_resource( $log_file ) ) {
             $link = add_query_arg( 'log_id', $item['id'], Incsub_Subscribe_By_Email::$admin_sent_emails_page->get_permalink() );
-            return $count . ' <a href="' . $link . '">' . __( 'Details &rarr;', INCSUB_SBE_LANG_DOMAIN ) . '</a>';
+            return $item['mail_recipients'] . ' <a href="' . $link . '">' . __( 'Details &rarr;', INCSUB_SBE_LANG_DOMAIN ) . '</a>';
         }
         return $item['mail_recipients'];
     }
 
     function column_status( $item ) {
-        if ( empty( $item['mail_settings'] ) )
+        if ( absint( $item['mail_recipients'] ) == 0 && empty( $item['mail_settings'] ) )
+            return '<span style="color:#DF2929; font-weight:bold;">' . __( 'Failed', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
+        if ( empty( $item['mail_settings'] ) && absint( $item['mail_recipients'] ) != 0 )
             return __( 'Finished', INCSUB_SBE_LANG_DOMAIN );
         else
             return '<span style="color:#DF2929; font-weight:bold;">' . __( 'Pending', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
     }
 
+    function column_subject( $item ) {
+        return stripslashes_deep( $item['mail_subject'] );
+    }
+
     function get_columns(){
         $columns = array(
             'date'   => __( 'Date', INCSUB_SBE_LANG_DOMAIN ),
+            'subject'   => __( 'Subject', INCSUB_SBE_LANG_DOMAIN ),
             'recipients'    => __( 'Recipients no.', INCSUB_SBE_LANG_DOMAIN ),
             'status'   => __( 'Status', INCSUB_SBE_LANG_DOMAIN )
         );

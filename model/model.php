@@ -196,7 +196,16 @@ class Incsub_Subscribe_By_Email_Model {
         return $results;
     }
 
+    public function get_subscribers_count( $max_id ) {
+        global $wpdb;
 
+        $results = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(subscription_ID) FROM $this->subscriptions_table WHERE confirmation_flag = 1 AND subscription_ID <= %d", $max_id ) );
+
+        if ( empty( $results ) )
+            return 0;
+
+        return absint( $results );
+    }
 
     public function get_all_subscribers( $count = false ) {
         global $wpdb;
@@ -298,7 +307,7 @@ class Incsub_Subscribe_By_Email_Model {
     
     public function get_subscriber_id( $email ) {
         global $wpdb;
-        return $wpdb->get_var( $wpdb->prepare( "SELECT * FROM $this->subscriptions_table WHERE subscription_email = %d", $email ) );
+        return $wpdb->get_var( $wpdb->prepare( "SELECT * FROM $this->subscriptions_table WHERE subscription_email = %s", $email ) );
     }
 
     public function confirm_subscription( $key ) {
@@ -537,6 +546,26 @@ class Incsub_Subscribe_By_Email_Model {
         global $wpdb;
 
         return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_log_table WHERE id = %d", $id ) );
+    }
+
+    public function get_old_logs_ids( $time ) {
+        global $wpdb;
+
+        return $wpdb->get_col( $wpdb->prepare( "SELECT id FROM $this->subscriptions_log_table WHERE mail_date < %d AND mail_settings = ''", $time ) );
+    }
+
+    public function delete_log( $log_id ) {
+        global $wpdb;
+
+        if ( is_array( $log_id ) ) {
+            $where = "WHERE id IN (" . implode( ', ', $log_id ) . ")";
+        }
+        else {
+            $where = $wpdb->prepare( "WHERE id = %d", $log_id );   
+        }
+
+        $query = "DELETE FROM $this->subscriptions_log_table $where";
+        $wpdb->query( $query );
     }
 
 
