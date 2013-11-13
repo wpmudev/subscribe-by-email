@@ -128,7 +128,8 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 		$user_settings = $model->get_subscriber_settings( $key );
 
 		// These are the post types that the user wants to get
-		$user_post_types = ! $user_settings ? $this->post_types : $user_settings['post_types'];
+		$user_post_types = empty( $user_settings ) || ! is_array( $user_settings ) ? $this->post_types : $user_settings['post_types'];
+		
 
 		$user_content = array();
 

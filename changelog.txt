@@ -5,6 +5,15 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.4.9 - 2013/11/13
+----------------------------------------------------------------------
+* Fixed memory issue with logs.
+* Improved performance
+* Logs are now saved in files
+* New setting: Set how often are the logs erased.
+* More details in logs.
+* Minor fixes.
+
 2.4.8 - 2013/10/31
 ----------------------------------------------------------------------
 * Fixed warning on activation when the plugin tables are empty

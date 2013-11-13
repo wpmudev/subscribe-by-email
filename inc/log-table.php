@@ -47,7 +47,6 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
     function get_columns(){
         $columns = array(
             'date'   => __( 'Date', INCSUB_SBE_LANG_DOMAIN ),
-            'subject'   => __( 'Subject', INCSUB_SBE_LANG_DOMAIN ),
             'recipients'    => __( 'Recipients no.', INCSUB_SBE_LANG_DOMAIN ),
             'status'   => __( 'Status', INCSUB_SBE_LANG_DOMAIN )
         );
