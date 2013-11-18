@@ -55,3 +55,8 @@ function incsub_sbe_upgrade_249() {
 
     return $errors;
 }
+
+function incsub_sbe_upgrade_25() {
+    $model = incsub_sbe_get_model();
+    $model->create_squema();
+}

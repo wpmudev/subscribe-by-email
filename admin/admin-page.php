@@ -105,4 +105,39 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 		return $this->capability;
 	}
 
+	/**
+	 * Want to render a WP native page? You can use this function
+	 * Remember to set a table.form-table HTML tag before and after 
+	 * 
+	 * This function is useful when not using the WP Settings API.
+	 * For example, Network Pages does not accept that API so you
+	 * need to add fields manually. This function will save
+	 * a loot of code.
+	 * 
+	 * @param String $title Title of the row
+	 * @param string/Array $callback Method that will render the markup
+	 */
+	protected function render_row( $title, $callback ) {
+		?>
+			<tr valign="top">
+				<th scope="row"><label><?php echo $title; ?></label></th>
+				<td>
+					<?php 
+						if ( is_array( $callback ) ) {
+							if ( ! is_object( $callback[0] ) || ( is_object( $callback[0] ) && ! method_exists( $callback[0], $callback[1] ) ) ) {
+								echo '';
+							}
+							else {
+								call_user_func( $callback );
+							}
+						}
+						else {
+							call_user_func( $callback );
+						}
+					?>
+				</td>
+			</tr>
+		<?php
+	}
+
 }

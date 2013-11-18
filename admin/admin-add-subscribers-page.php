@@ -26,7 +26,6 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 	public function render_content() {
 
 		?>
-			
 
 				<?php 
 					$errors = get_settings_errors( 'subscribe' ); 
@@ -73,9 +72,27 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 					<table class="form-table">
 						<tbody>
 							<tr valign="top">
+								<th scope="row"><?php _e( 'First Name', INCSUB_SBE_LANG_DOMAIN ); ?></th>
+								<td>
+									<input type="text" class="long-text" name="subscribe-meta[first_name]"><br/>
+								</td>
+							</tr>
+							<tr valign="top">
+								<th scope="row"><?php _e( 'Last Name', INCSUB_SBE_LANG_DOMAIN ); ?></th>
+								<td>
+									<input type="text" class="long-text" name="subscribe-meta[last_name]"><br/>
+								</td>
+							</tr>
+							<tr valign="top">
+								<th scope="row"><?php _e( 'Address', INCSUB_SBE_LANG_DOMAIN ); ?></th>
+								<td>
+									<textarea name="subscribe-meta[address]" id="subscribe-address" cols="50" rows="5"></textarea>
+								</td>
+							</tr>
+							<tr valign="top">
 								<th scope="row"><?php _e( 'Email', INCSUB_SBE_LANG_DOMAIN ); ?></th>
 								<td>
-									<input type="text" class="regular-text" name="subscribe-email"><br/>
+									<input type="text" class="regular-text" name="subscribe-email"> (*)<br/>
 								</td>
 							</tr>
 							<tr valign="top">
@@ -138,8 +155,9 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 				// We are submitting a single user
 				$email = sanitize_email( $input['subscribe-email'] );
 				if ( is_email( $email ) ) {
-					$model = Incsub_Subscribe_By_Email_Model::get_instance();
-					$result = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Instant', INCSUB_SBE_LANG_DOMAIN ), $autopt );
+					$model = incsub_sbe_get_model();
+					$meta = ! empty( $_POST['subscribe-meta'] ) && is_array( $_POST['subscribe-meta'] ) ? $_POST['subscribe-meta'] : array();
+					$result = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Instant', INCSUB_SBE_LANG_DOMAIN ), $autopt, $meta );
 				}
 				else {
 					// Email not valid

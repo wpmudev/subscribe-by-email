@@ -1,6 +1,6 @@
-jQuery(document).ready(function($) {
+jQuery(window).load(function() {
 
-	var follow_box_main = $('#sbe-follow');
+	var follow_box_main = jQuery('#sbe-follow');
 
 	var sbe_opened = false;
 
@@ -8,19 +8,18 @@ jQuery(document).ready(function($) {
 		sbe_opened = true;	
 
 	
-	var follow_box = $('#sbe-follow-wrap');
+	var follow_box = jQuery('#sbe-follow-wrap');
 
-	var follow_box_height = follow_box.outerHeight() + 2;
-
+	var follow_box_height = follow_box.outerHeight();
 	if ( ! sbe_opened ) {
 		follow_box_main.animate({
 			bottom: '-' + follow_box_height + 'px'
 		},2000);
 	}
 
-	$('.sbe-follow-link').click(function(e) {
+	jQuery('.sbe-follow-link').click(function(e) {
 		e.preventDefault();
-		var _this = $(this);
+		var _this = jQuery(this);
 
 		if ( sbe_opened ) {
 			_this.find('span').removeClass('sbe-opened');
@@ -36,8 +35,7 @@ jQuery(document).ready(function($) {
 			});
 			sbe_opened = true;
 		}
-		
-		
+
 		
 	})
 });

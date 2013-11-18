@@ -63,7 +63,9 @@
 
 }
 
-#sbe-follow-wrap input[type=email] {
+#sbe-follow-wrap input[type=email],
+#sbe-follow-wrap input[type=text],
+#sbe-follow-wrap textarea {
     background: #9C9C9C;
     border-color: #494949;
     color: white;
@@ -72,16 +74,24 @@
     box-sizing: border-box;
 	padding: 3px 6px;
 }
-#sbe-follow-wrap input[type=email]::-webkit-input-placeholder { /* WebKit browsers */
+#sbe-follow-wrap input[type=email]::-webkit-input-placeholder, /* WebKit browsers */
+#sbe-follow-wrap input[type=text]::-webkit-input-placeholder, /* WebKit browsers */
+#sbe-follow-wrap textarea::-webkit-input-placeholder {
     color:    #FFF;
 }
-#sbe-follow-wrap input[type=email]:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+#sbe-follow-wrap input[type=email]:-moz-placeholder, /* Mozilla Firefox 4 to 18 */
+#sbe-follow-wrap input[type=text]:-moz-placeholder, /* Mozilla Firefox 4 to 18 */
+#sbe-follow-wrap textarea:-moz-placeholder {
     color:    #FFF;
 }
-#sbe-follow-wrap input[type=email]::-moz-placeholder { /* Mozilla Firefox 19+ */
+#sbe-follow-wrap input[type=email]::-moz-placeholder, /* Mozilla Firefox 19+ */
+#sbe-follow-wrap input[type=text]::-moz-placeholder, /* Mozilla Firefox 19+ */
+#sbe-follow-wrap textarea::-moz-placeholder {
     color:    #FFF;
 }
-#sbe-follow-wrap input[type=email]:-ms-input-placeholder { /* Internet Explorer 10+ */
+#sbe-follow-wrap input[type=email]:-ms-input-placeholder, /* Internet Explorer 10+ */
+#sbe-follow-wrap input[type=text]:-ms-input-placeholder, /* Internet Explorer 10+ */
+#sbe-follow-wrap textarea:-ms-input-placeholder {
     color:    #FFF;
 }
 

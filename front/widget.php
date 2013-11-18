@@ -68,7 +68,22 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 						echo "MAIL ERROR";
 					}
 					else {
-						Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant', $autopt );
+						$sid = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant', $autopt );
+
+						if ( ! $sid ) {
+							echo "MAIL ERROR";
+							die();
+						}
+
+						$model = incsub_sbe_get_model();
+						if ( isset( $_POST['widget_meta']['first_name'] ) )
+							$model->add_subscriber_meta( $sid, 'first_name', stripslashes_deep( $_POST['widget_meta']['first_name'] ) );
+
+						if ( isset( $_POST['widget_meta']['last_name'] ) )
+							$model->add_subscriber_meta( $sid, 'last_name', stripslashes_deep( $_POST['widget_meta']['last_name'] ) );
+
+						if ( isset( $_POST['widget_meta']['address'] ) )
+							$model->add_subscriber_meta( $sid, 'address', stripslashes_deep( $_POST['widget_meta']['address'] ) );
 
 						$settings = incsub_sbe_get_settings();
 						if ( $settings['get_notifications'] ) {
@@ -110,6 +125,18 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	        	<p class="subscribe-by-email-error"><?php _e( 'Please, insert a valid email.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
         		<p class="subscribe-by-email-updated"><?php echo $message; ?></p>
 	        	<input type="email" class="subscribe-by-email-field" name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>">
+	        	<?php if ( ! empty( $instance['widget_meta'] ) ): ?>
+					<?php $meta = $instance['widget_meta']; ?>
+					<?php if ( in_array( 'first_name', $meta ) ): ?>
+						<input type="text" class="subscribe-by-email-field" name="widget_meta[first_name]" placeholder="<?php _e( 'Your first name', INCSUB_SBE_LANG_DOMAIN ); ?>">
+					<?php endif; ?>	
+					<?php if ( in_array( 'last_name', $meta ) ): ?>
+						<input type="text" class="subscribe-by-email-field" name="widget_meta[last_name]" placeholder="<?php _e( 'Your last name', INCSUB_SBE_LANG_DOMAIN ); ?>">
+					<?php endif; ?>	
+					<?php if ( in_array( 'address', $meta ) ): ?>
+						<textarea class="subscribe-by-email-field" name="widget_meta[address]" cols="30" rows="3" placeholder="<?php _e( 'Your address', INCSUB_SBE_LANG_DOMAIN ); ?>"></textarea>
+					<?php endif; ?>	
+				<?php endif; ?>
 	        	<?php if ( $instance['show_count'] ): ?>
 	        		<?php $count = $model->get_active_subscribers_count(); ?>
 		        	<p>
@@ -139,6 +166,18 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		$instance['show_count'] = ! empty( $new_instance['show_count'] ) ? true : false;
 		$instance['subscribed_placeholder'] = sanitize_text_field( $new_instance['subscribed_placeholder'] );
 
+		$show_meta = array(); 
+		if ( ! empty( $new_instance['show_first_name'] ) )
+			$show_meta[] = 'first_name';
+
+		if ( ! empty( $new_instance['show_last_name'] ) )
+			$show_meta[] = 'last_name';
+
+		if ( ! empty( $new_instance['show_address'] ) )
+			$show_meta[] = 'address';
+
+		$instance['widget_meta'] = $show_meta;
+
 		return $instance;
 	}
 
@@ -156,7 +195,8 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			'button_text' => __( 'Subscribe', INCSUB_SBE_LANG_DOMAIN  ),
 			'autopt' => false,
 			'show_count' => false,
-			'subscribed_placeholder' => __( 'Thank you, your email has been added to the mailing.', INCSUB_SBE_LANG_DOMAIN )
+			'subscribed_placeholder' => __( 'Thank you, your email has been added to the mailing.', INCSUB_SBE_LANG_DOMAIN ),
+			'widget_meta' => array()
 		);
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
 		<p>
@@ -174,6 +214,15 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		<p>
 			<label for="<?php echo $this->get_field_id( 'subscribed_placeholder' ); ?>"><?php _e( 'Text displayed when a user subscribes:', INCSUB_SBE_LANG_DOMAIN); ?></label>
 			<input type="text" class="widefat" id="<?php echo $this->get_field_id( 'subscribed_placeholder' ); ?>" name="<?php echo $this->get_field_name( 'subscribed_placeholder' ); ?>" value="<?php echo esc_attr( $instance['subscribed_placeholder'] ); ?>" />
+		</p>
+		<p>
+			<strong><?php _e( 'Show fields', INCSUB_SBE_LANG_DOMAIN ); ?></strong><br/>
+			<input type="checkbox" id="<?php echo $this->get_field_id( 'show_first_name' ); ?>" name="<?php echo $this->get_field_name( 'show_first_name' ); ?>" value="1" <?php checked( in_array( 'first_name', $instance['widget_meta'] ) ); ?> /> 
+			<label for="<?php echo $this->get_field_id( 'show_first_name' ); ?>"><?php _e('First name', INCSUB_SBE_LANG_DOMAIN ); ?></label><br/>
+			<input type="checkbox" id="<?php echo $this->get_field_id( 'show_last_name' ); ?>" name="<?php echo $this->get_field_name( 'show_last_name' ); ?>" value="1" <?php checked( in_array( 'last_name', $instance['widget_meta'] ) ); ?> /> 
+			<label for="<?php echo $this->get_field_id( 'show_last_name' ); ?>"><?php _e('Last name', INCSUB_SBE_LANG_DOMAIN ); ?></label><br/>
+			<input type="checkbox" id="<?php echo $this->get_field_id( 'show_address' ); ?>" name="<?php echo $this->get_field_name( 'show_address' ); ?>" value="1" <?php checked( in_array( 'address', $instance['widget_meta'] ) ); ?> /> 
+			<label for="<?php echo $this->get_field_id( 'show_address' ); ?>"><?php _e('Address', INCSUB_SBE_LANG_DOMAIN ); ?></label><br/>
 		</p>
 		<p>
 			<input type="checkbox" id="<?php echo $this->get_field_id( 'show_count' ); ?>" name="<?php echo $this->get_field_name( 'show_count' ); ?>" value="1" <?php checked( $instance['show_count'] ); ?> /> 

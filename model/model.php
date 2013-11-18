@@ -22,6 +22,7 @@ class Incsub_Subscribe_By_Email_Model {
         global $wpdb;
         
         $this->subscriptions_table = $wpdb->prefix . 'subscriptions';
+        $this->subscriptions_meta_table = $wpdb->prefix . 'subscriptions_meta';
         $this->subscriptions_log_table = $wpdb->prefix . 'subscriptions_log_table';
 
         $this->create_squema();
@@ -32,6 +33,7 @@ class Incsub_Subscribe_By_Email_Model {
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
         $this->create_subscriptions_table();
         $this->create_subscriptions_log_table();
+        $this->create_subscriptions_meta_table();
     }
 
     /**
@@ -67,6 +69,32 @@ class Incsub_Subscribe_By_Email_Model {
 
         $alter = "ALTER TABLE $this->subscriptions_table MODIFY COLUMN subscription_settings text";
         $wpdb->query( $alter );
+
+    }
+
+    private function create_subscriptions_meta_table() {
+
+        global $wpdb;
+
+         // Get the correct character collate
+        $db_charset_collate = '';
+        if ( ! empty($wpdb->charset) )
+          $db_charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+        if ( ! empty($wpdb->collate) )
+          $db_charset_collate .= " COLLATE $wpdb->collate";
+
+        $sql = "CREATE TABLE $this->subscriptions_meta_table (
+              id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+              subscription_id bigint(20) NOT NULL,
+              meta_key varchar(64) NOT NULL,
+              meta_value longtext NOT NULL,
+              PRIMARY KEY  (id),
+              UNIQUE KEY id (id),
+              KEY subscription_id (subscription_id),
+              KEY meta_key (meta_key)
+            )  ENGINE=MyISAM $db_charset_collate;";
+       
+        dbDelta($sql);
 
     }
 
@@ -600,9 +628,115 @@ class Incsub_Subscribe_By_Email_Model {
         );
     }
 
+    public function update_subscriber_email( $sid, $email ) {
+        global $wpdb;
+
+        $wpdb->update(
+            $this->subscriptions_table,
+            array( 'subscription_email' => $email ),
+            array( 'subscription_ID' => $sid ),
+            array( '%s' ),
+            array( '%d' )
+        );
+    }
+
     public function drop_schema() {
         global $wpdb;
         $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_table" );
         $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_log_table" );
+        $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_meta_table" );
+    }
+
+    public function add_subscriber_meta( $subscription_id, $meta_key, $meta_value ) {
+        global $wpdb;
+
+        $_meta_value = $this->get_subscriber_meta( $subscription_id, $meta_key );
+        if ( $_meta_value == $meta_value )
+            return true;
+
+        if ( ! empty( $_meta_value ) ) {
+            $this->update_subscriber_meta( $subscription_id, $meta_key, $meta_value );
+        }
+        else {
+            return $wpdb->insert(
+                $this->subscriptions_meta_table,
+                array(
+                    'subscription_id' => $subscription_id,
+                    'meta_key' => $meta_key,
+                    'meta_value' => maybe_serialize( $meta_value )
+                ),
+                array( '%d', '%s', '%s' )
+            );
+        }
+    }
+
+    public function get_subscriber_meta( $subscription_id, $meta_key, $default = false ) {
+        global $wpdb;
+
+        $result = $wpdb->get_var( 
+            $wpdb->prepare( 
+                "SELECT meta_value FROM $this->subscriptions_meta_table 
+                WHERE subscription_id = %d
+                AND meta_key = %s",
+                $subscription_id,
+                $meta_key
+            )
+        );
+
+        if ( empty( $result ) )
+            return $default;
+
+        return maybe_unserialize( $result );
+    }
+
+    public function update_subscriber_meta( $subscription_id, $meta_key, $meta_value ) {
+        global $wpdb;
+
+        $_meta_value = $this->get_subscriber_meta( $subscription_id, $meta_key );
+        if ( $_meta_value == $meta_value )
+            return true;
+
+        $rows_updated = $wpdb->update(
+            $this->subscriptions_meta_table,
+            array( 'meta_value' => maybe_serialize( $meta_value ) ),
+            array( 
+                'subscription_id' => $subscription_id,
+                'meta_key' => $meta_key 
+            ),
+            array( '%s' ),
+            array( '%d', '%s' )
+        );
+
+
+        if ( $rows_updated === 0 )
+            return $this->add_subscriber_meta( $subscription_id, $meta_key, $meta_value );
+
+        return true;
+    }
+
+    public function delete_subscriber_meta( $subscription_id, $meta_key ) {
+        global $wpdb;
+
+        $wpdb->query( 
+            $wpdb->prepare(
+                "DELETE FROM $this->subscriptions_meta_table 
+                WHERE subscription_id = %d
+                AND meta_key = %s",
+                $subscription_id,
+                $meta_key
+            )
+        );
+    }
+
+    public function get_subscriber_all_meta( $subscription_id ) {
+        global $wpdb;
+
+        return $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT meta_key, meta_value FROM $this->subscriptions_meta_table
+                WHERE subscription_id = %d",
+                $subscription_id
+            )
+        );  
     }
 }

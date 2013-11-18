@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: S H Mohanjith (Incsub), Ignacio (Incsub)
-Version: 2.4.9
+Version: 2.5
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -122,7 +122,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.4.9' );
+		define( 'INCSUB_SBE_VERSION', '2.5' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'INCSUB_SBE_LOGS_DIR', WP_CONTENT_DIR . '/subscribe-by-email-logs' );
@@ -302,6 +302,12 @@ class Incsub_Subscribe_By_Email {
 			delete_transient( 'incsub_sbe_updating' );
 
 		}
+
+		if ( version_compare( $current_version, '2.5', '<' ) ) {
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
+			incsub_sbe_upgrade_25();
+			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+		}
 		
 	}
 
@@ -311,11 +317,17 @@ class Incsub_Subscribe_By_Email {
 	 * 
 	 * @param Integer $subscription_id 
 	 */
-	public static function subscribe_user( $user_email, $note, $type, $autopt = false ) {
+	public static function subscribe_user( $user_email, $note, $type, $autopt = false, $meta = array() ) {
 		
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 
 		$sid = $model->add_subscriber( $user_email, $note, $type, 0 );
+
+		if ( $sid && ! empty( $meta ) ) {
+			foreach ( $meta as $meta_key => $meta_value ) {
+				$model->add_subscriber_meta( $sid, $meta_key, $meta_value );
+			}
+		}
 
 		if ( $autopt && $sid ) {
 
@@ -325,12 +337,12 @@ class Incsub_Subscribe_By_Email {
 				$model->confirm_subscription( $user_key );
 			}
 
-			return true;
+			return $sid;
 		}
 
 		if ( $sid ) {
 			self::send_confirmation_mail( $sid );
-			return true;	
+			return $sid;	
 		}
 
 		return false;

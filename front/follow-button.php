@@ -12,7 +12,7 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 	}
 
 	public function add_styles() {
-		wp_enqueue_style( 'follow-button-styles', INCSUB_SBE_ASSETS_URL . '/css/follow-button.css' );
+		wp_enqueue_style( 'follow-button-styles', INCSUB_SBE_ASSETS_URL . '/css/follow-button.css', array(), '20131118' );
 		wp_enqueue_script( 'follow-button-scripts', INCSUB_SBE_ASSETS_URL . '/js/follow-button.js', array( 'jquery' ) );
 	}
 
@@ -26,7 +26,20 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 			if ( ! is_email( $email ) )
 				return;
 
-			Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), __( 'Follow Button', INCSUB_SBE_LANG_DOMAIN ) );
+			$sid = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), __( 'Follow Button', INCSUB_SBE_LANG_DOMAIN ) );
+
+			if ( ! $sid )
+				return;
+
+			$model = incsub_sbe_get_model();
+			if ( isset( $_POST['follow_meta']['first_name'] ) )
+				$model->add_subscriber_meta( $sid, 'first_name', stripslashes_deep( $_POST['follow_meta']['first_name'] ) );
+
+			if ( isset( $_POST['follow_meta']['last_name'] ) )
+				$model->add_subscriber_meta( $sid, 'last_name', stripslashes_deep( $_POST['follow_meta']['last_name'] ) );
+
+			if ( isset( $_POST['follow_meta']['address'] ) )
+				$model->add_subscriber_meta( $sid, 'address', stripslashes_deep( $_POST['follow_meta']['address'] ) );
 
 			$link = add_query_arg( 'sbe-followsubs', 'true' );
 			wp_redirect( $link );
@@ -61,8 +74,19 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 							<p>
 								<input type="email" name="email" placeholder="<?php _e( 'Your email', INCSUB_SBE_LANG_DOMAIN ); ?>">
 							</p>
+							<?php if ( ! empty( $this->settings['follow_button_meta'] ) ): ?>
+								<?php $meta = $this->settings['follow_button_meta']; ?>
+								<?php if ( in_array( 'first_name', $meta ) ): ?>
+									<p><input type="text" name="follow_meta[first_name]" placeholder="<?php _e( 'Your first name', INCSUB_SBE_LANG_DOMAIN ); ?>"></p>
+								<?php endif; ?>	
+								<?php if ( in_array( 'last_name', $meta ) ): ?>
+									<p><input type="text" name="follow_meta[last_name]" placeholder="<?php _e( 'Your last name', INCSUB_SBE_LANG_DOMAIN ); ?>"></p>
+								<?php endif; ?>	
+								<?php if ( in_array( 'address', $meta ) ): ?>
+									<p><textarea name="follow_meta[address]" cols="30" rows="3" placeholder="<?php _e( 'Your address', INCSUB_SBE_LANG_DOMAIN ); ?>"></textarea></p>
+								<?php endif; ?>	
+							<?php endif; ?>
 							
-							<input type="hidden" name="sbe-blog-id" value="<?php echo get_current_blog_id(); ?>">
 							<input type="hidden" name="action" value="sbe-subscribe">
 							
 							<?php wp_nonce_field( 'sbe-subscribe' ); ?>

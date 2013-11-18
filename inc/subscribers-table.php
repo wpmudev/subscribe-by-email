@@ -27,11 +27,17 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
 
     function column_email( $item ) {
 
+        $edit_link = add_query_arg( array( 'action' => 'edit', 'sid' => absint( $item['subscription_ID'] ) ) );
     	$actions = array(
+            'edit'    => sprintf( __( '<a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), 
+                esc_url( $edit_link ),
+                __( 'Edit', INCSUB_SBE_LANG_DOMAIN )
+            ),
             'cancel'    => sprintf( __( '<span class="trash"><a class="trash" href="%s">%s</a></span>', INCSUB_SBE_LANG_DOMAIN ), 
             	esc_url( add_query_arg( array( 'action' => 'cancel', 'sid' => absint( $item['subscription_ID'] ) ) ) ),
             	__( 'Cancel subscription', INCSUB_SBE_LANG_DOMAIN )
-            )
+            ),
+            
         );
 
         if ( $item['confirmation_flag'] == 0 ) {
@@ -45,7 +51,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
             );
         }
         
-        return $item['subscription_email'] . $this->row_actions( $actions );
+        return '<a href="' . esc_url( $edit_link ) . '">' . $item['subscription_email'] . '</a>' . $this->row_actions( $actions );
     }
 
     function column_created( $item ) { 
