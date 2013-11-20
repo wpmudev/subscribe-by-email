@@ -20,7 +20,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			'general' => __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ),
 			'content' => __( 'Contents', INCSUB_SBE_LANG_DOMAIN ),
 			'template' => __( 'Mail template', INCSUB_SBE_LANG_DOMAIN ),
-			'logs' => __( 'Logs', INCSUB_SBE_LANG_DOMAIN )
+			'logs' => __( 'Logs', INCSUB_SBE_LANG_DOMAIN ),
+			'extra-fields' => __( 'Extra Fields', INCSUB_SBE_LANG_DOMAIN )
 		);
 
 		$args = array(
@@ -42,6 +43,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
+
+		add_action( 'admin_init', array( &$this, 'maybe_remove_extra_field' ) );
 
 		add_filter( 'plugin_action_links_' . INCSUB_SBE_PLUGIN_FILE, array( &$this, 'add_plugin_list_link' ), 10 , 2 );
 
@@ -98,6 +101,37 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			if ( 'template' == $this->get_current_tab() )
 				wp_enqueue_style( 'jquery-ui-css', INCSUB_SBE_ASSETS_URL .'css/jquery-ui/jquery-ui-1.10.3.custom.min.css' );
+
+			if ( 'extra-fields' == $this->get_current_tab() )
+				wp_enqueue_style( 'sbe-settings', INCSUB_SBE_ASSETS_URL .'css/settings.css' );				
+		}
+	}
+
+	public function maybe_remove_extra_field() {
+		$screen = get_current_screen();
+		if ( isset( $_GET['page'] ) && $this->get_menu_slug() == $_GET['page'] && $this->get_current_tab() == 'extra-fields' && isset( $_GET['remove'] ) ) {
+			if ( ! wp_verify_nonce( $_GET['_wpnonce'], 'remove_extra_field' ) )
+				return false;
+
+			$settings = incsub_sbe_get_settings();
+			if ( isset( $settings['extra_fields'][ $_GET['remove'] ] ) ) {
+				unset( $settings['extra_fields'][ $_GET['remove'] ] );
+				remove_filter( 'sanitize_option_' . $this->settings_name, array( &$this, 'sanitize_settings' ) );
+				incsub_sbe_update_settings( $settings );
+				add_filter( 'sanitize_option_' . $this->settings_name, array( &$this, 'sanitize_settings' ) );
+
+				$model = incsub_sbe_get_model();
+				$model->delete_subscriber_all_meta( $_GET['remove'] );
+				wp_redirect( 
+					add_query_arg(
+						array( 
+							'tab' => 'extra-fields',
+							'updated' => 'true' 
+						),
+						$this->get_permalink()
+					)
+				);
+			}
 		}
 	}
 
@@ -164,8 +198,12 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			add_settings_section( 'email-preview', __( 'Email preview', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_preview_section' ), $this->get_menu_slug() );
 		}
 		elseif ( $this->get_current_tab() == 'logs' ) {
-			add_settings_section( 'logs-settings', __( 'Logo', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			add_settings_section( 'logs-settings', __( 'Logs', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'keep-logs-for', __( 'Keep logs files during', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_keep_logs_for_field' ), $this->get_menu_slug(), 'logs-settings' ); 
+		}
+		elseif ( $this->get_current_tab() == 'extra-fields' ) {
+			add_settings_section( 'custom-fields', __( 'Extra Fields', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_extra_fields_section' ), $this->get_menu_slug() );
+			add_settings_field( 'custom-fields-meta', __( 'Subscribers extra fields', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribers_extra_fields_field' ), $this->get_menu_slug(), 'custom-fields' ); 
 		}
 
 	}
@@ -217,23 +255,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 */
 	public function render_content() {
 
-		$errors = get_settings_errors( $this->settings_name ); 
-		if ( ! empty( $errors ) ) {
-			?>	
-				<div class="error">
-					<ul>
-						<?php
-						foreach ( $errors as $error ) {
-							?>
-								<li><?php echo $error['message']; ?></li>
-							<?php
-						}
-						?>
-					</ul>
-				</div>
-			<?php
-		}
-		elseif ( isset( $_GET['settings-updated'] ) ) {
+		settings_errors( $this->settings_name );
+		if ( isset( $_GET['settings-updated'] ) ) {
 			?>
 				<div class="updated"><p><?php _e( 'Settings updated', INCSUB_SBE_LANG_DOMAIN ); ?></p></div>
 			<?php
@@ -642,6 +665,54 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		<?php
 	}
 
+	public function render_extra_fields_section() {
+		?>
+			<p><?php _e( 'In this screen you can add new fields that subscribers can fill when they try to subscribe via widget or Follow Button', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+		<?php
+	}
+
+
+	public function render_subscribers_extra_fields_field() {
+		?>
+			<label><?php _e( 'Field title', INCSUB_SBE_LANG_DOMAIN ); ?>
+				<input type="text" name="<?php echo $this->settings_name; ?>[extra_field_name]" />
+			</label>
+			<label><?php _e( 'Field Slug', INCSUB_SBE_LANG_DOMAIN ); ?>
+				<input type="text" name="<?php echo $this->settings_name; ?>[extra_field_slug]" />
+			</label>
+			<select name="<?php echo $this->settings_name; ?>[extra_field_type]" id="extra_field_type">
+				<option value="">-- <?php _e( 'Field type', INCSUB_SBE_LANG_DOMAIN ); ?> --</option>
+				<?php incsub_sbe_extra_field_types_dropdown(); ?>
+			</select>
+			<label>
+				<?php _e( 'Required', INCSUB_SBE_LANG_DOMAIN ); ?>
+				<input type="checkbox" name="<?php echo $this->settings_name; ?>[extra_field_required]" />
+
+			</label>
+			<?php submit_button( __( 'Add field', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[submit_new_extra_field]', false ); ?>
+
+			<?php $allowed_types = incsub_sbe_get_extra_field_types(); ?>
+			<?php $remove_link = add_query_arg( 'tab', 'extra-fields', $this->get_permalink() ); ?>
+			<div id="extra-fields-list" class="extra-fields-sortables">
+				<?php foreach ( $this->settings['extra_fields'] as $field_id => $value ): ?>
+					<div class="extra-field-item">	
+						<div class="extra-field-item-top">
+							<div class="extra-field-item-title-action">
+								<a class="extra-field-item-edit" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'remove', $field_id, $remove_link ), 'remove_extra_field' ) ); ?>">
+									<span class="remove"><?php _e( 'Remove', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+								</a>
+							</div>
+							<div class="extra-field-item-title"><h4><?php echo esc_html( $value['title'] ); ?> <?php echo $value['required'] ? '[' . __( 'Required', INCSUB_SBE_LANG_DOMAIN ) . ']' : ''; ?>:
+								<span class="in-extra-field-item-title"><?php echo urldecode( $value['slug'] ) . ' [' . $allowed_types[ $value['type'] ]['name'] . ']'; ?></span></h4>
+							</div>
+						</div>
+					</div>
+				<?php endforeach; ?>
+			</div>
+		<?php
+
+	}
+
 
 	/**
 	 * Sanitizes the settings and return the values to be saved
@@ -861,6 +932,50 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				}
 			}
 				
+		}
+
+		if ( isset( $input['submit_new_extra_field'] ) ) {
+			$extra_field_error = false;
+
+			if ( empty( $input['extra_field_name'] ) ) {
+				add_settings_error( $this->settings_name, 'extra-field-name', __( 'Name cannot be empty', INCSUB_SBE_LANG_DOMAIN ) );
+				$extra_field_error = true;
+			}
+			else {
+				$name = sanitize_text_field( $input['extra_field_name'] );
+			}
+
+			if ( ! $extra_field_error ) {
+				if ( empty( $input['extra_field_slug'] ) )
+					$slug = sanitize_title_with_dashes( $name );
+				else
+					$slug = sanitize_title_with_dashes( $input['extra_field_slug'] );
+
+				$settings = incsub_sbe_get_settings();
+				$slug_found = false;
+				foreach ( $settings['extra_fields'] as $extra_field ) {
+					if ( $extra_field['slug'] == $slug )
+						$slug_found = true;
+				}
+				if ( $slug_found ) {
+					add_settings_error( $this->settings_name, 'extra-field-slug', __( 'Slug already exist', INCSUB_SBE_LANG_DOMAIN ) );
+					$extra_field_error = true;
+				}
+
+				$type = ! empty( $input['extra_field_type'] ) ? $input['extra_field_type'] : '';
+				if ( ! $extra_field_error && array_key_exists( $type, incsub_sbe_get_extra_field_types() ) ) {
+					$new_settings['extra_fields'][] = array(
+						'slug' => $slug,
+						'title' => $name,
+						'type' => $type,
+						'required' => ! empty( $input['extra_field_required'] )
+					);
+				}
+				else {
+					add_settings_error( $this->settings_name, 'extra-field-type', __( 'Select a field type', INCSUB_SBE_LANG_DOMAIN ) );
+				}
+			}
+							
 		}
 
 		return $new_settings;

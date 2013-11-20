@@ -739,4 +739,16 @@ class Incsub_Subscribe_By_Email_Model {
             )
         );  
     }
+
+    public function delete_subscriber_all_meta( $meta_key ) {
+        global $wpdb;
+
+        return $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM $this->subscriptions_meta_table
+                WHERE meta_key = %s",
+                $meta_key
+            )
+        );  
+    }
 }

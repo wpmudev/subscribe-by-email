@@ -163,7 +163,8 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/widget.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/follow-button.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/manage-subscription.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/general-helpers.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/extra-fields-helpers.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/logger.php' );
 
 

@@ -94,6 +94,16 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 
 		}
 
+		$this->extra_field_types = array( 
+			'text' => array(
+				'name' => __( 'Text field', INCSUB_SBE_LANG_DOMAIN ),
+				'callback' => 'stripslashes_deep'
+			), 
+			'checkbox' => array(
+				'name' => __( 'Checkbox', INCSUB_SBE_LANG_DOMAIN ),
+			)
+		);
+
 	}
 
 	public function get_settings() {
@@ -170,7 +180,9 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'mails_batch_size' => 80,
 			'subscribe_email_content' => $subscribe_email_content,
 
-			'keep_logs_for' => 31
+			'keep_logs_for' => 31,
+
+			'extra_fields' => array()
 		);
 	}
 
@@ -215,6 +227,10 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 		$taxonomies = array();
 		if ( isset( $this->settings['taxonomies'][ $post_type_slug ] ) && in_array( 'all', $this->settings['taxonomies'][ $post_type_slug ] ) )
 			return $this->get_taxonomies_by_post_type( $post_type_slug );
+	}
+
+	public function get_extra_field_types() {
+		return $this->extra_field_types;
 	}
 
 }

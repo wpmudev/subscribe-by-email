@@ -67,28 +67,22 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 				?>
 
 				<form action="" id="add-single-subscriber" method="post">
+					<?php
+						$settings = incsub_sbe_get_settings();
+						$extra_fields = $settings['extra_fields'];
+					?>
 					<h3><?php _e( 'Subscribe a single user', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
 					<?php wp_nonce_field( 'subscribe', '_wpnonce' ); ?>
 					<table class="form-table">
 						<tbody>
-							<tr valign="top">
-								<th scope="row"><?php _e( 'First Name', INCSUB_SBE_LANG_DOMAIN ); ?></th>
-								<td>
-									<input type="text" class="long-text" name="subscribe-meta[first_name]"><br/>
-								</td>
-							</tr>
-							<tr valign="top">
-								<th scope="row"><?php _e( 'Last Name', INCSUB_SBE_LANG_DOMAIN ); ?></th>
-								<td>
-									<input type="text" class="long-text" name="subscribe-meta[last_name]"><br/>
-								</td>
-							</tr>
-							<tr valign="top">
-								<th scope="row"><?php _e( 'Address', INCSUB_SBE_LANG_DOMAIN ); ?></th>
-								<td>
-									<textarea name="subscribe-meta[address]" id="subscribe-address" cols="50" rows="5"></textarea>
-								</td>
-							</tr>
+							<?php foreach ( $extra_fields as $field_id => $extra_field ): ?>
+								<tr valign="top">
+									<th scope="row"><?php echo $extra_field['title']; ?></th>
+									<td>
+										<?php incsub_sbe_render_extra_field( $extra_field['type'], $extra_field['slug'], $extra_field['title'], '' ); ?> <?php echo $extra_field['required'] ? '(*)' : ''; ?><br/>
+									</td>
+								</tr>
+							<?php endforeach; ?>
 							<tr valign="top">
 								<th scope="row"><?php _e( 'Email', INCSUB_SBE_LANG_DOMAIN ); ?></th>
 								<td>
@@ -156,13 +150,30 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 				$email = sanitize_email( $input['subscribe-email'] );
 				if ( is_email( $email ) ) {
 					$model = incsub_sbe_get_model();
-					$meta = ! empty( $_POST['subscribe-meta'] ) && is_array( $_POST['subscribe-meta'] ) ? $_POST['subscribe-meta'] : array();
-					$result = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Instant', INCSUB_SBE_LANG_DOMAIN ), $autopt, $meta );
+
+					$settings = incsub_sbe_get_settings();
+					$extra_fields = $settings['extra_fields'];
+					$extra_fields_error = false;
+					$meta = array();
+					foreach ( $extra_fields as $field_id => $value ) {
+						if ( empty( $_POST[ 'sbe_extra_field_' . $value['slug'] ] ) && $value['required'] ) {
+							add_settings_error( 'subscribe', 'extra-fields', sprintf( __( '%s field is required', INCSUB_SBE_LANG_DOMAIN ), $value['title'] ) );
+							break;
+						}
+						elseif ( ! empty( $_POST[ 'sbe_extra_field_' . $value['slug'] ] ) ) {
+							$meta[ $value['slug'] ] = incsub_sbe_validate_extra_field( $value['type'], $_POST[ 'sbe_extra_field_' . $value['slug'] ] );
+						}
+					}
+
+					if ( ! $extra_fields_error )
+						$result = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Instant', INCSUB_SBE_LANG_DOMAIN ), $autopt, $meta );
 				}
 				else {
 					// Email not valid
 					add_settings_error( 'subscribe', 'email', __( 'The email is not a valid one', INCSUB_SBE_LANG_DOMAIN ) );
 				}
+
+				
 
 				$errors = get_settings_errors( 'subscribe' ); 
 				if ( empty( $errors ) ) {
