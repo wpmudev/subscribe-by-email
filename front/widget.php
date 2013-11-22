@@ -195,7 +195,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			'button_text' => __( 'Subscribe', INCSUB_SBE_LANG_DOMAIN  ),
 			'autopt' => false,
 			'show_count' => false,
-			'subscribed_placeholder' => __( 'Thank you, your email has been added to the mailing.', INCSUB_SBE_LANG_DOMAIN ),
+			'subscribed_placeholder' => __( 'Thank you, your email has been added to the mailing list.', INCSUB_SBE_LANG_DOMAIN ),
 			'widget_meta' => array()
 		);
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>

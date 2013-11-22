@@ -585,7 +585,7 @@ class Incsub_Subscribe_By_Email_Model {
     public function delete_log( $log_id ) {
         global $wpdb;
 
-        if ( is_array( $log_id ) ) {
+        if ( is_array( $log_id ) && ! empty( $log_id ) ) {
             $where = "WHERE id IN (" . implode( ', ', $log_id ) . ")";
         }
         else {
