@@ -21,61 +21,72 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         return sprintf(
             '<input type="checkbox" name="%1$s[]" value="%2$s" />',
             	'subscriptor',  
-            	$item['subscription_ID']
+            	$item->get_subscription_ID()
         );
     }
 
     function column_email( $item ) {
 
-        $edit_link = add_query_arg( array( 'action' => 'edit', 'sid' => absint( $item['subscription_ID'] ) ) );
+        $edit_link = add_query_arg( array( 'action' => 'edit', 'sid' => absint( $item->get_subscription_ID() ) ) );
     	$actions = array(
             'edit'    => sprintf( __( '<a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), 
                 esc_url( $edit_link ),
                 __( 'Edit', INCSUB_SBE_LANG_DOMAIN )
             ),
             'cancel'    => sprintf( __( '<span class="trash"><a class="trash" href="%s">%s</a></span>', INCSUB_SBE_LANG_DOMAIN ), 
-            	esc_url( add_query_arg( array( 'action' => 'cancel', 'sid' => absint( $item['subscription_ID'] ) ) ) ),
+            	esc_url( add_query_arg( array( 'action' => 'cancel', 'sid' => absint( $item->get_subscription_ID() ) ) ) ),
             	__( 'Cancel subscription', INCSUB_SBE_LANG_DOMAIN )
             ),
             
         );
 
-        if ( $item['confirmation_flag'] == 0 ) {
+        if ( $item->get_confirmation_flag() == 0 ) {
             $actions['send_confirmation'] = sprintf( __( '<span><a class="trash" href="%s">%s</a></span>', INCSUB_SBE_LANG_DOMAIN ), 
-                esc_url( add_query_arg( array( 'action' => 'send_confirmation', 'sid' => absint( $item['subscription_ID'] ) ) ) ),
+                esc_url( add_query_arg( array( 'action' => 'send_confirmation', 'sid' => absint( $item->get_subscription_ID() ) ) ) ),
                 __( 'Resend confirmation mail', INCSUB_SBE_LANG_DOMAIN )
             );
             $actions['confirm_subscription'] = sprintf( __( '<span><a class="trash" href="%s">%s</a></span>', INCSUB_SBE_LANG_DOMAIN ), 
-                esc_url( add_query_arg( array( 'action' => 'confirm_subscription', 'sid' => absint( $item['subscription_ID'] ) ) ) ),
+                esc_url( add_query_arg( array( 'action' => 'confirm_subscription', 'sid' => absint( $item->get_subscription_ID() ) ) ) ),
                 __( 'Confirm Subscription', INCSUB_SBE_LANG_DOMAIN )
             );
         }
         
-        return '<a href="' . esc_url( $edit_link ) . '">' . $item['subscription_email'] . '</a>' . $this->row_actions( $actions );
+        return '<a href="' . esc_url( $edit_link ) . '">' . $item->get_subscription_email() . '</a>' . $this->row_actions( $actions );
     }
 
     function column_created( $item ) { 
-        return date_i18n( get_option( 'date_format' ), (int)$item['subscription_created'] );
+        return date_i18n( get_option( 'date_format' ), (int)$item->get_subscription_created() );
     }
 
     function column_note( $item ) {
         $confirmation_flag_captions = incsub_sbe_get_confirmation_flag_captions();
-        return isset( $confirmation_flag_captions[ $item['confirmation_flag'] ] ) ? $confirmation_flag_captions[ $item['confirmation_flag'] ] : '';
+        return isset( $confirmation_flag_captions[ $item->get_confirmation_flag() ] ) ? $confirmation_flag_captions[ $item->get_confirmation_flag() ] : '';
     }
 
     function column_subscription_type( $item ) {
-        return $item['subscription_note'];
+        return $item->get_subscription_note();
     }
 
     function column_subscribed_to( $item ) {
         $result = array();
 
-        if ( $item['confirmation_flag'] ) {
-            foreach ( $item['subscription_settings'] as $post_type_slug ) {
-                $cpt = get_post_type_object( $post_type_slug );
-                if ( $cpt ) {
-                    $result[] = $cpt->labels->name;
+        if ( $item->get_confirmation_flag() ) {
+            $post_types = $item->get_post_types();
+            if ( $post_types === false ) {
+                $settings = incsub_sbe_get_settings();
+                $post_types = $settings['post_types'];
+            }
+            
+            if( is_array( $post_types ) ) {
+                foreach ( $post_types as $post_type_slug ) {
+                    $cpt = get_post_type_object( $post_type_slug );
+                    if ( $cpt ) {
+                        $result[] = $cpt->labels->name;
+                    }
                 }
+            }
+            else {
+                $result = array();
             }
         }
         
@@ -181,35 +192,33 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         $this->process_bulk_action();
         $current_page = $this->get_pagenum();
 
-        $model = Incsub_Subscribe_By_Email_Model::get_instance();
+        $model = incsub_sbe_get_model();
 
-        $settings = incsub_sbe_get_settings();
-        $post_types = $settings['post_types'];
+        $args = array(
+            'per_page' => $per_page,
+            'current_page' => $current_page,
+            'sort' => $sortable,
+            'sort_type' => 'ASC',
+        );
 
-        $search = false;
-        if ( isset( $_POST['s'] ) )
-            $search = $_POST['s'];
-
-        $subscribers = $model->get_subscribers( $current_page, $per_page, $sortable, $search );
-
-        foreach ( $subscribers['subscribers'] as $subscriber ) {
-            $subscriber_settings = $subscriber['subscription_settings'];
-            if ( $subscriber_settings ) {
-                $subscriber_settings = maybe_unserialize( $subscriber_settings );
-                $subscriber_settings = $subscriber_settings['post_types'];
+        foreach ( $sortable as $value ) {
+            if ( $value[1] ) {
+                $args['sort'] = $value[0];
+                $args['sort_type'] = $value[1];
+                break;
             }
-            else {
-                $subscriber_settings = $post_types;
-            }
-            $item = $subscriber;
-            $item['subscription_settings'] = $subscriber_settings;
-            $this->items[] = $item;
         }
 
+        if ( isset( $_POST['s'] ) )
+            $args['s'] = stripslashes_deep( $_POST['s'] );
+
+        $this->items = incsub_sbe_get_subscribers( $args );
+        $total_subscribers = $model->get_all_subscribers( true );
+
         $this->set_pagination_args( array(
-            'total_items' => $subscribers['total'],                 
+            'total_items' => $total_subscribers,                 
             'per_page'    => $per_page,              
-            'total_pages' => ceil( $subscribers['total'] / $per_page )  
+            'total_pages' => ceil( $total_subscribers / $per_page )  
         ) );
     }
 }

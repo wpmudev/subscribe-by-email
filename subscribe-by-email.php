@@ -165,7 +165,9 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/manage-subscription.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/general-helpers.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/extra-fields-helpers.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/subscriber-helpers.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/logger.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/subscriber.php' );
 
 
 	}

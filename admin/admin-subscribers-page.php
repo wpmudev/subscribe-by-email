@@ -45,7 +45,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 					<?php 
 
 						$model = incsub_sbe_get_model(); 
-						$this->subscriber = $model->get_subscriber( $_GET['sid'] );
+						$this->subscriber = incsub_sbe_get_subscriber( 'subscription_ID', $_GET['sid'] );
 
 						if ( empty( $this->subscriber ) )
 							wp_die( __( 'The subscriber does not exist', INCSUB_SBE_LANG_DOMAIN ) );
@@ -67,7 +67,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 					<form id="form-subscriptions-edit" action="" method="post">
 						<?php wp_nonce_field( 'edit_subscriber' ); ?>
-						<input type="hidden" name="sid" value="<?php echo $this->subscriber->subscription_ID; ?>">
+						<input type="hidden" name="sid" value="<?php echo $this->subscriber->get_subscription_ID(); ?>">
 						<table class="form-table">
 							<?php $this->render_row( __( 'Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_row' ) ); ?>
 							<?php $this->render_row( __( 'First Name', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_first_name_row' ) ); ?>
@@ -109,13 +109,13 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 	public function render_email_row() {
 
 		?>
-			<input type="text" class="regular-text" name="subscribe-email" value="<?php echo esc_attr( $this->subscriber->subscription_email ); ?>" />
+			<input type="text" class="regular-text" name="subscribe-email" value="<?php echo esc_attr( $this->subscriber->get_subscription_email() ); ?>" />
 		<?php
 	}
 
 	public function render_first_name_row() {
 		$model = incsub_sbe_get_model();
-		$first_name = isset( $_POST['subscribe-meta']['first_name'] ) ? stripslashes_deep( $_POST['subscribe-meta']['first_name'] ) : $model->get_subscriber_meta( $this->subscriber->subscription_ID, 'first_name', '' );
+		$first_name = isset( $_POST['subscribe-meta']['first_name'] ) ? stripslashes_deep( $_POST['subscribe-meta']['first_name'] ) : $this->subscriber->get_meta( 'first_name', '' );
 		?>
 			<input type="text" class="regular-text" name="subscribe-meta[first_name]" value="<?php echo esc_attr( $first_name ); ?>" />
 		<?php
@@ -123,7 +123,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 	public function render_last_name_row() {
 		$model = incsub_sbe_get_model();
-		$last_name = isset( $_POST['subscribe-meta']['last_name'] ) ? stripslashes_deep( $_POST['subscribe-meta']['last_name'] ) : $model->get_subscriber_meta( $this->subscriber->subscription_ID, 'last_name', '' );
+		$last_name = isset( $_POST['subscribe-meta']['last_name'] ) ? stripslashes_deep( $_POST['subscribe-meta']['last_name'] ) : $this->subscriber->get_meta( 'last_name', '' );
 		?>
 			<input type="text" class="regular-text" name="subscribe-meta[last_name]" value="<?php echo esc_attr( $last_name ); ?>" />
 		<?php
@@ -131,7 +131,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 	public function render_address_row() {
 		$model = incsub_sbe_get_model();
-		$address = isset( $_POST['subscribe-meta']['address'] ) ? stripslashes_deep( $_POST['subscribe-meta']['address'] ) : $model->get_subscriber_meta( $this->subscriber->subscription_ID, 'address', '' );
+		$address = isset( $_POST['subscribe-meta']['address'] ) ? stripslashes_deep( $_POST['subscribe-meta']['address'] ) : $this->subscriber->get_meta( 'address', '' );
 		?>
 			<textarea name="subscribe-meta[address]" cols="30" rows="10"><?php echo esc_textarea( $address ); ?></textarea>
 		<?php

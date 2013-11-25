@@ -193,35 +193,51 @@ class Incsub_Subscribe_By_Email_Model {
         );
     }
 
-    public function get_subscribers( $current_page, $per_page, $sort = array(), $search = false ) {
+    public function get_subscribers( $args ) {
         global $wpdb;
 
-        $query = "SELECT * FROM $this->subscriptions_table ";
+        extract( $args );
 
-        if ( ! empty ( $search ) )
-            $query .= sprintf( "WHERE subscription_email LIKE '%s'", '%' . esc_sql( $search ) . '%' );
+        if ( ! in_array( strtoupper( $sort_type ), array( 'ASC', 'DESC' ) ) )
+            $sort_type = 'ASC';
 
-        $total = $wpdb->get_var( str_replace( 'SELECT *', 'SELECT COUNT(subscription_ID)', $query) );
-
-        if ( ! empty( $sort['email'][1] ) )
-            $query .= " ORDER BY " . $sort['email'][0] . " " . $sort['email'][1];
-
-        if ( ! empty( $sort['created'][1] ) )
-          $query .= " ORDER BY " . $sort['created'][0] . " " . $sort['created'][1];
-
-        if ( ! empty( $sort['subscription_type'][1] ) )
-          $query .= " ORDER BY " . $sort['subscription_type'][0] . " " . $sort['subscription_type'][1];
-
-        $query .= " LIMIT " . intval( ( $current_page - 1 ) * $per_page ) . ", " . intval( $per_page );
-
-        $subscriptions = $wpdb->get_results( $query, ARRAY_A );
-
-        $results = array(
-            'total' => $total,
-            'subscribers' => $subscriptions
-        );
+        if ( ! in_array( $sort, array( 'subscription_email', 'subscription_created', 'subscription_note' ) ) )
+            $sort = 'subscription_ID';
         
-        return $results;
+        $where = array();
+
+        $where[] = "1=1";
+
+        if ( ! empty ( $s ) )
+            $where[] = $wpdb->prepare( "subscription_email LIKE '%s'", '%' . $s . '%' );
+
+        if ( $confirmed !== false )
+            $where[] = $wpdb->prepare( "confirmation_flag = %d", absint( $confirmed ) );
+
+        if ( $subscription_created_from > 0 )
+            $where[] = $wpdb->prepare( "subscription_created >= %d", absint( $subscription_created_from ) );
+
+        if ( is_array( $include ) && ! empty( $include ) ) {
+            $in = array();
+            foreach ( $include as $subscriber_id )
+                $in[] = absint( $subscriber_id );
+
+            $in = implode( ', ', $in );
+            $where[] = "subscription_ID IN ($in)";
+        }
+
+        $where = "WHERE " . implode( " AND ", $where );
+
+        $order = "ORDER BY $sort $sort_type";
+
+        $limit = '';
+        if ( $per_page > -1 )
+            $limit .= "LIMIT " . ( absint( $current_page ) - 1 ) * absint( $per_page ) . ", " . absint( $per_page );
+
+        $query = "SELECT * FROM $this->subscriptions_table $where $order $limit";
+
+        return $wpdb->get_results( $query );
+        
     }
 
     public function get_subscribers_count( $max_id ) {
