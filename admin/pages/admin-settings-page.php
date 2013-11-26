@@ -48,6 +48,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 		add_filter( 'plugin_action_links_' . INCSUB_SBE_PLUGIN_FILE, array( &$this, 'add_plugin_list_link' ), 10 , 2 );
 
+		add_action( 'wp_ajax_incsub_sbe_sort_extra_fields', array( &$this, 'sort_extra_fields' ) );
+
 	}
 
 	public function add_plugin_list_link( $actions, $file ) {
@@ -76,6 +78,9 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			    wp_enqueue_script( 'farbtastic' );
 			    wp_enqueue_script( 'jquery-ui-slider' );
 				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . 'js/settings-template.js', array( 'thickbox', 'media-upload' ), '20130721' );
+			}
+			elseif ( 'extra-fields' == $this->get_current_tab() ) {
+				wp_enqueue_script( 'jquery-ui-sortable' );
 			}
 		    
 
@@ -121,7 +126,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				add_filter( 'sanitize_option_' . $this->settings_name, array( &$this, 'sanitize_settings' ) );
 
 				$model = incsub_sbe_get_model();
-				$model->delete_subscriber_all_meta( $_GET['remove'] );
+				$model->delete_subscribers_all_meta( $_GET['remove'] );
 				wp_redirect( 
 					add_query_arg(
 						array( 
@@ -695,7 +700,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			<?php $remove_link = add_query_arg( 'tab', 'extra-fields', $this->get_permalink() ); ?>
 			<div id="extra-fields-list" class="extra-fields-sortables">
 				<?php foreach ( $this->settings['extra_fields'] as $field_id => $value ): ?>
-					<div class="extra-field-item">	
+					<div class="extra-field-item" data-field-slug="<?php echo esc_attr( $value['slug'] ); ?>">	
 						<div class="extra-field-item-top">
 							<div class="extra-field-item-title-action">
 								<a class="extra-field-item-edit" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'remove', $field_id, $remove_link ), 'remove_extra_field' ) ); ?>">
@@ -709,8 +714,63 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 					</div>
 				<?php endforeach; ?>
 			</div>
+			<script>
+				jQuery(document).ready(function($) {
+					$('.extra-fields-sortables').sortable({
+						stop: function( event, ui ) {
+							var nodes = $('.extra-field-item');
+							var slugs = new Array();
+							nodes.each( function ( i, element ) {
+								slugs.push($(this).data('field-slug'));
+							});
+
+							$.ajax({
+								url: ajaxurl,
+								type: 'post',
+								data: {
+									slugs: slugs,
+									action: 'incsub_sbe_sort_extra_fields',
+									nonce: "<?php echo wp_create_nonce( 'sort_extra_fields' ); ?>"
+								},
+							});							
+						}
+					});
+				});
+			</script>
 		<?php
 
+	}
+
+	public function sort_extra_fields() {
+		if ( ! wp_verify_nonce( $_POST['nonce'], 'sort_extra_fields' ) )
+			die();
+
+		if ( empty( $_POST['slugs'] ) || ! is_array( $_POST['slugs'] ) )
+			die();
+
+		$slugs = $_POST['slugs'];
+
+		$settings = incsub_sbe_get_settings();
+		$extra_fields = $settings['extra_fields'];
+		$new_extra_fields = array();
+
+		foreach ( $slugs as $slug ) {
+			foreach ( $extra_fields as $extra_field ) {
+				if ( $slug == $extra_field['slug'] ) {
+					$new_extra_fields[] = $extra_field;
+					break;
+				}
+			}
+		}
+
+		$settings['extra_fields'] = $new_extra_fields;
+		error_log(print_r($settings, true));
+
+		remove_filter( 'sanitize_option_' . $this->settings_name, array( &$this, 'sanitize_settings' ) );
+		incsub_sbe_update_settings( $settings );
+		add_filter( 'sanitize_option_' . $this->settings_name, array( &$this, 'sanitize_settings' ) );
+
+		die();
 	}
 
 

@@ -369,9 +369,19 @@ class Incsub_Subscribe_By_Email_Model {
     public function cancel_subscription( $key ) {
         global $wpdb;
 
-        $pq = $wpdb->prepare( "DELETE FROM $this->subscriptions_table WHERE user_key = %s", $key );
+        $subscriber = $this->get_subscriber_by_key( $key );
 
-        return $wpdb->query( $pq );
+        if ( $subscriber ) {
+            $this->delete_subscriber_all_meta( $subscriber->subscription_ID );
+            $pq = $wpdb->prepare( "DELETE FROM $this->subscriptions_table WHERE user_key = %s", $key );
+
+            wp_cache_delete( $subscriber->subscription_ID, 'subscribers' );
+            return $wpdb->query( $pq );
+        }
+
+        return false;
+
+        
     }
 
     public function remove_old_subscriptions() {
@@ -380,7 +390,16 @@ class Incsub_Subscribe_By_Email_Model {
         $now = time();
         $lastweek_time = $now - Incsub_Subscribe_By_Email::$max_confirmation_time;
 
-        $wpdb->query( "DELETE FROM $this->subscriptions_table WHERE confirmation_flag = 0 AND subscription_created < $lastweek_time" );
+        $sids = $wpdb->get_col( "SELECT subscription_ID FROM $this->subscriptions_table WHERE confirmation_flag = 0 AND subscription_created < $lastweek_time" );
+
+        if ( ! empty( $sids ) ) {
+            $this->delete_subscriber_all_meta( $sids );
+            $wpdb->query( "DELETE FROM $this->subscriptions_table WHERE confirmation_flag = 0 AND subscription_created < $lastweek_time" );
+            foreach ( $sids as $sid ) {
+                wp_cache_delete( $sid, 'subscribers' );
+            }
+        }
+        
     }
 
 
@@ -727,6 +746,8 @@ class Incsub_Subscribe_By_Email_Model {
         if ( $rows_updated === 0 )
             return $this->add_subscriber_meta( $subscription_id, $meta_key, $meta_value );
 
+        wp_cache_delete( $subscription_id . $meta_key, 'subscribers_meta' );
+
         return true;
     }
 
@@ -742,6 +763,8 @@ class Incsub_Subscribe_By_Email_Model {
                 $meta_key
             )
         );
+
+        wp_cache_delete( $subscription_id . $meta_key, 'subscribers_meta' );
     }
 
     public function get_subscriber_all_meta( $subscription_id ) {
@@ -756,7 +779,32 @@ class Incsub_Subscribe_By_Email_Model {
         );  
     }
 
-    public function delete_subscriber_all_meta( $meta_key ) {
+    public function delete_subscriber_all_meta( $sid ) {
+        global $wpdb;
+
+        $q = "DELETE FROM $this->subscriptions_meta_table";
+
+        if ( is_array( $sid ) ) {
+            $where = array();
+            foreach ( $sid as $value )
+                $where[] = $wpdb->prepare( "%d", $value );
+
+            $where = implode( ', ', $where );
+            $where = "subscription_id IN ($where)";
+            $q .= " WHERE $where";
+        }
+        else {
+            $q = $wpdb->prepare(
+                "DELETE FROM $this->subscriptions_meta_table
+                WHERE subscription_id = %d",
+                $sid
+            );
+        }
+
+        return $wpdb->query( $q );
+    }
+
+    public function delete_subscribers_all_meta( $meta_key ) {
         global $wpdb;
 
         return $wpdb->query(

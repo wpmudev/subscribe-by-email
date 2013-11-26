@@ -108,7 +108,7 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 		 				<?php printf( __( 'Logs files are <strong>deleted every %d days</strong>. You can set a different interval in <a href="%s">Subscribe By Email settings page</a>', INCSUB_SBE_LANG_DOMAIN ), $settings['keep_logs_for'], esc_url( add_query_arg( 'tab', 'logs', Incsub_Subscribe_By_Email::$admin_settings_page->get_permalink() ) ) ); ?>
 		 			</p>
 					<?php 
-						require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/log-table.php' );
+						require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/tables/log-table.php' );
 						$the_table = new Incsub_Subscribe_By_Email_Log_Table();
 
 						$the_table->prepare_items();

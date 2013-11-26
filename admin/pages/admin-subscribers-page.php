@@ -16,8 +16,6 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 		);
 		parent::__construct( $args );
 
-		$this->subscriber = false;
-
 		add_action( 'admin_init', array( &$this, 'validate_form' ) );
 		//add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
 		//add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
@@ -44,10 +42,9 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 				<?php if ( isset( $_GET['action'] ) && $_GET['action'] == 'edit' && isset( $_GET['sid'] ) ): ?>
 					<?php 
 
-						$model = incsub_sbe_get_model(); 
-						$this->subscriber = incsub_sbe_get_subscriber( 'subscription_ID', $_GET['sid'] );
+						$subscriber = incsub_sbe_get_subscriber( $_GET['sid'] );
 
-						if ( empty( $this->subscriber ) )
+						if ( empty( $subscriber ) )
 							wp_die( __( 'The subscriber does not exist', INCSUB_SBE_LANG_DOMAIN ) );
 
 						$errors = get_settings_errors( 'subscribe' );
@@ -62,18 +59,29 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 								</div>
 							<?php
 						}
+
+						$settings = incsub_sbe_get_settings();
+						$extra_fields = $settings['extra_fields'];
 					?>
 					<h2><?php _e( 'Edit subscriber', INCSUB_SBE_LANG_DOMAIN ); ?></h2>
 
 					<form id="form-subscriptions-edit" action="" method="post">
 						<?php wp_nonce_field( 'edit_subscriber' ); ?>
-						<input type="hidden" name="sid" value="<?php echo $this->subscriber->get_subscription_ID(); ?>">
+						<input type="hidden" name="sid" value="<?php echo $subscriber->get_subscription_ID(); ?>">
 						<table class="form-table">
-							<?php $this->render_row( __( 'Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_row' ) ); ?>
-							<?php $this->render_row( __( 'First Name', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_first_name_row' ) ); ?>
-							<?php $this->render_row( __( 'Last Name', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_last_name_row' ) ); ?>
-							<?php $this->render_row( __( 'Address', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_address_row' ) ); ?>
+							<?php $this->render_row( __( 'Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_row' ), $subscriber ); ?>
+							<?php 
 
+								foreach ( $extra_fields as $extra_field ) {
+									$callback = 'render_extra_field_' . $extra_field['type'];
+									$args = array(
+										'subscriber' => $subscriber,
+										'atts' => $extra_field
+									);
+									$this->render_row( $extra_field['title'], array( &$this, $callback ), $args );
+								}
+							?>
+							
 						</table>
 						<p class="submit">
 							<?php submit_button( __( 'Submit changes', INCSUB_SBE_LANG_DOMAIN ), 'primary', 'submit_edit_subscriber', false ); ?>
@@ -85,7 +93,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 					
 					<form id="form-subscriptions-list" action="" method="post">
 						<?php
-
+							require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/tables/subscribers-table.php' );
 							$the_table = new Incsub_Subscribe_By_Email_Subscribers_Table();
 
 							$the_table->prepare_items();
@@ -106,36 +114,39 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 	}
 
-	public function render_email_row() {
-
+	public function render_email_row( $subscriber ) {
 		?>
-			<input type="text" class="regular-text" name="subscribe-email" value="<?php echo esc_attr( $this->subscriber->get_subscription_email() ); ?>" />
+			<input type="text" class="regular-text" name="subscribe-email" value="<?php echo esc_attr( $subscriber->get_subscription_email() ); ?>" />
 		<?php
 	}
 
-	public function render_first_name_row() {
-		$model = incsub_sbe_get_model();
-		$first_name = isset( $_POST['subscribe-meta']['first_name'] ) ? stripslashes_deep( $_POST['subscribe-meta']['first_name'] ) : $this->subscriber->get_meta( 'first_name', '' );
+	public function render_extra_field_text( $args ) {
+		$subscriber = $args['subscriber'];
+		$extra_field = $args['atts'];
+
+		$meta_value = isset( $_POST['subscribe-meta'][ $extra_field['slug'] ] ) ? 
+			incsub_sbe_validate_extra_field( $extra_field['type'], $_POST['subscribe-meta'][ $extra_field['slug'] ] ) : 
+			$subscriber->get_meta( $extra_field['slug'], '' );
 		?>
-			<input type="text" class="regular-text" name="subscribe-meta[first_name]" value="<?php echo esc_attr( $first_name ); ?>" />
+			<input type="text" name="subscribe-meta[<?php echo $extra_field['slug']; ?>]" value="<?php echo esc_attr( $meta_value ); ?>">
+			<?php echo $extra_field['required'] ? '(*)' : ''; ?>
 		<?php
 	}
 
-	public function render_last_name_row() {
-		$model = incsub_sbe_get_model();
-		$last_name = isset( $_POST['subscribe-meta']['last_name'] ) ? stripslashes_deep( $_POST['subscribe-meta']['last_name'] ) : $this->subscriber->get_meta( 'last_name', '' );
+	public function render_extra_field_checkbox( $args ) {
+		$subscriber = $args['subscriber'];
+		$extra_field = $args['atts'];
+
+		$meta_value = isset( $_POST['subscribe-meta'][ $extra_field['slug'] ] ) ? 
+			incsub_sbe_validate_extra_field( $extra_field['type'], $_POST['subscribe-meta'][ $extra_field['slug'] ] ) : 
+			$subscriber->get_meta( $extra_field['slug'] );
 		?>
-			<input type="text" class="regular-text" name="subscribe-meta[last_name]" value="<?php echo esc_attr( $last_name ); ?>" />
+			<input type="checkbox" name="subscribe-meta[<?php echo $extra_field['slug']; ?>]" <?php checked( $meta_value ); ?>>
+			<?php echo $extra_field['required'] ? '(*)' : ''; ?>
 		<?php
+		
 	}
 
-	public function render_address_row() {
-		$model = incsub_sbe_get_model();
-		$address = isset( $_POST['subscribe-meta']['address'] ) ? stripslashes_deep( $_POST['subscribe-meta']['address'] ) : $this->subscriber->get_meta( 'address', '' );
-		?>
-			<textarea name="subscribe-meta[address]" cols="30" rows="10"><?php echo esc_textarea( $address ); ?></textarea>
-		<?php
-	}
 
 	public function validate_form() {
 		if ( isset( $_POST['submit_edit_subscriber'] ) ) {
@@ -147,6 +158,8 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 			$sid = $_POST['sid'];
 			$error = false;
 
+			$subscriber = incsub_sbe_get_subscriber( $sid );
+
 			if ( ! is_email ( $email ) ) {
 				add_settings_error( 'subscribe', 'wrong-email', __( 'Please, insert a valid email', INCSUB_SBE_LANG_DOMAIN ) );
 				$error = true;
@@ -155,14 +168,24 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 				$model->update_subscriber_email( $sid, $email );
 			}
 
-			if ( ! empty( $_POST['subscribe-meta']['first_name'] ) )
-				$model->update_subscriber_meta( $sid, 'first_name', stripslashes_deep( $_POST['subscribe-meta']['first_name'] ) );
+			$settings = incsub_sbe_get_settings();
+			$extra_fields = $settings['extra_fields'];
 
-			if ( ! empty( $_POST['subscribe-meta']['last_name'] ) )
-				$model->update_subscriber_meta( $sid, 'last_name', stripslashes_deep( $_POST['subscribe-meta']['last_name'] ) );
+			foreach ( $extra_fields as $extra_field ) {
+				$meta_value = isset( $_POST['subscribe-meta'][ $extra_field['slug'] ] ) ? $_POST['subscribe-meta'][ $extra_field['slug'] ] : '';
+				$meta_value = incsub_sbe_validate_extra_field( $extra_field['type'], $meta_value );
 
-			if ( ! empty( $_POST['subscribe-meta']['address'] ) )
-				$model->update_subscriber_meta( $sid, 'address', stripslashes_deep( $_POST['subscribe-meta']['address'] ) );
+				if ( empty( $meta_value ) && $extra_field['required'] ) {
+					add_settings_error( 'subscribe', 'required-extra-field', sprintf( __( '%s is a required field', INCSUB_SBE_LANG_DOMAIN ), $extra_field['title'] ) );
+					$_POST['subscribe-meta'][ $extra_field['slug'] ] = $subscriber->get_meta( $extra_field['slug'] );
+					$error = true;
+				}
+
+				if ( $error )
+					break;
+
+				$model->update_subscriber_meta( $sid, $extra_field['slug'], $meta_value );
+			}
 
 			if ( ! $error )
 				wp_redirect( add_query_arg( 'updated', 'true' ) );

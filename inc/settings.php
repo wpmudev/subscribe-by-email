@@ -97,7 +97,6 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 		$this->extra_field_types = array( 
 			'text' => array(
 				'name' => __( 'Text field', INCSUB_SBE_LANG_DOMAIN ),
-				'callback' => 'stripslashes_deep'
 			), 
 			'checkbox' => array(
 				'name' => __( 'Checkbox', INCSUB_SBE_LANG_DOMAIN ),

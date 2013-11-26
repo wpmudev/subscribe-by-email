@@ -117,7 +117,7 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 	 * @param String $title Title of the row
 	 * @param string/Array $callback Method that will render the markup
 	 */
-	protected function render_row( $title, $callback ) {
+	protected function render_row( $title, $callback, $args = array() ) {
 		?>
 			<tr valign="top">
 				<th scope="row"><label><?php echo $title; ?></label></th>
@@ -128,11 +128,11 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 								echo '';
 							}
 							else {
-								call_user_func( $callback );
+								call_user_func( $callback, $args );
 							}
 						}
 						else {
-							call_user_func( $callback );
+							call_user_func( $callback, $args );
 						}
 					?>
 				</td>

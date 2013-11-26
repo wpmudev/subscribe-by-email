@@ -11,29 +11,26 @@ class Subscribe_By_Email_Subscriber {
 	private $user_key;
 	private $post_types = '';
 
-	public static function get_instance( $key, $value ) {
+	public static function get_instance( $sid ) {
 		$model = incsub_sbe_get_model();
 
-		$subscriber = false;
-		if ( $key == 'subscription_email' ) {
-			$subscriber_id = $model->get_subscriber_id( $value );
-			if ( $subscriber_id )
-				$subscriber = $model->get_subscriber( $subscriber_id );
-		}
-		elseif ( $key == 'user_key' ) {
-			$subscriber = $model->get_subscriber_by_key( $value );
-		}
-		elseif ( $key == 'subscription_ID' ) {
-			$subscriber = $model->get_subscriber( $value );	
-		}
-		else {
-			return false;
-		}
-
-		if ( empty( $subscriber ) )
+		$sid = absint( $sid );
+		if ( ! $sid )
 			return false;
 
-		return new self( $subscriber );
+		$_subscriber = wp_cache_get( $sid, 'subscribers' );
+
+		if ( ! $_subscriber ) {
+			$_subscriber = $model->get_subscriber( $sid );
+
+			if ( ! $_subscriber )
+				return false;
+
+			wp_cache_add( $sid, $_subscriber, 'subscribers' );
+
+		}
+
+		return new self( $_subscriber );
 	}
 
 	public function __construct( $subscriber ) {
@@ -49,9 +46,23 @@ class Subscribe_By_Email_Subscriber {
 		}
 	}
 
-	public function get_meta( $meta_key ) {
+	public function get_meta( $meta_key, $default = false ) {
 		$model = incsub_sbe_get_model();
-		return stripslashes_deep( $model->get_subscriber_meta( $this->subscription_ID, $meta_key ) );
+
+		$meta = wp_cache_get( $this->subscription_ID . $meta_key, 'subscribers_meta' );
+
+		if ( ! $meta ) {
+			$meta = stripslashes_deep( $model->get_subscriber_meta( $this->subscription_ID, $meta_key ) );
+
+			if ( ! $meta )
+				return $default;
+
+			wp_cache_add( $this->subscription_ID . $meta_key, $meta, 'subscribers_meta' );
+		}
+
+		return $meta;
+
+
 	}
 
 	public function get_subscription_ID() {

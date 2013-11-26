@@ -15,7 +15,7 @@ function incsub_sbe_get_subscribers( $args = array() ) {
 	$args = wp_parse_args( $args, $defaults );
 
 	if ( is_array( $args['include'] ) && count( $args['include'] ) === 1 )
-		return incsub_sbe_get_subscriber( 'subscription_ID', absint( $args['include'] ) );
+		return incsub_sbe_get_subscriber( $args['include'] );
 
 	$model = incsub_sbe_get_model();
 	$_subscribers = $model->get_subscribers( $args );
@@ -28,6 +28,6 @@ function incsub_sbe_get_subscribers( $args = array() ) {
 	return $subscribers;
 }
 
-function incsub_sbe_get_subscriber( $key, $value ) {
-	return Subscribe_By_Email_Subscriber::get_instance( $key, $value );
+function incsub_sbe_get_subscriber( $sid ) {
+	return Subscribe_By_Email_Subscriber::get_instance( $sid );
 }

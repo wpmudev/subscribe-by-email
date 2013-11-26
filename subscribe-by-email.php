@@ -141,16 +141,14 @@ class Incsub_Subscribe_By_Email {
 	/**
 	 * Include needed files
 	 */
-	private function includes() {
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/subscribers-table.php' );
-			
+	private function includes() {		
 
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-page.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-settings-page.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-subscribers-page.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-add-subscribers-page.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-export-subscribers-page.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/admin-sent-emails-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-settings-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-subscribers-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-add-subscribers-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-export-subscribers-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-sent-emails-page.php' );
 
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/settings.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/content-generator.php' );
