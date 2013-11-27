@@ -162,7 +162,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			add_settings_section( 'follow-button', __( 'Follow button', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'follow-button-field', __( 'Display a follow button?', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_field' ), $this->get_menu_slug(), 'follow-button' ); 
-			add_settings_field( 'follow-button-meta-fields', __( 'Display fields in Follow Button', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_meta_fields_field' ), $this->get_menu_slug(), 'follow-button' ); 
 		}
 		elseif ( $this->get_current_tab() == 'content' ) {
 			$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
@@ -505,26 +504,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			</label>
 		<?php
 	}
-
-	public function render_follow_button_meta_fields_field() {
-		?>	
-			<label>
-				<input type="checkbox" name="<?php echo $this->settings_name; ?>[follow_meta][first_name]" <?php checked( in_array( 'first_name', $this->settings['follow_button_meta'] ) ); ?> /> 
-				<?php _e( 'First name.', INCSUB_SBE_LANG_DOMAIN ); ?>
-			</label><br/>
-			<label>
-				<input type="checkbox" name="<?php echo $this->settings_name; ?>[follow_meta][last_name]" <?php checked( in_array( 'last_name', $this->settings['follow_button_meta'] ) ); ?> /> 
-				<?php _e( 'Last name.', INCSUB_SBE_LANG_DOMAIN ); ?>
-			</label><br/>
-			<label>
-				<input type="checkbox" name="<?php echo $this->settings_name; ?>[follow_meta][address]" <?php checked( in_array( 'address', $this->settings['follow_button_meta'] ) ); ?> /> 
-				<?php _e( 'Address.', INCSUB_SBE_LANG_DOMAIN ); ?>
-			</label><br/>
-		<?php
-	}
-
-
-
 
 	/**
 	 * Logo field

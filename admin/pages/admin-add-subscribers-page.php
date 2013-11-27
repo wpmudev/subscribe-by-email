@@ -79,7 +79,7 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 								<tr valign="top">
 									<th scope="row"><?php echo $extra_field['title']; ?></th>
 									<td>
-										<?php incsub_sbe_render_extra_field( $extra_field['type'], $extra_field['slug'], $extra_field['title'], '' ); ?> <?php echo $extra_field['required'] ? '(*)' : ''; ?><br/>
+										<?php incsub_sbe_render_extra_field( $extra_field['type'], $extra_field['slug'], $extra_field['title'], '', $extra_field['required'] ); ?> <br/>
 									</td>
 								</tr>
 							<?php endforeach; ?>

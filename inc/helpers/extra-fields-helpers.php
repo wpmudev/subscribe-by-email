@@ -13,13 +13,13 @@ function incsub_sbe_extra_field_types_dropdown( $selected = '' ) {
 	}
 }
 
-function incsub_sbe_render_extra_field( $type, $slug, $title, $value, $show_label = false ) {
+function incsub_sbe_render_extra_field( $type, $slug, $title, $value, $required, $show_label = false ) {
 	switch ( $type ) {
 		case 'text': {
 			?>
 				<?php if ( $show_label ): ?><label><?php endif; ?>
 					<input type="text" name="sbe_extra_field_<?php echo $slug; ?>" value="<?php echo esc_attr( $value ); ?>" <?php if ( ! $show_label ): ?>placeholder="<?php echo $title; ?>"<?php endif; ?>>
-				<?php if ( $show_label ): ?><?php echo $title; ?></label><?php endif; ?>
+				<?php if ( $show_label ): ?><?php echo $title; ?></label><?php endif; ?> <?php echo $required ? '(*)' : ''; ?>
 			<?php
 			break;
 		}
@@ -28,12 +28,13 @@ function incsub_sbe_render_extra_field( $type, $slug, $title, $value, $show_labe
 				<label>
 					<input type="checkbox" name="sbe_extra_field_<?php echo $slug; ?>" <?php checked( ! empty( $value ) ); ?>>
 					<?php echo $title; ?>
-				</label>
+				</label> <?php echo $required ? '(*)' : ''; ?>
 			<?php
 			break;
 		}
 	}
 }
+
 
 function incsub_sbe_validate_extra_field( $type, $value ) {
 	$new_value = $value;
