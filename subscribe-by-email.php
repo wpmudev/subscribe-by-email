@@ -62,10 +62,11 @@ class Incsub_Subscribe_By_Email {
 
 		add_action( 'plugins_loaded', array( &$this, 'load_text_domain' ) );
 
+		add_action( 'wpmu_drop_tables', array( &$this, 'uninstall' ) );
+
 	}
 
 	public function init_plugin() {
-		
 		// Do we have to remove old subscriptions?
 		$transient = get_transient( 'sbe_remove_old_subscriptions' );
 		if ( ! $transient ) {
@@ -176,6 +177,12 @@ class Incsub_Subscribe_By_Email {
 	}
 
 	public function deactivate() {
+	}
+
+	public function uninstall( $tables ) {
+		$model = incsub_sbe_get_model();
+		$new_tables = $model->get_tables_list();
+		return array_merge( $tables, $new_tables );
 	}
 
 

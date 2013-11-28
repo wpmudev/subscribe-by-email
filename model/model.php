@@ -36,6 +36,14 @@ class Incsub_Subscribe_By_Email_Model {
         $this->create_subscriptions_meta_table();
     }
 
+    public function get_tables_list() {
+        return array(
+            $this->subscriptions_table,
+            $this->subscriptions_meta_table,
+            $this->subscriptions_log_table
+        );
+    }
+
     /**
      * Creates/upgrade FAQ table
      * 
