@@ -26,8 +26,6 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
 
-		add_action( 'wp_ajax_nopriv_sbe_subscribe_user', array( &$this, 'subscribe_user' ) );
-		add_action( 'wp_ajax_sbe_subscribe_user', array( &$this, 'subscribe_user' ) );
 
 		add_action( 'init', array( &$this, 'validate_widget' ) );
 	}
@@ -49,7 +47,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 
 
 	public function enqueue_styles() {
-		wp_enqueue_style( 'subscribe-by-email-widget-css', INCSUB_SBE_ASSETS_URL . 'css/widget.css', array(), '20130522' );
+		wp_enqueue_style( 'subscribe-by-email-widget-css', INCSUB_SBE_ASSETS_URL . 'css/widget/widget.css', array(), '20130522' );
 	}
 
 
@@ -102,7 +100,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	}
 
 	public function validate_widget() {
-		if ( ! empty( $_POST['action'] ) && 'sbe_subscribe_user' == $_POST['action'] ) {
+		if ( ! empty( $_POST['action'] ) && 'sbe_widget_subscribe_user' == $_POST['action'] ) {
 	    	$subscribed = false;
 	    	$this->errors = array();
 
@@ -147,7 +145,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 					if ( $sid ) {
 						$model = incsub_sbe_get_model();
 						foreach ( $fields_to_save as $meta_key => $meta_value ) {
-							$model->add_subscriber_meta( $sid, 'first_name', $meta_value );	
+							$model->add_subscriber_meta( $sid, $meta_key, $meta_value );	
 						}
 
 						if ( $settings['get_notifications'] ) {
@@ -188,41 +186,65 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	    $extra_fields = empty( $settings['extra_fields'] ) ? array() : $settings['extra_fields'];
 
 	    if ( ! isset( $_GET['sbe_widget_subscribed'] ) ): ?>
-	        <form method="post" id="subscribe-by-email-subscribe-form">
+	        <form method="post" class="sbe-widget-subscribe-form" id="sbe-widget-subscribe-form-<?php echo $this->number; ?>">
 	        	<?php if ( count( $this->errors ) > 0 ): ?>
-	        		<ul class="subscribe-by-email-error">
+	        		<ul class="sbe-widget-error">
 						<?php foreach ( $this->errors as $error ): ?>
 							<li><?php echo $error; ?></li>
 						<?php endforeach; ?>
 	        		</ul>
 	        	<?php endif; ?>
-	        	<p>
+	        	<p class="sbe-widget-top-text">
 		        	<?php echo $text; ?>
 		        </p>
         		
         		<?php $email = isset( $_POST['subscription-email'] ) ? $_POST['subscription-email'] : ''; ?>
-	        	<input type="email" class="subscribe-by-email-field" name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo $email; ?>"><br/><br/>
+        		<div class="sbe-widget-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div>
+	        	<input type="email" class="sbe-widget-form-field sbe-widget-email-field"  name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo $email; ?>"><br/>
+
 	        	<?php if ( ! empty( $extra_fields ) ): ?>
-	        		<?php foreach ($extra_fields as $key => $value ): ?>
-	        			<?php $current_value = isset( $_POST[ 'sbe_extra_field_' . $value['slug'] ] ) ? $_POST[ 'sbe_extra_field_' . $value['slug'] ] : '';  ?>
-	        			<?php incsub_sbe_render_extra_field( $value['type'], $value['slug'], $value['title'], $current_value, $value['required'] ); ?><br/><br/>
+	        		<?php foreach ( $extra_fields as $key => $value ): ?>
+
+	        			<?php if ( 'checkbox' !== $value['type'] ): ?>
+							<div class="sbe-widget-form-field-title"><?php echo $value['title']; ?> <?php echo $value['required'] ? '<span class="sbe-widget-required">(*)</span>' : ''; ?></div>
+						<?php endif; ?>
+
+	        			<?php 
+	        				$current_value = isset( $_POST[ 'sbe_extra_field_' . $value['slug'] ] ) ? $_POST[ 'sbe_extra_field_' . $value['slug'] ] : '';
+							$atts = array(
+								'placeholder' => '',
+								'name' => 'sbe_extra_field_' . $value['slug'],
+								'class' => 'sbe-widget-form-field sbe-widget-' . $value['slug'] . '-field',
+							);
+						?>
+
+						<?php incsub_sbe_render_extra_field( $value['type'], $value['slug'], $value['title'], $current_value, $atts ); ?>
+						<?php if ( 'checkbox' === $value['type'] ): ?>
+							<?php echo $value['required'] ? '<span class="sbe-widget-required">(*)</span>' : ''; ?>
+						<?php endif; ?>
+						<br/>
+
 	        		<?php endforeach; ?>
 	        	<?php endif; ?>
+	        	
+
+		        <?php wp_nonce_field( 'sbe_widget_subscribe', 'sbe_subscribe_nonce' ); ?>
+	        	<input type="hidden" name="action" value="sbe_widget_subscribe_user">
+	        	<div class="sbe-widget-form-submit-container">
+	        		<input type="submit" class="sbe-widget-form-submit" name="submit-subscribe-user" value="<?php echo $button_text; ?>">
+	        	</div>
+
 	        	<?php if ( $instance['show_count'] ): ?>
 	        		<?php $count = $model->get_active_subscribers_count(); ?>
-		        	<p>
+		        	<p class="sbe-widget-subscribers-count">
 		        		<?php printf( _n( '%d subscriber', '%d subscribers', $count, INCSUB_SBE_LANG_DOMAIN ), $count ); ?>
 		        	</p>
 		        <?php endif; ?>
-
-		        <?php wp_nonce_field( 'sbe_widget_subscribe', 'sbe_subscribe_nonce' ); ?>
-	        	<input type="hidden" name="action" value="sbe_subscribe_user">
-	        	<input type="submit" class="subscribe-by-email-submit" name="submit-subscribe-user" value="<?php echo $button_text; ?>">
-	        	<img src="<?php echo INCSUB_SBE_ASSETS_URL . 'images/ajax-loader.gif'; ?>" class="subscribe-by-email-loader"/>
 	        </form>
+
 	        
         <?php else: ?>
-			<p class="subscribe-by-email-updated"><?php echo $message; ?></p>
+			<p class="sbe-widget-updated"><?php echo $message; ?></p>
     	<?php endif;
 		echo $after_widget;
 	}

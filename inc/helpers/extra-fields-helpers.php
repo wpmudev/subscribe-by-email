@@ -13,22 +13,30 @@ function incsub_sbe_extra_field_types_dropdown( $selected = '' ) {
 	}
 }
 
-function incsub_sbe_render_extra_field( $type, $slug, $title, $value, $required, $show_label = false ) {
+function incsub_sbe_render_extra_field( $type, $slug, $title, $value, $atts = array() ) {
+	$default_atts = array(
+		'class' => 'sbe-extra-field',
+		'name' => 'sbe_extra_field_' . $slug,
+		'placeholder' => esc_attr( $title ),
+		'id' => '',
+		'show_label' => true
+	);
+
+	$atts = wp_parse_args( $atts, $default_atts );
+
 	switch ( $type ) {
 		case 'text': {
 			?>
-				<?php if ( $show_label ): ?><label><?php endif; ?>
-					<input type="text" name="sbe_extra_field_<?php echo $slug; ?>" value="<?php echo esc_attr( $value ); ?>" <?php if ( ! $show_label ): ?>placeholder="<?php echo $title; ?>"<?php endif; ?>>
-				<?php if ( $show_label ): ?><?php echo $title; ?></label><?php endif; ?> <?php echo $required ? '(*)' : ''; ?>
+				<input type="text" id="<?php echo esc_attr( $atts['id'] ); ?>" class="<?php echo $atts['class']; ?>" name="<?php echo $atts['name']; ?>" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php echo $atts['placeholder']; ?>">
 			<?php
 			break;
 		}
 		case 'checkbox': {
 			?>
 				<label>
-					<input type="checkbox" name="sbe_extra_field_<?php echo $slug; ?>" <?php checked( ! empty( $value ) ); ?>>
-					<?php echo $title; ?>
-				</label> <?php echo $required ? '(*)' : ''; ?>
+					<input type="checkbox" name="<?php echo $atts['name']; ?>" <?php checked( ! empty( $value ) ); ?>>
+					<?php echo $atts ['show_label'] ? $title : ''; ?>
+				</label>
 			<?php
 			break;
 		}

@@ -1,0 +1,146 @@
+/** Main wrap **/
+#sbe-follow {
+	z-index: 999000;
+	position: fixed;
+	margin-right: 10%;
+	right: 0px;
+	bottom: 0px;
+}
+
+/** Tab **/
+.sbe-follow-link {
+	border-radius: 3px;
+	display: block;
+	padding: 10px 10px 16px 10px;
+	float: left;
+	text-decoration: none !important;
+	font-family:proxima-nova-soft, Verdana, sans-serif;
+	color: #616161;
+	border: 0;
+	line-height: 14px;
+	font-size:15px;
+	background: #F0F0F0;
+	outline-style: none;
+	outline-width: 0;
+	z-index: 10;
+}
+
+.sbe-follow-link span {
+	padding-bottom: 13px;
+	display: inline-block;
+	padding-left: 23px;
+	background: url("../../images/icon-mail-light.png") no-repeat -2px -3px;
+}
+
+.sbe-follow-link:hover {
+	color:#0F3647;
+}
+
+/** Secondary wrap **/
+#sbe-follow-wrap {
+	background: #F0F0F0;
+	color: #333;
+	padding: 15px;
+	width: 200px;
+	margin-top: 37px;
+	-moz-border-radius: 2px 0 0 0;
+	-webkit-border-radius: 2px 0 0 0;
+	-o-border-radius: 2px 0 0 0;
+	-ms-border-radius: 2px 0 0 0;
+	border-radius: 2px;
+	z-index: 999999;
+	position: relative;
+	line-height: 25px;
+}
+
+#sbe-follow-wrap h2 {
+    font-size: 18px;
+    margin-bottom: 0.7em;
+}
+
+#sbe-follow-wrap p {
+	margin: 0.5em 0;
+	font-size:13px;
+}
+
+/** Fields **/
+.sbe-follow-form-field-title {
+	margin-bottom:3px;
+}
+.sbe-follow-form-field {
+	margin-bottom:15px;
+    background: #DDD;
+    border-color: #A2A2A2;
+    color: #333;
+    outline: none;
+    width:94%;
+    box-sizing: border-box;
+	padding: 3px 6px;
+}
+
+.sbe-follow-form-field::-webkit-input-placeholder {
+    color:    #8A8A8A;
+}
+.sbe-follow-form-field:-moz-placeholder {
+    color:    #8A8A8A;
+}
+.sbe-follow-form-field::-moz-placeholder {
+    color:    #8A8A8A;
+}
+.sbe-follow-form-field:-ms-input-placeholder {
+    color:    #8A8A8A;
+}
+
+.sbe-widget-form-field:focus {}
+
+/** Submit button **/
+.sbe-follow-form-submit-container {
+	margin-top:20px;
+	text-align:right;
+}
+.sbe-follow-form-submit-container .sbe-follow-form-submit {
+	padding: 5px 10px;
+	line-height: 1.0;
+	font-weight: normal;
+	font-size: 12px;
+	border-top: 1px solid #8a8a8a;
+	background: #505050;
+	background: -webkit-gradient(linear, left top, left bottom, from(#6b6b6b), to(#505050));
+	background: -webkit-linear-gradient(top, #6b6b6b, #505050);
+	background: -moz-linear-gradient(top, #6b6b6b, #505050);
+	background: -ms-linear-gradient(top, #6b6b6b, #505050);
+	background: -o-linear-gradient(top, #6b6b6b, #505050);
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	text-shadow: rgba(0,0,0,.4) 0 1px 0;
+	color: #ffffff;
+	text-decoration: none;
+	vertical-align: middle;
+	box-shadow:none;
+	border-bottom:1px solid black;
+	border-left:none;
+	border-right:none;
+	cursor: pointer;
+}
+.sbe-follow-form-submit-container .sbe-follow-form-submit:hover {
+   border-top-color: #212121;
+   background: #212121;
+   color: #FFF;
+}
+.sbe-follow-form-submit-container .sbe-follow-form-submit:active {
+   border-top-color: #757575;
+   background: #757575;
+}
+
+/** Errors/updates **/
+.sbe-follow-error {
+	background: #B62B2B;
+	color:white;
+	padding: 9px;
+	font-size: 12px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+.sbe-follow-updated {}

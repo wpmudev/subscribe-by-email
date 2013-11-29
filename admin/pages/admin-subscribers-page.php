@@ -73,7 +73,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 							<?php 
 
 								foreach ( $extra_fields as $extra_field ) {
-									$callback = 'render_extra_field_' . $extra_field['type'];
+									$callback = 'render_extra_field';
 									$args = array(
 										'subscriber' => $subscriber,
 										'atts' => $extra_field
@@ -120,31 +120,20 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 		<?php
 	}
 
-	public function render_extra_field_text( $args ) {
+	public function render_extra_field( $args ) {
 		$subscriber = $args['subscriber'];
 		$extra_field = $args['atts'];
 
 		$meta_value = isset( $_POST['subscribe-meta'][ $extra_field['slug'] ] ) ? 
 			incsub_sbe_validate_extra_field( $extra_field['type'], $_POST['subscribe-meta'][ $extra_field['slug'] ] ) : 
 			$subscriber->get_meta( $extra_field['slug'], '' );
-		?>
-			<input type="text" name="subscribe-meta[<?php echo $extra_field['slug']; ?>]" value="<?php echo esc_attr( $meta_value ); ?>">
-			<?php echo $extra_field['required'] ? '(*)' : ''; ?>
-		<?php
-	}
 
-	public function render_extra_field_checkbox( $args ) {
-		$subscriber = $args['subscriber'];
-		$extra_field = $args['atts'];
+		$atts = array(
+			'name' => 'subscribe-meta[' . $extra_field['slug'] . ']'
+		);
+		incsub_sbe_render_extra_field(  $extra_field['type'], $extra_field['slug'], '', $meta_value, $atts );
+		echo $extra_field['required'] ? '(*)' : '';
 
-		$meta_value = isset( $_POST['subscribe-meta'][ $extra_field['slug'] ] ) ? 
-			incsub_sbe_validate_extra_field( $extra_field['type'], $_POST['subscribe-meta'][ $extra_field['slug'] ] ) : 
-			$subscriber->get_meta( $extra_field['slug'] );
-		?>
-			<input type="checkbox" name="subscribe-meta[<?php echo $extra_field['slug']; ?>]" <?php checked( $meta_value ); ?>>
-			<?php echo $extra_field['required'] ? '(*)' : ''; ?>
-		<?php
-		
 	}
 
 

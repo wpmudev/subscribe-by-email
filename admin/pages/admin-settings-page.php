@@ -162,6 +162,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			add_settings_section( 'follow-button', __( 'Follow button', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'follow-button-field', __( 'Display a follow button?', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_field' ), $this->get_menu_slug(), 'follow-button' ); 
+			add_settings_field( 'follow-button-schema-field', __( 'Schema', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_schema_field' ), $this->get_menu_slug(), 'follow-button' ); 
 		}
 		elseif ( $this->get_current_tab() == 'content' ) {
 			$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
@@ -503,6 +504,20 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				<?php _e( 'Will place a follow button permanently in the bottom right of your site.', INCSUB_SBE_LANG_DOMAIN ); ?>
 			</label>
 		<?php
+	}
+
+	public function render_follow_button_schema_field() {
+		$settings = incsub_sbe_get_settings();
+		$schemas = incsub_sbe_get_follow_button_schemas();
+		foreach ( $schemas as $schema ) {
+			?>
+				<label>
+					<input type="radio" name="<?php echo $this->settings_name; ?>[follow_button_schema]" value="<?php echo esc_attr( $schema['slug'] ); ?>" <?php checked( $this->settings['follow_button_schema'] == $schema['slug'] ); ?> /> 
+					<?php echo $schema['label']; ?>
+				</label><br/>
+			<?php
+		}
+			
 	}
 
 	/**
@@ -847,15 +862,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			$new_settings['get_notifications'] = isset( $input['get_notifications'] );
 
 			$new_settings['follow_button'] = isset( $input['follow_button'] );
-			if ( isset( $input['follow_meta'] ) && is_array( $input['follow_meta'] ) ) {
-				$new_settings['follow_button_meta'] = array();
-				foreach ( $input['follow_meta'] as $meta_key => $value ) {
-					$new_settings['follow_button_meta'][] = $meta_key;
-				}
-			}
-			else {
-				$new_settings['follow_button_meta'] = array();
-			}
+			if ( ! empty( $input['follow_button_schema'] ) && array_key_exists( $input['follow_button_schema'], incsub_sbe_get_follow_button_schemas() ) )
+				$new_settings['follow_button_schema'] = $input['follow_button_schema'];
 
 			$new_settings['get_notifications_role'] = $input['get_notifications_role'];
 		}

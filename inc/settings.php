@@ -15,6 +15,7 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 	private $confirmation_flag;
 	private $post_types;
 	private $taxonomies;
+	private $follow_button_schemas;
 
 	// Settings slug name
 	private $settings_slug = 'incsub_sbe_settings';
@@ -103,6 +104,17 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 			)
 		);
 
+		$this->follow_button_schemas = array( 
+			'dark' => array(
+				'label' => __( 'Dark', INCSUB_SBE_LANG_DOMAIN ),
+				'slug' => 'dark'
+			),
+			'light' => array(
+				'label' => __( 'Light', INCSUB_SBE_LANG_DOMAIN ),
+				'slug' => 'light' 
+			) 
+		);
+
 	}
 
 	public function get_settings() {
@@ -162,8 +174,9 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'manage_subs_page' => 0,
 			'get_notifications' => false,
 			'get_notifications_role' => 'administrator',
+
 			'follow_button' => false,
-			'follow_button_meta' => array(),
+			'follow_button_schema' => 'dark',
 
 			'post_types' => array( 'post' ),
 			'taxonomies' => array( 'post' => array( 'category' => array( 'all' ) ) ),
@@ -230,6 +243,10 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 
 	public function get_extra_field_types() {
 		return $this->extra_field_types;
+	}
+
+	public function get_follow_button_schemas() {
+		return $this->follow_button_schemas;
 	}
 
 }

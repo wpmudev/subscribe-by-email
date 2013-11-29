@@ -14,6 +14,10 @@ function incsub_sbe_get_settings() {
 	return wp_parse_args( $settings_handler->get_settings(), $default );
 }
 
+function incsub_sbe_get_settings_handler() {
+	return Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
+}
+
 /**
  * Get the plugin default settings
  * 
@@ -80,6 +84,11 @@ function incsub_sbe_get_digest_days_of_week() {
 function incsub_sbe_get_confirmation_flag_captions() {
 	$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
 	return $settings_handler->get_confirmation_flag();
+}
+
+function incsub_sbe_get_follow_button_schemas() {
+	$settings_handler = incsub_sbe_get_settings_handler();
+	return $settings_handler->get_follow_button_schemas();
 }
 
 /**

@@ -1,0 +1,64 @@
+.sbe-widget-subscribe-form {
+	vertical-align: middle;
+}
+
+/** Text at the top of the form (defined by user in widget options) **/
+.sbe-widget-top-text {}
+
+/** Errors, updates **/
+.sbe-widget-error,.sbe-widget-updated {
+	width: 97%;
+	border-width: 1px;
+	border-style: solid;
+	padding: 5px;
+	border-radius: 3px;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+.sbe-widget-error {
+	background-color: #FFEBE8;
+	border-color: #C00;
+	color:black;
+}
+
+.sbe-widget-updated {
+	background-color: #DEFFCC;
+	border-color: #60B854;
+	color:black;
+}
+
+/** Form field title **/
+.sbe-widget-form-field-title {
+	margin-bottom:10px;
+}
+
+/** Form field **/
+.sbe-widget-form-field {
+	width: 100%;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	box-sizing: border-box;
+	padding:8px;
+	margin-bottom:20px;
+}
+.sbe-widget-form-field:focus {}
+
+/** Submit button **/
+.sbe-widget-form-submit-container {
+	margin:8px 0;
+   	text-align:right;
+}
+.sbe-widget-form-submit {
+	border: 1px solid #447314;
+	text-decoration: none;
+	vertical-align: middle;
+}
+
+/** Subscribers counter **/
+.sbe-widget-subscribers-count {
+	text-align:right;
+}

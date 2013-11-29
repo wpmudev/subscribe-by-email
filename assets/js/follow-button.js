@@ -4,10 +4,9 @@ jQuery(window).load(function() {
 
 	var sbe_opened = false;
 
-	if ( follow_box_main.hasClass('sbe-opened') )
-		sbe_opened = true;	
+	if ( follow_box_main.hasClass('sbe-follow-opened') )
+		sbe_opened = true;
 
-	
 	var follow_box = jQuery('#sbe-follow-wrap');
 
 	var follow_box_height = follow_box.outerHeight();
@@ -22,14 +21,14 @@ jQuery(window).load(function() {
 		var _this = jQuery(this);
 
 		if ( sbe_opened ) {
-			_this.find('span').removeClass('sbe-opened');
+			_this.find('span').removeClass('sbe-follow-opened');
 			follow_box_main.animate({
 				bottom: '-' + follow_box_height + 'px'
 			});
 			sbe_opened = false;
 		}
 		else {
-			_this.find('span').addClass('sbe-opened');
+			_this.find('span').addClass('sbe-follow-opened');
 			follow_box_main.animate({
 				bottom: 0
 			});
