@@ -65,6 +65,29 @@ class Subscribe_By_Email_Subscriber {
 
 	}
 
+	public function get_metas( $slugs ) {
+
+		$model = incsub_sbe_get_model();
+
+		$meta = $model->get_subscriber_meta( $this->subscription_ID, $slugs );
+
+		$results = array();
+		foreach ( $meta as $value ) {
+			$results[ $value->meta_key ] = stripslashes_deep( $value->meta_value );
+		}
+
+		foreach ( $slugs as $slug ) {
+			if ( ! array_key_exists( $slug, $results ) ) {
+				$results[ $slug ] = '';
+			}
+		}
+
+
+		return $results;
+
+
+	}
+
 	public function get_subscription_ID() {
 		return $this->subscription_ID;
 	}

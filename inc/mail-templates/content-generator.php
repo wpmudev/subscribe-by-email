@@ -11,10 +11,11 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 		$this->post_types = $post_types;
 		$this->dummy = $dummy;
 		$this->content = array();
+
 	}
 
 	public function get_content() {
-
+		
 		if ( ! empty( $this->post_ids ) && ! $this->dummy ) {
 			$content = get_posts(  
 				array(
@@ -39,6 +40,7 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 					'post_status' => array( 'publish' )
 				)
 			);
+			
 
 			$content = $query->posts;
 			remove_filter( 'posts_where', array( &$this, 'set_wp_query_filter' ) );
@@ -53,10 +55,24 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 
 		$this->content = $content;
 
-		if ( ! $this->dummy )
+		if ( ! $this->dummy ) {
+			$this->filter_sent_posts();
 			$this->filter_content_by_taxonomies();
+		}
 
 		return $this->content;
+	}
+
+	private function filter_sent_posts() {
+		if ( ! empty( $this->content ) ) {
+			$content = $this->content;
+			foreach( $content as $post_key => $the_post ) {
+				$post_id = $the_post->ID;
+				$sbe_sent = get_post_meta( $post_id, 'sbe_sent', true );
+				if ( $sbe_sent )
+					unset( $this->content[ $post_key ] );
+			}
+		}
 	}
 
 	private function filter_content_by_taxonomies() {

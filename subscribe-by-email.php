@@ -84,7 +84,6 @@ class Incsub_Subscribe_By_Email {
 
 		self::$admin_subscribers_page = new Incsub_Subscribe_By_Email_Admin_Subscribers_Page();
 		self::$admin_add_new_subscriber_page = new Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page();
-		self::$admin_export_subscribers_page = new Incsub_Subscribe_By_Email_Export_Subscribers_Page();
 		self::$admin_settings_page = new Incsub_Subscribe_By_Email_Admin_Settings_Page();
 		self::$admin_sent_emails_page = new Incsub_Subscribe_By_Email_Sent_Emails_Page();
 
@@ -148,7 +147,6 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-settings-page.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-subscribers-page.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-add-subscribers-page.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-export-subscribers-page.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-sent-emails-page.php' );
 
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/settings.php' );
@@ -241,7 +239,7 @@ class Incsub_Subscribe_By_Email {
 			delete_transient( self::$freq_daily_transient_slug );
 			delete_transient( self::$freq_weekly_transient_slug );
 			if ( 'weekly' == $settings['frequency'] ) {
-				self::set_next_week_schedule_time( $settings['day_of_week'] );
+				self::set_next_week_schedule_time( $settings['day_of_week'], $settings['time'] );
 			}
 			
 			if ( 'daily' == $settings['frequency'] ) {
@@ -559,7 +557,7 @@ class Incsub_Subscribe_By_Email {
 
 		if ( 'weekly' == $settings['frequency'] && $next_time = get_option( self::$freq_weekly_transient_slug ) ) {
 			if ( current_time( 'timestamp' ) > $next_time ) {
-				self::set_next_week_schedule_time( $settings['day_of_week'] );
+				self::set_next_week_schedule_time( $settings['day_of_week'], $settings['time'] );
 				$this->send_mails();
 			}
 		}
@@ -577,7 +575,7 @@ class Incsub_Subscribe_By_Email {
 	 * 
 	 * @param String $day_of_week 
 	 */
-	public static function set_next_week_schedule_time( $day_of_week ) {
+	public static function set_next_week_schedule_time( $day_of_week, $time ) {
 		switch ( $day_of_week ) {
 			case 0:
 				$day = 'sunday';
@@ -603,8 +601,10 @@ class Incsub_Subscribe_By_Email {
 		}
 
 		$next_time = strtotime( 'next ' . $day, current_time( 'timestamp' ) );
+		$next_time_date = date( 'Y-m-d', $next_time ) . ' ' . str_pad( $time, 2, 0, STR_PAD_LEFT ) . ':00:00';
+		$next_time_timestamp = strtotime( $next_time_date );
 		
-		update_option( self::$freq_weekly_transient_slug, $next_time );
+		update_option( self::$freq_weekly_transient_slug, $next_time_timestamp );
 		delete_option( self::$freq_daily_transient_slug );
 
 	}

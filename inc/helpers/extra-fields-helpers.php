@@ -58,3 +58,17 @@ function incsub_sbe_validate_extra_field( $type, $value ) {
 	}
 	return $new_value;
 }
+
+function incsub_sbe_get_extra_fields_slugs() {
+	$settings = incsub_sbe_get_settings();
+    $extra_fields = $settings['extra_fields'];
+    $extra_fields_slugs = array();
+    foreach ( $extra_fields as $extra_field ) {
+    	$extra_fields_slugs[] = $extra_field['slug'];
+    }
+    return $extra_fields_slugs;
+}
+
+function incsub_sbe_get_reserved_extra_fields_slugs() {
+	return array( 'email', 'type', 'note', 'created' );
+}

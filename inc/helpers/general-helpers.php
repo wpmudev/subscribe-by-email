@@ -170,6 +170,42 @@ function sbe_terms_checklist($post_id = 0, $args = array()) {
 	echo call_user_func_array(array(&$walker, 'walk'), array($categories, 0, $args));
 }
 
+function incsub_sbe_download_csv( $sep, $sample = false ) {
+    header( 'Content-Type: text/csv' );
+    header( 'Content-Disposition: attachment;filename=' . date( 'YmdHi' ) . '.csv' );
+    
+    $extra_fields_slugs = incsub_sbe_get_extra_fields_slugs();
+
+    sort($extra_fields_slugs);
+
+    echo '"email"' . $sep . '"type"' . $sep . '"created"' . $sep . '"note"';
+    if ( ! empty( $extra_fields_slugs ) )
+    	echo $sep . '"' . implode( '"' . $sep . '"', $extra_fields_slugs ) . '"';
+    echo "\n";
+    
+    $args = array(
+        'per_page' => $limit ? absint( $limit ) :  -1
+    );
+
+    $model = incsub_sbe_get_model();
+
+    $subscriptions = incsub_sbe_get_subscribers( $args );
+
+    foreach ( $subscriptions as $subscription ) {
+    	$meta = $subscription->get_metas( $extra_fields_slugs );
+
+        echo '"' . $subscription->get_subscription_email() . '"'
+        	. $sep . '"' . $subscription->get_subscription_type() . '"' 
+        	. $sep . '"' . $subscription->get_subscription_created() . '"' 
+        	. $sep . '"' . $subscription->get_subscription_note() . '"';
+
+        echo $sep . '"' . implode( '"' . $sep . '"', stripslashes_deep( $meta ) ) . '"';
+        echo "\n";
+    }
+    
+    exit();     
+}
+
 
 
 function incsub_sbe_log( $message ) {        

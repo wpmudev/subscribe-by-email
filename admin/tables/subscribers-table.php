@@ -112,8 +112,36 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         return $actions;
     }
 
-    function process_bulk_action() {
+    function display_tablenav( $which ) {
+
+        if ( 'top' == $which )
+            wp_nonce_field( 'bulk-' . $this->_args['plural'] );
         
+        ?>
+            <div class="tablenav <?php echo esc_attr( $which ); ?>">
+
+                <div class="alignleft actions">
+                    <?php $this->bulk_actions(); ?>
+                </div>
+
+                <?php if ( 'top' == $which ): ?>
+                    <div class="alignleft actions">
+                        <?php submit_button( __( 'Download CSV', INCSUB_SBE_LANG_DOMAIN ), 'secondary', 'sbe-download-csv', false ); ?>
+                    </div>
+                <?php endif; ?>
+                <?php $this->pagination( $which ); ?>
+
+                <br class="clear" />
+            </div>
+        <?php
+    }
+
+
+    function process_bulk_action() {
+        if ( isset( $_POST['sbe-download-csv'] ) ) {
+            return;           
+        }
+
         if( 'cancel' === $this->current_action() ) {
 
             $model = Incsub_Subscribe_By_Email_Model::get_instance();

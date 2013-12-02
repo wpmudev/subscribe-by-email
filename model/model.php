@@ -716,20 +716,38 @@ class Incsub_Subscribe_By_Email_Model {
     public function get_subscriber_meta( $subscription_id, $meta_key, $default = false ) {
         global $wpdb;
 
-        $result = $wpdb->get_var( 
-            $wpdb->prepare( 
-                "SELECT meta_value FROM $this->subscriptions_meta_table 
+        if ( ! is_array( $meta_key ) ) {
+            $result = $wpdb->get_var( 
+                $wpdb->prepare( 
+                    "SELECT meta_value FROM $this->subscriptions_meta_table 
+                    WHERE subscription_id = %d
+                    AND meta_key = %s",
+                    $subscription_id,
+                    $meta_key
+                )
+            );
+
+            if ( empty( $result ) )
+                return $default;
+
+            return maybe_unserialize( $result );
+        }
+        else {
+            $in = "meta_key IN ('" . implode( "','", $meta_key ) . "')";
+            $q = $wpdb->prepare( 
+                "SELECT meta_key, meta_value FROM $this->subscriptions_meta_table 
                 WHERE subscription_id = %d
-                AND meta_key = %s",
-                $subscription_id,
-                $meta_key
-            )
-        );
+                AND $in
+                ORDER BY meta_key ASC",
+                $subscription_id
+            );
+            $result = $wpdb->get_results( $q );
 
-        if ( empty( $result ) )
-            return $default;
+            if ( empty( $result ) )
+                return array();
 
-        return maybe_unserialize( $result );
+            return $result;
+        }
     }
 
     public function update_subscriber_meta( $subscription_id, $meta_key, $meta_value ) {

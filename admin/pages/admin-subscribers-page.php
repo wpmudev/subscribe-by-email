@@ -17,6 +17,8 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 		parent::__construct( $args );
 
 		add_action( 'admin_init', array( &$this, 'validate_form' ) );
+		add_action( 'admin_init', array( &$this, 'maybe_download_csv' ) );
+
 		//add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
 		//add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
 
@@ -182,5 +184,16 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 		}
 	}
+
+	public function maybe_download_csv() {
+		if ( isset( $_GET['page'] ) && $this->get_menu_slug() == $_GET['page'] && isset( $_POST['sbe-download-csv'] ) ) {
+
+			check_admin_referer( 'bulk-subscriptors' );
+
+			$sep = ',';
+			incsub_sbe_download_csv( $sep );
+        }
+	}
+
 }
 

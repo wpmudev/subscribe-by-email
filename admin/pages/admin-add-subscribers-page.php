@@ -116,6 +116,12 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 					<table class="form-table">
 						<tbody>
 							<tr valign="top">
+								<th scope="row"><?php _e( 'Sample CSV', INCSUB_SBE_LANG_DOMAIN ); ?></th>
+								<td>
+									<?php submit_button( 'Download a sample', 'secondary', 'download_sample_csv', false ); ?>
+								</td>
+							</tr>
+							<tr valign="top">
 								<th scope="row"><?php _e( 'CSV file', INCSUB_SBE_LANG_DOMAIN ); ?></th>
 								<td>
 									<input type="file" class="regular-text" name="subscribe-file">
@@ -148,6 +154,11 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 
 			$autopt = ! empty( $_POST['autopt'] ) ? true : false;
 
+			if ( isset( $input['download_sample_csv'] ) ) {
+				if ( ! wp_verify_nonce( $input['_wpnonce'], 'subscribe' ) )
+					return false;
+				incsub_sbe_download_csv( ',', 5 );
+			}
 			if ( isset( $input['submit-single'] ) ) {
 				
 				if ( ! wp_verify_nonce( $input['_wpnonce'], 'subscribe' ) )
@@ -228,47 +239,80 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 
 
 				if ( ( $handle = fopen( $_FILES['subscribe-file']['tmp_name'], 'r' ) ) !== false ) {
+
+					// Extra fields slugs
+					$extra_fields_slugs = incsub_sbe_get_extra_fields_slugs();
+
+					$first_row = fgetcsv( $handle, null, ',', '"' );
+
+					if ( ! $first_row ) {
+						add_settings_error( 'subscribe', 'email', __( 'The file does not include a valid header', INCSUB_SBE_LANG_DOMAIN ) );
+						return;
+					}
+
+					// Check columns
+					$columns = array();
+					foreach ( $first_row as $column ) {
+						$columns[] = stripslashes_deep( $column );
+					}
+
+					// Is the mail header in the sheet?
+					$is_valid = in_array( 'email', $columns );
 					
+					if ( ! $is_valid ) {
+						add_settings_error( 'subscribe', 'email', __( 'The file does not include an email in the header', INCSUB_SBE_LANG_DOMAIN ) );
+						return;
+					}
+
 					$subscribed_c = 0;
 					$row_c = 0;
-					$email_col = -1;
 
-					while ( ( $row = fgetcsv( $handle, null, ',', '"' ) ) !== false ) {
+					if ( $is_valid ) {
+						$email_col = array_search( 'email', $columns );
 
-						$cols = count( $row );
-						$row_c++;
-						if ( $email_col == -1 ) {
-							for ( $c = 0; $c < $cols; $c++ ) {
-								if ( is_email( sanitize_email( $row[ $c ] ) ) ) {
-									$email_col = $c;
-									break;
+						// Checking for extra fields columns
+						$extra_fields_cols = array();
+						foreach ( $extra_fields_slugs as $extra_field_slug ) {
+							$extra_fields_cols[ $extra_field_slug ] = array_search( $extra_field_slug, $columns );
+						}
+
+						$model = incsub_sbe_get_model();
+						while ( ( $row = fgetcsv( $handle, null, ',', '"' ) ) !== false ) {
+
+							$row_c++;
+
+							if ( 
+								is_email( sanitize_email( $row[$email_col] ) ) 
+								&& $sid = Incsub_Subscribe_By_Email::subscribe_user( sanitize_email( $row[$email_col] ), __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Import', INCSUB_SBE_LANG_DOMAIN ), $autopt ) 
+							) {
+								$subscribed_c++;
+								foreach ( $extra_fields_cols as $extra_field_slug => $extra_field_col ) {
+									if ( ! empty( $row[ $extra_field_col ] ) ) {
+										$model->add_subscriber_meta( $sid, $extra_field_slug, $row[ $extra_field_col ] );
+									}
 								}
 							}
 						}
 
-						if ( 
-							is_email( sanitize_email( $row[$email_col] ) ) 
-							&& Incsub_Subscribe_By_Email::subscribe_user( sanitize_email( $row[$email_col] ), __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Import', INCSUB_SBE_LANG_DOMAIN ), $autopt ) 
-						)
-							$subscribed_c++;
+						fclose( $handle );
+
+						$query_args = array(
+							'page' => $this->get_menu_slug(),
+							'users-subscribed' => 'true',
+							'total' => $row_c,
+							'subscribed' => $subscribed_c,
+						);
+
+						if ( $autopt )
+							$query_args['autopt'] = 'true';
+
+						wp_redirect( add_query_arg( 
+							$query_args,
+							admin_url( 'admin.php' ) )
+						);
+
+						exit();
 					}
-
-					fclose( $handle );
-
-					$query_args = array(
-						'page' => $this->get_menu_slug(),
-						'users-subscribed' => 'true',
-						'total' => $row_c,
-						'subscribed' => $subscribed_c,
-					);
-
-					if ( $autopt )
-						$query_args['autopt'] = 'true';
-
-					wp_redirect( add_query_arg( 
-						$query_args,
-						admin_url( 'admin.php' ) )
-					);
 
 				} 
 				else {

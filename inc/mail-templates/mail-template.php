@@ -277,7 +277,8 @@ class Incsub_Subscribe_By_Email_Template {
 	}
 
 	public function set_content( $log_id = false ) {
-		$this->content = $this->content_generator->get_content( $log_id );
+		$content = $this->content_generator->get_content( $log_id );
+		$this->content = apply_filters( 'sbe_mail_content', $content, $log_id );
 	}
 
 	/**
@@ -392,8 +393,13 @@ class Incsub_Subscribe_By_Email_Template {
 		}
 
 		// If we have sent the mail to all subscribers we won't need the settings in that log for the future
-		if ( $sent_to_all_subscribers && ! $this->dummy )
+		if ( $sent_to_all_subscribers && ! $this->dummy ) {
 			$model->clear_mail_log_settings( $mail_log_id );
+			$posts_ids = $this->content_generator->get_posts_ids();
+			foreach ( $posts_ids as $post_id ) {
+				update_post_meta( $post_id, 'sbe_sent', true );
+			}
+		}
 
 
 		remove_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
