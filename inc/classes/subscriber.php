@@ -2,13 +2,13 @@
 
 class Subscribe_By_Email_Subscriber {
 
-	private $subscription_ID;
-	private $subscription_email;
-	private $confirmation_flag;
-	private $subscription_type;
-	private $subscription_created;
-	private $subscription_note;
-	private $user_key;
+	private $subscription_ID = 0;
+	private $subscription_email = '';
+	private $confirmation_flag = 0;
+	private $subscription_type = '';
+	private $subscription_created = 0;
+	private $subscription_note = '';
+	private $user_key = '';
 	private $post_types = '';
 
 	public static function get_instance( $sid ) {

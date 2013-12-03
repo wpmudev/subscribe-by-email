@@ -178,25 +178,44 @@ function incsub_sbe_download_csv( $sep, $sample = false ) {
 
     sort($extra_fields_slugs);
 
-    echo '"email"' . $sep . '"type"' . $sep . '"created"' . $sep . '"note"';
+    echo '"email"' . $sep . '"type"' . $sep . '"note"';
     if ( ! empty( $extra_fields_slugs ) )
     	echo $sep . '"' . implode( '"' . $sep . '"', $extra_fields_slugs ) . '"';
     echo "\n";
     
     $args = array(
-        'per_page' => $limit ? absint( $limit ) :  -1
+        'per_page' => -1
     );
 
-    $model = incsub_sbe_get_model();
+    if ( $sample ) {
+    	$subscriptions = array();
+    	$_subscription = new stdClass();
+    	$_subscription->subscription_email = 'sample_email_1@email.com';
+    	$_subscription->subscription_type = __( 'Instant', INCSUB_SBE_PLUGIN_DIR );
+    	$_subscription->subscription_note = __( 'Manual Subscription', INCSUB_SBE_PLUGIN_DIR );
+    	$subscriptions[0] = new Subscribe_By_Email_Subscriber( $_subscription );
 
-    $subscriptions = incsub_sbe_get_subscribers( $args );
+    	$_subscription->subscription_email = 'sample_email_2@email.com';
+    	$subscriptions[1] = new Subscribe_By_Email_Subscriber( $_subscription );
+    }
+    else {
+    	$subscriptions = incsub_sbe_get_subscribers( $args );
+    }
 
     foreach ( $subscriptions as $subscription ) {
-    	$meta = $subscription->get_metas( $extra_fields_slugs );
+
+    	if ( ! $sample ) {
+    		$meta = $subscription->get_metas( $extra_fields_slugs );
+    	}
+    	else {
+    		$meta = array();
+    		foreach ( $extra_fields_slugs as $extra_field_slug )
+    			$meta[] = 'Sample';
+    	}
+    		
 
         echo '"' . $subscription->get_subscription_email() . '"'
         	. $sep . '"' . $subscription->get_subscription_type() . '"' 
-        	. $sep . '"' . $subscription->get_subscription_created() . '"' 
         	. $sep . '"' . $subscription->get_subscription_note() . '"';
 
         echo $sep . '"' . implode( '"' . $sep . '"', stripslashes_deep( $meta ) ) . '"';

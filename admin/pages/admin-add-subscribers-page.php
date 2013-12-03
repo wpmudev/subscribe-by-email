@@ -157,7 +157,7 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 			if ( isset( $input['download_sample_csv'] ) ) {
 				if ( ! wp_verify_nonce( $input['_wpnonce'], 'subscribe' ) )
 					return false;
-				incsub_sbe_download_csv( ',', 5 );
+				incsub_sbe_download_csv( ',', true );
 			}
 			if ( isset( $input['submit-single'] ) ) {
 				
