@@ -57,6 +57,7 @@ class Subscribe_By_Email_Subscriber {
 			if ( ! $meta )
 				return $default;
 
+			$meta = apply_filters( 'sbe_get_subscriber_meta', $meta_key, $this->subscription_ID );
 			wp_cache_add( $this->subscription_ID . $meta_key, $meta, 'subscribers_meta' );
 		}
 
@@ -82,7 +83,7 @@ class Subscribe_By_Email_Subscriber {
 			}
 		}
 
-
+		$results = apply_filters( 'sbe_get_subscriber_metas', $results, $this->subscription_ID );
 		return $results;
 
 
@@ -113,6 +114,7 @@ class Subscribe_By_Email_Subscriber {
 		return $this->user_key;
 	}
 	public function get_post_types() {
+		$this->post_types = apply_filters( 'sbe_get_subscriber_post_types', $this->post_types, $this->subscription_ID );
 		return $this->post_types;
 	}
 

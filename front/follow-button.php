@@ -15,7 +15,11 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 	public function add_styles() {
 		$settings = incsub_sbe_get_settings();
 		$schema = $settings['follow_button_schema'];
-		wp_enqueue_style( 'follow-button-styles', INCSUB_SBE_ASSETS_URL . '/css/follow-button/follow-button-' . $schema . '.css', array(), '20131128' );
+
+		$follow_stylesheet = apply_filters( 'sbe_follow_button_stylesheet_uri', INCSUB_SBE_ASSETS_URL . '/css/follow-button/follow-button-' . $schema . '.css' );
+		$deps = apply_filters( 'sbe_follow_button_stylesheet_dependants', array() );
+
+		wp_enqueue_style( 'follow-button-styles', $follow_stylesheet, $deps, '20131128' );
 		wp_enqueue_script( 'follow-button-scripts', INCSUB_SBE_ASSETS_URL . '/js/follow-button.js', array( 'jquery' ) );
 	}
 
@@ -52,6 +56,8 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 					$fields_to_save[ $extra_field['slug'] ] = $new_value;
 				}
 			}
+
+			$this->errors = apply_filters( 'sbe_follow_button_validate_form', $this->errors, $email, $fields_to_save );
 
 			if ( empty( $this->errors ) ) {
 				$sid = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), __( 'Follow Button', INCSUB_SBE_LANG_DOMAIN ) );
@@ -141,6 +147,8 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 
 				        		<?php endforeach; ?>
 				        	<?php endif; ?>
+
+				        	<?php do_action( 'sbe_follow_button_form_fields' ); ?>
 							
 							<?php wp_nonce_field( 'sbe_follow_subscribe', 'sbe_subscribe_nonce' ); ?>
 							<input type="hidden" name="action" value="sbe_follow_subscribe_user">

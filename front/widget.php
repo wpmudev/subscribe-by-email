@@ -23,81 +23,22 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		/* Create the widget. */
 		parent::WP_Widget( 'subscribe-by-email' , __( 'Subscribe by Email', INCSUB_SBE_LANG_DOMAIN ), $widget_ops );
 
-		add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
+		//add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
 
 
 		add_action( 'init', array( &$this, 'validate_widget' ) );
 	}
 
-	public function enqueue_scripts() {
-		//wp_enqueue_script( 'subscribe-by-email-widget-js', INCSUB_SBE_ASSETS_URL . 'js/widget.js', array( 'jquery' ), '20130522' );
-		//$sbe_localized = array(
-		//	'ajaxurl' => site_url() . '/wp-admin/admin-ajax.php',
-		//	'subscription_created' => __( 'Your subscription has been successfully created!', 'subscribe-by-email'),
-		//	'already_subscribed' => __( 'You are already subscribed!', 'subscribe-by-email'),
-		//	'subscription_cancelled' => __('Your subscription has been successfully canceled!', 'subscribe-by-email'),
-		//	'failed_to_cancel_subscription' => __('Failed to cancel your subscription!', 'subscribe-by-email'),
-		//	'invalid_email' => __('Invalid e-mail address!', 'subscribe-by-email'),
-		//	'default_email' => __('ex: john@hotmail.com', 'subscribe-by-email'),
-		//);
-	//
-		//wp_localize_script( 'subscribe-by-email-widget-js', 'sbe_localized', $sbe_localized );
-	}
+	public function enqueue_scripts() {}
 
 
 	public function enqueue_styles() {
-		wp_enqueue_style( 'subscribe-by-email-widget-css', INCSUB_SBE_ASSETS_URL . 'css/widget/widget.css', array(), '20130522' );
+		$widget_stylesheet = apply_filters( 'sbe_widget_stylesheet_uri', INCSUB_SBE_ASSETS_URL . 'css/widget/widget.css' );
+		$deps = apply_filters( 'sbe_widget_stylesheet_dependants', array() );
+		wp_enqueue_style( 'subscribe-by-email-widget-css', $widget_stylesheet, $deps, '20130522' );
 	}
 
-
-
-	public function subscribe_user() {
-		
-		if ( isset( $_POST['subscription-email'] ) ) {
-			$instance = $this->get_settings();
-
-			if ( array_key_exists( $this->number, $instance ) ) {
-				$instance = $instance[ $this->number ];
-
-				if ( false !== $instance ) {
-					$autopt = $instance['autopt'];
-
-					$email = sanitize_email( $_POST['subscription-email'] );
-					if ( ! is_email( $email ) ) {
-						echo "MAIL ERROR";
-					}
-					else {
-						$sid = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant', $autopt );
-
-						if ( ! $sid ) {
-							echo "MAIL ERROR";
-							die();
-						}
-
-						$model = incsub_sbe_get_model();
-						if ( isset( $_POST['widget_meta']['first_name'] ) )
-							$model->add_subscriber_meta( $sid, 'first_name', stripslashes_deep( $_POST['widget_meta']['first_name'] ) );
-
-						if ( isset( $_POST['widget_meta']['last_name'] ) )
-							$model->add_subscriber_meta( $sid, 'last_name', stripslashes_deep( $_POST['widget_meta']['last_name'] ) );
-
-						if ( isset( $_POST['widget_meta']['address'] ) )
-							$model->add_subscriber_meta( $sid, 'address', stripslashes_deep( $_POST['widget_meta']['address'] ) );
-
-						$settings = incsub_sbe_get_settings();
-						if ( $settings['get_notifications'] ) {
-							$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Subscribed_Notice_Template( $email );
-							$admin_notice->send_email();
-						}
-
-						echo "TRUE";
-					}
-				}
-			}
-		}
-		die();
-	}
 
 	public function validate_widget() {
 		if ( ! empty( $_POST['action'] ) && 'sbe_widget_subscribe_user' == $_POST['action'] ) {
@@ -138,6 +79,8 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 					}
 				}
 
+				$this->errors = apply_filters( 'sbe_widget_validate_form', $this->errors, $email, $fields_to_save );
+
 				if ( empty( $this->errors ) ) {
 					$autopt = $instance['autopt'];
 					$sid = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant', $autopt );
@@ -156,6 +99,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 					}
 
 					$redirect_to = add_query_arg( 'sbe_widget_subscribed', 'true' ) . '#subscribe-by-email-' . $this->number;
+					$redirect_to = apply_filters( 'sbe_widget_redirect_on_subscribe', $redirect_to );
 					wp_redirect( $redirect_to );
 					exit;		
 	    		}
@@ -226,7 +170,8 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 
 	        		<?php endforeach; ?>
 	        	<?php endif; ?>
-	        	
+
+	        	<?php do_action( 'sbe_widget_form_fields' ); ?>
 
 		        <?php wp_nonce_field( 'sbe_widget_subscribe', 'sbe_subscribe_nonce' ); ?>
 	        	<input type="hidden" name="action" value="sbe_widget_subscribe_user">
@@ -265,6 +210,8 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 
 		$instance['widget_meta'] = $show_meta;
 
+		$instance = apply_filters( 'sbe_widget_validate_admin_form', $instance, $new_instance, $old_instance );
+
 		return $instance;
 	}
 
@@ -285,6 +232,8 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			'subscribed_placeholder' => __( 'Thank you, your email has been added to the mailing list.', INCSUB_SBE_LANG_DOMAIN ),
 			'widget_meta' => array()
 		);
+
+		$defaults = apply_filters( 'sbe_widget_admin_form_default_values', $defaults, $instance );
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
 		<p>
 			<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e('Title:', INCSUB_SBE_LANG_DOMAIN ); ?></label>
@@ -310,6 +259,9 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			<input type="checkbox" id="<?php echo $this->get_field_id( 'autopt' ); ?>" name="<?php echo $this->get_field_name( 'autopt' ); ?>" value="1" <?php checked( $instance['autopt'] ); ?> /> 
 			<label for="<?php echo $this->get_field_id( 'autopt' ); ?>"><?php _e('Auto-opt In (it will not send a confirmation email to the user)', INCSUB_SBE_LANG_DOMAIN ); ?></label>
 		</p>
+
+		<?php do_action( 'sbe_widget_admin_form_fields', $this, $instance ); ?>
+
 	<?php
 	}
 
