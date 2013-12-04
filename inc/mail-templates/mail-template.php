@@ -21,6 +21,7 @@ class Incsub_Subscribe_By_Email_Template {
 		$this->dummy = $dummy;
 		$this->subject = $this->settings['subject'];
 
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/content-generator.php' );
 		$this->content_generator = new Incsub_Subscribe_By_Email_Content_Generator( $this->settings['frequency'], $this->settings['post_types'], $this->dummy );
 		if ( ! empty( $settings['post_ids'] ) ) {
 			$this->content_generator->set_posts_ids( $settings['post_ids'] );
@@ -191,89 +192,155 @@ class Incsub_Subscribe_By_Email_Template {
 			ob_start();
 
 		?>
-		<div <?php echo $font_style; ?>>
-				<table <?php echo $table_style; ?> bgcolor="<?php echo $this->settings['header_color']; ?>">
-					<tbody>
-						<tr>
-							<td></td>
-							<td <?php echo $column_style; ?>>
-								<div <?php echo $column_wrap_style; ?>>
-									<table <?php echo $table_style; ?> bgcolor="<?php echo $this->settings['header_color']; ?>">
-										<tbody>
-											<tr>
-												<td><a href="<?php echo get_home_url(); ?>"><img style="max-width:<?php echo $this->settings['logo_width']; ?>px;" src="<?php echo $this->settings['logo']; ?>"></a></td>
-												<td align="right">
-													<?php if ( $this->settings['show_blog_name'] ): ?>
-														<h6><a <?php echo $blogname_style; ?> href="<?php echo get_home_url(); ?>"><?php echo $this->settings['from_sender']; ?></a></h6>
-													<?php endif; ?>
-												</td>
-											</tr>
-										</tbody>
-									</table>
-								</div>
-							</td>
-							<td></td>
-						</tr>
-					</tbody>
-				</table><!-- /HEADER -->
-				<table <?php echo $table_style; ?>>
-					<tbody>
-						<tr>
-							<td></td>
-							<td <?php echo $column_style; ?> bgcolor="#FFFFFF">
-								<div <?php echo $column_wrap_style; ?>>
-									<table <?php echo $table_style; ?>>
-										<tbody>
-											<tr>
-												<td>
-													<h2 <?php echo $subject_style; ?>><?php echo $this->subject; ?></h2>
-													<p <?php echo $lead_style; ?>><?php echo wpautop( $this->settings['header_text'] ); ?></p>
-													<hr/>
-													<?php $this->the_content( $user_content ); ?>												
-												</td>
-											</tr>
-										</tbody>
-									</table>
-								</div><!-- /content -->
-							</td>
-							<td></td>
-						</tr>	
-					</tbody>
-				</table>
-				<table <?php echo $table_style; ?>>
-					<tbody>
-						<tr>
-							<td></td>
-							<td <?php echo $column_style; ?> bgcolor="#EFEFEF">
-								<div <?php echo $column_wrap_style; ?>>
-									<table <?php echo $table_style; ?>>
-										<tbody>
-											<tr>
-												<td <?php echo $footer_style; ?>>
-													<p>
-														<?php printf( __( 'You are subscribed to email updates from <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), get_home_url(), get_bloginfo( 'name' ) ); ?>  <br/>
-														<?php if ( $this->settings['manage_subs_page'] ): ?>
-															<?php printf( __( 'To manage your subscriptions, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sub_key', $key, get_permalink( $this->settings['manage_subs_page'] ) ) ) ); ?> <br/>	
+		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+		<html xmlns=3D"http://www.w3.org/1999/xhtml">
+		<head>
+		</head>
+		<body>
+			<div <?php echo $font_style; ?>>
+					<table <?php echo $table_style; ?> bgcolor="<?php echo $this->settings['header_color']; ?>">
+						<tbody>
+							<tr>
+								<td></td>
+								<td <?php echo $column_style; ?>>
+									<div <?php echo $column_wrap_style; ?>>
+										<table <?php echo $table_style; ?> bgcolor="<?php echo $this->settings['header_color']; ?>">
+											<tbody>
+												<tr>
+													<td><a href="<?php echo get_home_url(); ?>"><img style="max-width:<?php echo $this->settings['logo_width']; ?>px;" src="<?php echo $this->settings['logo']; ?>"></a></td>
+													<td align="right">
+														<?php if ( $this->settings['show_blog_name'] ): ?>
+															<h6><a <?php echo $blogname_style; ?> href="<?php echo get_home_url(); ?>"><?php echo $this->settings['from_sender']; ?></a></h6>
 														<?php endif; ?>
-														<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sbe_unsubscribe', $key, get_home_url() ) ) ); ?>
-													</p>
-													<p><?php echo wpautop( $this->settings['footer_text'] ); ?></p>
-												</td>
-											</tr>
-										</tbody>
-									</table>
-								</div><!-- /content -->
-							</td>
-							<td></td>
-						</tr>	
-					</tbody>
-				</table>
-			</div>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</td>
+								<td></td>
+							</tr>
+						</tbody>
+					</table><!-- /HEADER -->
+					<table <?php echo $table_style; ?>>
+						<tbody>
+							<tr>
+								<td></td>
+								<td <?php echo $column_style; ?> bgcolor="#FFFFFF">
+									<div <?php echo $column_wrap_style; ?>>
+										<table <?php echo $table_style; ?>>
+											<tbody>
+												<tr>
+													<td>
+														<h2 <?php echo $subject_style; ?>><?php echo $this->subject; ?></h2>
+														<p <?php echo $lead_style; ?>><?php echo wpautop( $this->settings['header_text'] ); ?></p>
+														<hr/>
+														<?php $this->the_content( $user_content ); ?>												
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div><!-- /content -->
+								</td>
+								<td></td>
+							</tr>	
+						</tbody>
+					</table>
+					<table <?php echo $table_style; ?>>
+						<tbody>
+							<tr>
+								<td></td>
+								<td <?php echo $column_style; ?> bgcolor="#EFEFEF">
+									<div <?php echo $column_wrap_style; ?>>
+										<table <?php echo $table_style; ?>>
+											<tbody>
+												<tr>
+													<td <?php echo $footer_style; ?>>
+														<p>
+															<?php printf( __( 'You are subscribed to email updates from <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), get_home_url(), get_bloginfo( 'name' ) ); ?>  <br/>
+															<?php if ( $this->settings['manage_subs_page'] ): ?>
+																<?php printf( __( 'To manage your subscriptions, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sub_key', $key, get_permalink( $this->settings['manage_subs_page'] ) ) ) ); ?> <br/>	
+															<?php endif; ?>
+															<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sbe_unsubscribe', $key, get_home_url() ) ) ); ?>
+														</p>
+														<p><?php echo wpautop( $this->settings['footer_text'] ); ?></p>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div><!-- /content -->
+								</td>
+								<td></td>
+							</tr>	
+						</tbody>
+					</table>
+				</div>
+			</body>
+			</html>
 
 		<?php
 
 		if ( ! $echo )
 			return ob_get_clean();
+	}
+
+	public function render_text_mail_template( $user_content = array(), $echo = true, $key = '' ) {
+		if ( $this->dummy )
+			$user_content = $this->content;
+
+		$text = '';
+
+		if ( $this->settings['show_blog_name'] )
+			$text .= $this->settings['from_sender'] . '(' . get_home_url() . ')' . "\r\n";
+
+		$text .= $this->subject . "\r\n\r\n";
+
+		$text .= strip_tags( $this->settings['header_text'] ) . "\r\n";
+
+		$date_format = get_option( 'date_format', get_site_option( 'date_format', 'Y-m-d' ) );
+		$date_format = ( empty( $date_format ) ) ? 'Y-m-d' : $date_format;
+
+		if ( ! empty( $user_content ) ) {
+
+			// We need this global or the_title(), the_excerpt... willl not work properly
+			global $post;
+
+			add_filter( 'excerpt_length', array( &$this, 'set_excerpt_length' ), 80 );
+
+			foreach ( $user_content as $content_post ) {
+				
+				$post = $content_post;
+				
+				// Setup a post data as if we were inside the Loop
+				setup_postdata( $post );
+
+				$permalink = ! $this->dummy ? get_permalink() : '#';
+				$title = ! $this->dummy ? get_the_title() : 'Lorem Ipsum';
+
+				$text .= $title . "\r\n";
+				$text .= $permalink . "\r\n";
+				$text .= '------------------------------------' . "\r\n";
+
+				$the_content = wp_kses( get_the_excerpt(), array( 'br' ) ) . "\r\n\r\n"; 
+				$the_content = preg_replace( '#<br\s*/?>#i', "\r\n", $the_content );
+				$text .= strip_tags( $the_content );
+
+				$text .= sprintf( __( 'by %s on %s', INCSUB_SBE_LANG_DOMAIN ), get_the_author(), get_the_date( $date_format ) ) . "\r\n";
+
+				$text .= '------------------------------------' . "\r\n\r\n";
+
+				$text .= sprintf( __( 'You are subscribed to email updates from %s', INCSUB_SBE_LANG_DOMAIN ), get_home_url() ) . "\r\n";
+				if ( $this->settings['manage_subs_page'] ) {
+					$text .= sprintf( __( 'To manage your subscriptions, go to %s.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sub_key', $key, get_permalink( $this->settings['manage_subs_page'] ) ) ) ) . "\r\n";
+					$text .= sprintf( __( 'To stop receiving these emails, go to %s.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sbe_unsubscribe', $key, get_home_url() ) ) ) . "\r\n\r\n";
+				}
+				$text .= strip_tags( $this->settings['footer_text'] );
+
+			}
+			remove_filter( 'excerpt_length', array( &$this, 'set_excerpt_length' ), 80 );
+		}
+
+		return $text;
 	}
 
 	public function set_content( $log_id = false ) {
@@ -304,7 +371,7 @@ class Incsub_Subscribe_By_Email_Template {
 				return false;
 		}
 
-		add_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
+		//add_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
 		add_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		add_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
 
@@ -342,13 +409,29 @@ class Incsub_Subscribe_By_Email_Template {
 				$user_content = array();
 			}
 
-			if ( $key !== false )
+			if ( $key !== false ) {
 				$content = $this->render_mail_template( $user_content, false, $key );
+				$text_content = $this->render_text_mail_template( $user_content, false, $key );
+			}
 			
 			if ( ! $this->dummy ) {
 
 				if ( ! $jump_user ) {
-					wp_mail( $mail, $this->subject, $content );
+					$boundary = uniqid( rand(), true );
+					$headers = "X-Mailer: PHP/".phpversion() ."\r\n".
+"MIME-Version: 1.0" . "\r\n".
+"Content-Type: multipart/alternative; boundary=$boundary". "\r\n";
+
+    				$message = "--".$boundary."\r\n".
+"Content-Type: text/plain; charset=utf-8; format=fixed" . "\r\n" .
+"Content-Transfer-Encoding: 7bit" . "\r\n\r\n" .
+$text_content . "\r\n" . 
+"--".$boundary . "\r\n" .
+"Content-Type: text/html;" . "\r\n" . 
+"Content-Transfer-Encoding: 7bit" . "\r\n\r\n" . 
+$content."\r\n".
+"--".$boundary."--";
+					wp_mail( $mail, $this->subject, $message, $headers );
 				}
 				
 				if ( $status === true )
@@ -402,7 +485,7 @@ class Incsub_Subscribe_By_Email_Template {
 		}
 
 
-		remove_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
+		//remove_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
 		remove_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		remove_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
 

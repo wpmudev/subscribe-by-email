@@ -69,6 +69,7 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 					}
 
 					if ( $settings['get_notifications'] ) {
+						require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
 						$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Subscribed_Notice_Template( $email );
 						$admin_notice->send_email();
 					}

@@ -94,7 +94,7 @@ function incsub_sbe_get_follow_button_schemas() {
 /**
  * Code took and modified from wp-admin/template.php
  */
-function sbe_terms_checklist($post_id = 0, $args = array()) {
+function sbe_terms_checklist( $post_id = 0, $args = array() ) {
  	$defaults = array(
 		'descendants_and_self' => 0,
 		'selected_cats' => false,

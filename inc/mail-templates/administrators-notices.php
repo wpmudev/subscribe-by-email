@@ -11,6 +11,7 @@ abstract class Incsub_Subscribe_By_Email_Administrators_Notice_Template {
 	protected function get_administrators_emails() {
 		$settings = incsub_sbe_get_settings();
 		$administrators = get_users( array( 'role' => $settings['get_notifications_role'] ) );
+		$administrators = apply_filters( 'sbe_get_notification_users', $administrators );
 
 		for ( $i = 0; $i < count( $administrators ); $i++ ) {
 			$administrators[ $i ] = $administrators[ $i ]->data->user_email;

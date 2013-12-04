@@ -149,9 +149,8 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 
 		// These are the post types that the user wants to get
 		$user_post_types = $subscriber->get_post_types();
-		$user_post_types = empty( $subscriber->get_post_types() ) || ! is_array( $user_post_types ) ? $this->post_types : $user_post_types;
+		$user_post_types = empty( $user_post_types ) || ! is_array( $user_post_types ) ? $this->post_types : $user_post_types;
 		
-
 		$user_content = array();
 
 		// Removing content based on post types
@@ -162,7 +161,7 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 			$user_content[] = $post;
 		}
 
-		$user_content = apply_filters( 'sbe_get_subscriber_email_contents', $user_content, $subscriber->subscription_ID );
+		$user_content = apply_filters( 'sbe_get_subscriber_email_contents', $user_content, $subscriber->get_subscription_ID() );
 		return $user_content;
 		
 	}

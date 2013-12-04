@@ -57,7 +57,7 @@ class Subscribe_By_Email_Subscriber {
 			if ( ! $meta )
 				return $default;
 
-			$meta = apply_filters( 'sbe_get_subscriber_meta', $meta_key, $this->subscription_ID );
+			$meta = apply_filters( 'sbe_get_subscriber_meta', $meta, $this->subscription_ID );
 			wp_cache_add( $this->subscription_ID . $meta_key, $meta, 'subscribers_meta' );
 		}
 

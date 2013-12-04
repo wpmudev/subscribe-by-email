@@ -92,6 +92,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 						}
 
 						if ( $settings['get_notifications'] ) {
+							require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
 							$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Subscribed_Notice_Template( $email );
 							$admin_notice->send_email();
 						}
@@ -208,8 +209,6 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		$instance['show_count'] = ! empty( $new_instance['show_count'] ) ? true : false;
 		$instance['subscribed_placeholder'] = sanitize_text_field( $new_instance['subscribed_placeholder'] );
 
-		$instance['widget_meta'] = $show_meta;
-
 		$instance = apply_filters( 'sbe_widget_validate_admin_form', $instance, $new_instance, $old_instance );
 
 		return $instance;
@@ -229,8 +228,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			'button_text' => __( 'Subscribe', INCSUB_SBE_LANG_DOMAIN  ),
 			'autopt' => false,
 			'show_count' => false,
-			'subscribed_placeholder' => __( 'Thank you, your email has been added to the mailing list.', INCSUB_SBE_LANG_DOMAIN ),
-			'widget_meta' => array()
+			'subscribed_placeholder' => __( 'Thank you, your email has been added to the mailing list.', INCSUB_SBE_LANG_DOMAIN )
 		);
 
 		$defaults = apply_filters( 'sbe_widget_admin_form_default_values', $defaults, $instance );

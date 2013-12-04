@@ -459,6 +459,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 								<ul id="<?php echo $taxonomy_slug; ?>checklist" class="<?php echo $taxonomy_slug; ?>checklist form-no-clear">
 									<li id="<?php echo $taxonomy_slug; ?>-all"><label class="selectit"><input class="settings-term-checkbox <?php echo $post_type_slug; ?>-checkbox" value="all" type="checkbox" <?php checked( $all_checked ); ?> <?php disabled( $disabled ); ?> name="<?php echo $base_name; ?>[<?php echo $post_type_slug; ?>][<?php echo $taxonomy_slug; ?>][]" id="in-<?php echo $taxonomy_slug; ?>-all"> <strong><?php _e( 'All', INCSUB_SBE_LANG_DOMAIN ); ?></strong></label></li>
 									<?php 
+										require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/walker-terms-checklist.php' );
 										$walker = new Walker_SBE_Terms_Checklist;
 
 										sbe_terms_checklist( 
@@ -650,6 +651,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			<p><a href="<?php echo $restore_link; ?>"><?php _e( 'Restore template to default', INCSUB_SBE_LANG_DOMAIN ); ?></a></p>
 
 			<?php 
+				require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
 				$template = new Incsub_Subscribe_By_Email_Template( $this->settings, true ); 
 				$template->render_mail_template();
 			?>
@@ -964,6 +966,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				$mail = sanitize_email( $input['test_mail'] );
 
 				if ( is_email( $mail ) ) {
+					require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
 					$template = new Incsub_Subscribe_By_Email_Template( $new_settings, true );
 					$template->send_mail( $mail );
 				}

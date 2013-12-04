@@ -79,8 +79,10 @@ class Incsub_Subscribe_By_Email {
 
 		$this->maybe_send_pending_emails();
 
-		if ( ! is_admin() )
+		if ( ! is_admin() ) {
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'front/manage-subscription.php' );
 			$manage_subscription_page = new Incsub_Subscribe_By_Email_Manage_Subscription();
+		}
 
 		self::$admin_subscribers_page = new Incsub_Subscribe_By_Email_Admin_Subscribers_Page();
 		self::$admin_add_new_subscriber_page = new Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page();
@@ -97,12 +99,14 @@ class Incsub_Subscribe_By_Email {
 			if ( ! $settings['follow_button'] )
 				return;
 
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'front/follow-button.php' );
 			new Incsub_Subscribe_By_Email_Follow_Button( $settings );
 		}
 	}
 
 
 	public function widget_init() {
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/widget.php' );
 		register_widget( 'Incsub_Subscribe_By_Email_Widget' );
 	}
 
@@ -143,27 +147,31 @@ class Incsub_Subscribe_By_Email {
 	 */
 	private function includes() {		
 
+		// Admin pages
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-page.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-settings-page.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-subscribers-page.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-add-subscribers-page.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-sent-emails-page.php' );
 
+		// Settings handler
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/settings.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/content-generator.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/confirmation-mail-template.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/walker-terms-checklist.php' );
+		
+		// WPMUDEV Dashboard class
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/dash-notifications.php' );
+
+		// Model
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'model/model.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/widget.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/follow-button.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/manage-subscription.php' );
+
+		// Helpers
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/general-helpers.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/extra-fields-helpers.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/subscriber-helpers.php' );
+
+		// Log class
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/logger.php' );
+
+		// Subscriber class
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/subscriber.php' );
 
 
@@ -365,6 +373,8 @@ class Incsub_Subscribe_By_Email {
 		$settings = incsub_sbe_get_settings();
 
 		$subscriber = $model->get_subscriber( $subscription_id );
+
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/confirmation-mail-template.php' );
 		$confirmation_mail = new Incsub_Subscribe_By_Email_Confirmation_Template( $settings, $subscriber->subscription_email );
 		$confirmation_mail->send_mail();
 	}
@@ -404,6 +414,7 @@ class Incsub_Subscribe_By_Email {
 			
 			$settings = incsub_sbe_get_settings();
 			if ( $settings['get_notifications'] ) {
+				require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
 				$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Unsubscribed_Notice_Template( $subscriber->subscription_email );
 				$admin_notice->send_email();
 			}
@@ -516,6 +527,7 @@ class Incsub_Subscribe_By_Email {
 		else
 			$args['post_ids'] = array();
 
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
 		$mail_template = new Incsub_Subscribe_By_Email_Template( $args, false );
 
 		if ( ! $log_id )
