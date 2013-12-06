@@ -20,8 +20,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			'general' => __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ),
 			'content' => __( 'Contents', INCSUB_SBE_LANG_DOMAIN ),
 			'template' => __( 'Mail template', INCSUB_SBE_LANG_DOMAIN ),
-			'logs' => __( 'Logs', INCSUB_SBE_LANG_DOMAIN ),
-			'extra-fields' => __( 'Extra Fields', INCSUB_SBE_LANG_DOMAIN )
+			'extra-fields' => __( 'Custom Fields', INCSUB_SBE_LANG_DOMAIN )
 		);
 
 		$args = array(
@@ -163,6 +162,9 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			add_settings_section( 'follow-button', __( 'Follow button', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'follow-button-field', __( 'Display a follow button?', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_field' ), $this->get_menu_slug(), 'follow-button' ); 
 			add_settings_field( 'follow-button-schema-field', __( 'Schema', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_schema_field' ), $this->get_menu_slug(), 'follow-button' ); 
+
+			add_settings_section( 'logs-settings', __( 'Logs', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			add_settings_field( 'keep-logs-for', __( 'Keep logs files during', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_keep_logs_for_field' ), $this->get_menu_slug(), 'logs-settings' ); 
 		}
 		elseif ( $this->get_current_tab() == 'content' ) {
 			$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
@@ -202,13 +204,9 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			add_settings_section( 'email-preview', __( 'Email preview', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_preview_section' ), $this->get_menu_slug() );
 		}
-		elseif ( $this->get_current_tab() == 'logs' ) {
-			add_settings_section( 'logs-settings', __( 'Logs', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
-			add_settings_field( 'keep-logs-for', __( 'Keep logs files during', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_keep_logs_for_field' ), $this->get_menu_slug(), 'logs-settings' ); 
-		}
 		elseif ( $this->get_current_tab() == 'extra-fields' ) {
-			add_settings_section( 'custom-fields', __( 'Extra Fields', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_extra_fields_section' ), $this->get_menu_slug() );
-			add_settings_field( 'custom-fields-meta', __( 'Subscribers extra fields', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribers_extra_fields_field' ), $this->get_menu_slug(), 'custom-fields' ); 
+			add_settings_section( 'custom-fields', __( 'Custom Fields', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_extra_fields_section' ), $this->get_menu_slug() );
+			add_settings_field( 'custom-fields-meta', __( 'Subscribers custom fields', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribers_extra_fields_field' ), $this->get_menu_slug(), 'custom-fields' ); 
 		}
 
 	}
@@ -675,7 +673,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 	public function render_extra_fields_section() {
 		?>
-			<p><?php _e( 'In this screen you can add new fields that subscribers can fill when they try to subscribe via widget or Follow Button', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+			<p><?php _e( 'In this screen you can add new fields that subscribers can fill when they try to subscribe via widget and Follow Button', INCSUB_SBE_LANG_DOMAIN ); ?></p>
 		<?php
 	}
 
@@ -701,26 +699,36 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			<?php $allowed_types = incsub_sbe_get_extra_field_types(); ?>
 			<?php $remove_link = add_query_arg( 'tab', 'extra-fields', $this->get_permalink() ); ?>
-			<div id="extra-fields-list" class="extra-fields-sortables">
+			<div id="extra-fields-list" >
+				<div class="spinner"></div> 
+				<table>
+					<tbody class="extra-fields-sortables">
 				<?php foreach ( $this->settings['extra_fields'] as $field_id => $value ): ?>
-					<div class="extra-field-item" data-field-slug="<?php echo esc_attr( $value['slug'] ); ?>">	
-						<div class="extra-field-item-top">
-							<div class="extra-field-item-title-action">
-								<a class="extra-field-item-edit" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'remove', $field_id, $remove_link ), 'remove_extra_field' ) ); ?>">
+					
+						<tr class="extra-field-item" data-field-slug="<?php echo esc_attr( $value['slug'] ); ?>">
+							<td class="extra-field-item-move"></td>
+							<td class="extra-field-item-edit">
+								<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'remove', $field_id, $remove_link ), 'remove_extra_field' ) ); ?>">
 									<span class="remove"><?php _e( 'Remove', INCSUB_SBE_LANG_DOMAIN ); ?></span>
 								</a>
-							</div>
-							<div class="extra-field-item-title"><h4><?php echo esc_html( $value['title'] ); ?> <?php echo $value['required'] ? '[' . __( 'Required', INCSUB_SBE_LANG_DOMAIN ) . ']' : ''; ?>:
-								<span class="in-extra-field-item-title"><?php echo urldecode( $value['slug'] ) . ' [' . $allowed_types[ $value['type'] ]['name'] . ']'; ?></span></h4>
-							</div>
-						</div>
-					</div>
+							</td>
+							<td class="extra-field-item-title"><strong><?php echo esc_html( $value['title'] ); ?></strong></td>
+							
+							<td class="extra-field-item-slug"><em><?php echo urldecode( $value['slug'] );?></em></td>
+							<td class="extra-field-item-type"><?php echo $allowed_types[ $value['type'] ]['name']; ?></td>
+							<td class="extra-field-item-required"><?php _e( 'Required', INCSUB_SBE_LANG_DOMAIN ); ?>: <strong><?php echo $value['required'] ? __( 'Yes', INCSUB_SBE_LANG_DOMAIN ) : __( 'No', INCSUB_SBE_LANG_DOMAIN ); ?></strong></td>
+						</tr>
+					
 				<?php endforeach; ?>
+					</tbody>
+				</table>
+				
 			</div>
 			<script>
 				jQuery(document).ready(function($) {
 					$('.extra-fields-sortables').sortable({
 						stop: function( event, ui ) {
+							$('#extra-fields-list .spinner').css({'visibility':'visible'});
 							var nodes = $('.extra-field-item');
 							var slugs = new Array();
 							nodes.each( function ( i, element ) {
@@ -735,6 +743,9 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 									action: 'incsub_sbe_sort_extra_fields',
 									nonce: "<?php echo wp_create_nonce( 'sort_extra_fields' ); ?>"
 								},
+							})
+							.always( function() {
+								$('#extra-fields-list .spinner').css({'visibility':'hidden'});
 							});							
 						}
 					});
@@ -874,6 +885,19 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				$new_settings['follow_button_schema'] = $input['follow_button_schema'];
 
 			$new_settings['get_notifications_role'] = $input['get_notifications_role'];
+
+			if ( ! empty( $input['keep_logs_for'] ) ) {
+				$option = absint( $input['keep_logs_for'] );
+				if ( $option > 31 ) {
+					$new_settings['keep_logs_for'] = 31;
+				}
+				elseif ( $option < 1 ) {
+					$new_settings['keep_logs_for'] = 1;	
+				}
+				else {
+					$new_settings['keep_logs_for'] = $option;
+				}
+			}
 		}
 
 		if ( isset( $input['submit_settings_content'] ) ) {
@@ -974,22 +998,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 		}
 
-		if ( isset( $input['submit_settings_logs'] ) ) {
-			if ( ! empty( $input['keep_logs_for'] ) ) {
-				$option = absint( $input['keep_logs_for'] );
-				if ( $option > 31 ) {
-					$new_settings['keep_logs_for'] = 31;
-				}
-				elseif ( $option < 1 ) {
-					$new_settings['keep_logs_for'] = 1;	
-				}
-				else {
-					$new_settings['keep_logs_for'] = $option;
-				}
-			}
-				
-		}
-
 		if ( isset( $input['submit_new_extra_field'] ) ) {
 			$extra_field_error = false;
 
@@ -1005,7 +1013,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				if ( empty( $input['extra_field_slug'] ) )
 					$slug = sanitize_title_with_dashes( $name );
 				else
-					$slug = sanitize_title_with_dashes( $input['extra_field_slug'] );
+					$slug = sanitize_title_with_dashes( remove_accents( $input['extra_field_slug'] ) );
 
 				$settings = incsub_sbe_get_settings();
 				$slug_found = false;

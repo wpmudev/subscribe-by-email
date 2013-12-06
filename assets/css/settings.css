@@ -1,81 +1,52 @@
 #extra-fields-list {
-	margin-top:30px;
+	margin-top:20px;
 	max-width:700px;
 }
 
-.extra-field-item {
-	margin-bottom:3px;
+#extra-fields-list span {
+	margin-right:25px;
 }
 
-div.extra-fields-sortables {
-	
-	border-color: #FFF;
+#extra-fields-list .spinner {
+	float:none;
+	display:block;
+	visibility: hidden;
+	margin-bottom:10px;
 }
 
-#extra-fields-list .extra-field-item-top a.extra-field-item-edit {
-	background: #EEE;
-	margin: -9px -5px 0 0;
-	padding: 3px 15px 14px 15px;
-	border-left: 1px solid #DDD;
-	border-right: 1px solid #DDD;
+#extra-fields-list table {
+	border-collapse: collapse;
+	border-spacing: 0;
+	width:100%;
 }
-#extra-fields-list .extra-field-item-top a.extra-field-item-edit {
-	color: #777;
+
+
+#extra-fields-list table td {
+	vertical-align:middle;
+	margin-bottom:1px;
+	padding:7px;
+	background-color:#F1F1F1;
+	border-bottom:3px solid #FFF;
 }
-#extra-fields-list a.extra-field-item-edit {
+
+#extra-fields-list .extra-field-item-edit a {
 	text-decoration: none;
+	font-weight: bold;
 }
 
-#extra-fields-list .extra-field-item-edit .remove {
-	display: inline;
+#extra-fields-list .extra-field-item-title {
+
 }
 
-.extra-field-item-top .extra-field-item-title-action {
-	float: right;
+#extra-fields-list .extra-field-item:hover .extra-field-item-move {
+	background:url('../images/move.png') no-repeat 0 4px #fff;
+	cursor:move;
 }
 
-.extra-field-item .extra-field-item-top {
-	background: #E9E9E9;
-	color: #333;
+#extra-fields-list .extra-field-item:hover td {
+	background:#fff;
 }
 
-.extra-field-item .extra-field-item-top, .menu-item-handle {
-	margin-top: 0;
-	padding: 4px;
+#extra-fields-list .extra-field-item-move {
 }
 
-.extra-field-item .extra-field-item-top {
-	font-size: 12px;
-	font-weight: 600;
-	height: 26px;
-	line-height: 1.4em;
-}
-
-.extra-field-item {
-	border: 1px solid #DEDEDE;
-	-webkit-box-shadow: 0px 1px 1px -1px rgba(0, 0, 0, 0.1);
-	box-shadow: 0px 1px 1px -1px rgba(0, 0, 0, 0.1);
-	cursor:pointer;
-}
-
-.extra-field-item-top .extra-field-item-title {
-	padding: 7px 9px;
-}
-
-.extra-field-item-title h4 {
-	margin: 0;
-	padding-bottom: 0.2em;
-	line-height: 1;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-}
-
-.in-extra-field-item-title {
-	color: #777;
-}
-
-.extra-field-item-title .in-extra-field-item-title {
-	font-size: 12px;
-	white-space: nowrap;
-}
