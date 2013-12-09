@@ -127,13 +127,19 @@ class Incsub_Subscribe_By_Email_Model {
               mail_subject text NOT NULL,
               mail_recipients int(8) NOT NULL,
               mail_date bigint(20) NOT NULL,
-              mail_settings text DEFAULT '',
-              mails_list text DEFAULT '',
+              mail_settings text,
+              mails_list text,
               max_email_ID bigint(20) NOT NULL,
               PRIMARY KEY  (id)
             )  ENGINE=MyISAM $db_charset_collate;";
        
         dbDelta($sql);
+
+        $alter = "ALTER TABLE $this->subscriptions_log_table MODIFY COLUMN mail_settings text";
+        $wpdb->query( $alter );
+        
+        $alter = "ALTER TABLE $this->subscriptions_log_table MODIFY COLUMN mails_list text";
+        $wpdb->query( $alter );
 
     }
 
