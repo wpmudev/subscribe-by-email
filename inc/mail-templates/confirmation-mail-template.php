@@ -48,7 +48,7 @@ class Incsub_Subscribe_By_Email_Confirmation_Template {
 									<table <?php echo $table_style; ?> >
 										<tbody>
 											<tr>
-												<td><strong><?php printf( __( 'Subscribe to posts on <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), site_url(), get_bloginfo( 'name' ) ); ?></strong></td>
+												<td><strong><?php printf( __( 'Subscribe to posts on <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), home_url(), get_bloginfo( 'name' ) ); ?></strong></td>
 											</tr>
 										</tbody>
 									</table>

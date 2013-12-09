@@ -630,12 +630,18 @@ class Incsub_Subscribe_By_Email_Model {
 
         if ( is_array( $log_id ) && ! empty( $log_id ) ) {
             $where = "WHERE id IN (" . implode( ', ', $log_id ) . ")";
+            $where_digest = "WHERE meta_key IN ('digest_sent_" . implode( "','digest_sent_", $log_id ) . "')";
         }
         else {
             $where = $wpdb->prepare( "WHERE id = %d", $log_id );   
+            $meta_key = 'digest_sent_' . $log_id;
+            $where_digest = "WHERE meta_key = '$meta_key'";   
         }
 
         $query = "DELETE FROM $this->subscriptions_log_table $where";
+        $wpdb->query( $query );
+
+        $query = "DELETE FROM $this->subscriptions_meta_table $where_digest";
         $wpdb->query( $query );
     }
 
@@ -793,6 +799,39 @@ class Incsub_Subscribe_By_Email_Model {
         wp_cache_delete( $subscription_id . $meta_key, 'subscribers_meta' );
     }
 
+    public function is_digest_sent( $sid, $mail_log_id ) {
+        global $wpdb;
+
+        $meta_key = 'digest_sent_' . $mail_log_id;
+        $results = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT meta_value FROM $this->subscriptions_meta_table WHERE meta_key = '$meta_key' AND subscription_id = %d",
+                $sid
+            )
+        );
+
+        if ( empty( $results ) )
+            return false;
+
+        return true;
+
+    }
+    public function set_digest_sent( $sid, $mail_log_id ) {
+        global $wpdb;
+
+        $meta_key = 'digest_sent_' . $mail_log_id;
+
+        $wpdb->insert(
+            $this->subscriptions_meta_table,
+            array( 
+                'meta_key' => $meta_key,
+                'meta_value' => 1,
+                'subscription_id' => $sid
+            ),
+            array( '%s', '%d', '%d' )
+        );
+    }
+
     public function get_subscriber_all_meta( $subscription_id ) {
         global $wpdb;
 
@@ -841,4 +880,5 @@ class Incsub_Subscribe_By_Email_Model {
             )
         );  
     }
+
 }

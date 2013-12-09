@@ -35,7 +35,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 
 	public function enqueue_styles() {
 		$widget_stylesheet = apply_filters( 'sbe_widget_stylesheet_uri', INCSUB_SBE_ASSETS_URL . 'css/widget/widget.css' );
-		$deps = apply_filters( 'sbe_widget_stylesheet_dependants', array() );
+		$deps = apply_filters( 'sbe_widget_stylesheet_dependencies', array() );
 		wp_enqueue_style( 'subscribe-by-email-widget-css', $widget_stylesheet, $deps, '20130522' );
 	}
 
@@ -187,6 +187,11 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		        	</p>
 		        <?php endif; ?>
 	        </form>
+	        <?php if ( ! empty( $instance['css'] ) ): ?>
+	        	<style>
+					<?php echo esc_html( $instance['css'] ); ?>
+	        	</style>
+	    	<?php endif; ?>
 
 	        
         <?php else: ?>
@@ -208,6 +213,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		$instance['autopt'] = ! empty( $new_instance['autopt'] ) ? true : false;
 		$instance['show_count'] = ! empty( $new_instance['show_count'] ) ? true : false;
 		$instance['subscribed_placeholder'] = sanitize_text_field( $new_instance['subscribed_placeholder'] );
+		$instance['css'] = $new_instance['css'];
 
 		$instance = apply_filters( 'sbe_widget_validate_admin_form', $instance, $new_instance, $old_instance );
 
@@ -228,7 +234,8 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			'button_text' => __( 'Subscribe', INCSUB_SBE_LANG_DOMAIN  ),
 			'autopt' => false,
 			'show_count' => false,
-			'subscribed_placeholder' => __( 'Thank you, your email has been added to the mailing list.', INCSUB_SBE_LANG_DOMAIN )
+			'subscribed_placeholder' => __( 'Thank you, your email has been added to the mailing list.', INCSUB_SBE_LANG_DOMAIN ),
+			'css' => ''
 		);
 
 		$defaults = apply_filters( 'sbe_widget_admin_form_default_values', $defaults, $instance );
@@ -257,7 +264,11 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			<input type="checkbox" id="<?php echo $this->get_field_id( 'autopt' ); ?>" name="<?php echo $this->get_field_name( 'autopt' ); ?>" value="1" <?php checked( $instance['autopt'] ); ?> /> 
 			<label for="<?php echo $this->get_field_id( 'autopt' ); ?>"><?php _e('Auto-opt In (it will not send a confirmation email to the user)', INCSUB_SBE_LANG_DOMAIN ); ?></label>
 		</p>
-
+		<p>
+			<label for="<?php echo $this->get_field_id( 'css' ); ?>"><?php _e( 'Custom CSS', INCSUB_SBE_LANG_DOMAIN ); ?></label><br/>
+			<textarea rows="10" cols="30" id="<?php echo $this->get_field_id( 'css' ); ?>" name="<?php echo $this->get_field_name( 'css' ); ?>" ><?php echo esc_textarea( ( $instance['css'] ) ); ?></textarea>
+			
+		</p>
 		<?php do_action( 'sbe_widget_admin_form_fields', $this, $instance ); ?>
 
 	<?php

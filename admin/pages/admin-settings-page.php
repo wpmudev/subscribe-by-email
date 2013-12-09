@@ -269,10 +269,12 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			<form action="options.php" method="post">
 				<?php settings_fields( $this->settings_group ); ?>
 				<?php do_settings_sections( $this->get_menu_slug() ); ?>
-					
-				<p class="submit">
-					<?php submit_button( null, 'primary', $this->settings_name . '[submit_settings_' . $this->get_current_tab() . ']', false ) ?>
-				</p>
+				
+				<?php if ( 'extra-fields' != $this->get_current_tab() ): ?>
+					<p class="submit">
+						<?php submit_button( null, 'primary', $this->settings_name . '[submit_settings_' . $this->get_current_tab() . ']', false ) ?>
+					</p>
+				<?php endif; ?>
 			</form>
 		
 		<?php
@@ -708,15 +710,18 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 						<tr class="extra-field-item" data-field-slug="<?php echo esc_attr( $value['slug'] ); ?>">
 							<td class="extra-field-item-move"></td>
 							<td class="extra-field-item-edit">
-								<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'remove', $field_id, $remove_link ), 'remove_extra_field' ) ); ?>">
+								<a onclick="return confirm('<?php printf( __( 'Are you sure? %s data will be deleted for all users',INCSUB_SBE_LANG_DOMAIN ), $value['title'] ); ?>');" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'remove', $field_id, $remove_link ), 'remove_extra_field' ) ); ?>">
 									<span class="remove"><?php _e( 'Remove', INCSUB_SBE_LANG_DOMAIN ); ?></span>
 								</a>
 							</td>
 							<td class="extra-field-item-title"><strong><?php echo esc_html( $value['title'] ); ?></strong></td>
 							
 							<td class="extra-field-item-slug"><em><?php echo urldecode( $value['slug'] );?></em></td>
-							<td class="extra-field-item-type"><?php echo $allowed_types[ $value['type'] ]['name']; ?></td>
-							<td class="extra-field-item-required"><?php _e( 'Required', INCSUB_SBE_LANG_DOMAIN ); ?>: <strong><?php echo $value['required'] ? __( 'Yes', INCSUB_SBE_LANG_DOMAIN ) : __( 'No', INCSUB_SBE_LANG_DOMAIN ); ?></strong></td>
+							<td class="extra-field-item-type"><?php echo $allowed_types[ $value['type'] ]['name']; ?> </td>
+							<td class="extra-field-item-required">
+								<?php _e( 'Required', INCSUB_SBE_LANG_DOMAIN ); ?>:
+								<strong><?php echo $value['required'] ? __( 'Yes' ) : __( 'No' ); ?> </strong>
+							</td>
 						</tr>
 					
 				<?php endforeach; ?>
@@ -727,6 +732,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			<script>
 				jQuery(document).ready(function($) {
 					$('.extra-fields-sortables').sortable({
+						handle: '.extra-field-item-move',
 						stop: function( event, ui ) {
 							$('#extra-fields-list .spinner').css({'visibility':'visible'});
 							var nodes = $('.extra-field-item');
@@ -778,7 +784,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		}
 
 		$settings['extra_fields'] = $new_extra_fields;
-		error_log(print_r($settings, true));
 
 		remove_filter( 'sanitize_option_' . $this->settings_name, array( &$this, 'sanitize_settings' ) );
 		incsub_sbe_update_settings( $settings );
@@ -1041,6 +1046,32 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			}
 							
 		}
+
+//		if ( isset( $input['submit_settings_extra-fields'] ) ) {
+//			$extra_field_error = false;
+//			
+//			$settings = incsub_sbe_get_settings();
+//	    	$current_extra_fields = empty( $settings['extra_fields'] ) ? array() : $settings['extra_fields'];
+//
+//	    	var_dump($current_extra_fields);
+//	    	foreach ( $current_extra_fields as $extra_field_id => $extra_field ) {
+//	    		if ( empty( $input['extra_field_name-' . $extra_field_id] ) ) {
+//					add_settings_error( $this->settings_name, 'extra-field-name', __( 'Name cannot be empty', INCSUB_SBE_LANG_DOMAIN ) );
+//					$extra_field_error = true;
+//				}
+//				else {
+//					$name = sanitize_text_field( $input['extra_field_name-' . $extra_field_id] );
+//					$new_settings['extra_fields'][ $extra_field_id ]['title'] = $name;
+//				}
+//
+//				$type = ! empty( $input['extra_field_type-' . $extra_field_id ] ) ? $input['extra_field_type-' . $extra_field_id ] : '';
+//				if ( array_key_exists( $type, incsub_sbe_get_extra_field_types() ) ) {
+//					$new_settings['extra_fields'][ $extra_field_id ]['type'] = $type;
+//				}
+//
+//				$new_settings['extra_fields'][ $extra_field_id ]['required'] = ! empty( $input['extra_field_required-' . $extra_field_id ] );
+//	    	} 
+//		}
 
 		return $new_settings;
 

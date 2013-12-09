@@ -86,7 +86,6 @@ class Subscribe_By_Email_Subscriber {
 		$results = apply_filters( 'sbe_get_subscriber_metas', $results, $this->subscription_ID );
 		return $results;
 
-
 	}
 
 	public function get_subscription_ID() {

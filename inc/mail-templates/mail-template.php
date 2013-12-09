@@ -192,11 +192,15 @@ class Incsub_Subscribe_By_Email_Template {
 			ob_start();
 
 		?>
-		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-		<html xmlns=3D"http://www.w3.org/1999/xhtml">
-		<head>
-		</head>
-		<body>
+
+		<?php if ( ! $this->dummy ): ?>
+			<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+			<html xmlns=3D"http://www.w3.org/1999/xhtml">
+			<head>
+			</head>
+			<body>
+		<?php endif; ?>
+		
 			<div <?php echo $font_style; ?>>
 					<table <?php echo $table_style; ?> bgcolor="<?php echo $this->settings['header_color']; ?>">
 						<tbody>
@@ -275,8 +279,12 @@ class Incsub_Subscribe_By_Email_Template {
 						</tbody>
 					</table>
 				</div>
-			</body>
-			</html>
+
+				<?php if ( ! $this->dummy ): ?>
+					</body>
+					</html>
+				<?php endif; ?>
+			
 
 		<?php
 
@@ -411,7 +419,9 @@ class Incsub_Subscribe_By_Email_Template {
 
 			if ( $key !== false ) {
 				$content = $this->render_mail_template( $user_content, false, $key );
-				$text_content = $this->render_text_mail_template( $user_content, false, $key );
+
+				if ( ! $this->dummy ) 
+					$text_content = $this->render_text_mail_template( $user_content, false, $key );
 			}
 			
 			if ( ! $this->dummy ) {
@@ -431,7 +441,12 @@ $text_content . "\r\n" .
 "Content-Transfer-Encoding: 7bit" . "\r\n\r\n" . 
 $content."\r\n".
 "--".$boundary."--";
-					wp_mail( $mail, $this->subject, $message, $headers );
+					$subscriber_id = $model->get_subscriber_id( $mail );
+					$is_digest_sent = $model->is_digest_sent( $subscriber_id, $mail_log_id );
+					if ( ! $is_digest_sent ) {
+						wp_mail( $mail, $this->subject, $message, $headers );
+						$model->set_digest_sent( $subscriber_id, $mail_log_id );
+					}
 				}
 				
 				if ( $status === true )
@@ -470,8 +485,10 @@ $content."\r\n".
 					break;
 				}
 			}
-			else {			
+			else {
+				add_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
 				wp_mail( $mail, $this->subject, $content );
+				remove_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
 			}
 		}
 
