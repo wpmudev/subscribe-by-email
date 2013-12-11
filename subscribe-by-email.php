@@ -518,6 +518,8 @@ class Incsub_Subscribe_By_Email {
 	 */
 	public function send_mails( $posts_ids = array(), $log_id = false ) {
 		
+		set_transient( 'sbe_sending', true, 25200 );
+
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 
 		$settings = incsub_sbe_get_settings();
@@ -536,6 +538,7 @@ class Incsub_Subscribe_By_Email {
 
 		$mail_template->send_mail( $log_id );
 
+		delete_transient( 'sbe_sending' );
 		return $log_id;
 	}
 
@@ -556,7 +559,10 @@ class Incsub_Subscribe_By_Email {
 			return;
 
 		if ( in_array( $post->post_type, $settings['post_types'] ) && $new_status != $old_status && 'publish' == $new_status && $settings['frequency'] == 'inmediately' ) {
-			//send emails
+			// Are we currently sending? Stop please
+			if ( get_transient( 'sbe_sending' ) )
+				return;
+
 			$this->send_mails( array( $post->ID ) );	
 		}
 	}
@@ -568,12 +574,20 @@ class Incsub_Subscribe_By_Email {
 			return;
 
 		if ( 'weekly' == $settings['frequency'] && $next_time = get_option( self::$freq_weekly_transient_slug ) ) {
+			// Are we currently sending? Stop please
+			if ( get_transient( 'sbe_sending' ) )
+				return;
+
 			if ( current_time( 'timestamp' ) > $next_time ) {
 				self::set_next_week_schedule_time( $settings['day_of_week'], $settings['time'] );
 				$this->send_mails();
 			}
 		}
 		elseif ( 'daily' == $settings['frequency'] && $next_time = get_option( self::$freq_daily_transient_slug ) ) {
+			// Are we currently sending? Stop please
+			if ( get_transient( 'sbe_sending' ) )
+				return;
+
 			if ( current_time( 'timestamp' ) > $next_time ) {
 				self::set_next_day_schedule_time( $settings['time'] );
 				$this->send_mails();
