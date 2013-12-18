@@ -265,7 +265,7 @@ class Incsub_Subscribe_By_Email_Template {
 															<?php if ( $this->settings['manage_subs_page'] ): ?>
 																<?php printf( __( 'To manage your subscriptions, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sub_key', $key, get_permalink( $this->settings['manage_subs_page'] ) ) ) ); ?> <br/>	
 															<?php endif; ?>
-															<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sbe_unsubscribe', $key, get_home_url() ) ) ); ?>
+															<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( $this->get_unsubscribe_url( $key ) ) ); ?>
 														</p>
 														<p><?php echo wpautop( $this->settings['footer_text'] ); ?></p>
 													</td>
@@ -340,7 +340,7 @@ class Incsub_Subscribe_By_Email_Template {
 				$text .= sprintf( __( 'You are subscribed to email updates from %s', INCSUB_SBE_LANG_DOMAIN ), get_home_url() ) . "\r\n";
 				if ( $this->settings['manage_subs_page'] ) {
 					$text .= sprintf( __( 'To manage your subscriptions, go to %s.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sub_key', $key, get_permalink( $this->settings['manage_subs_page'] ) ) ) ) . "\r\n";
-					$text .= sprintf( __( 'To stop receiving these emails, go to %s.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sbe_unsubscribe', $key, get_home_url() ) ) ) . "\r\n\r\n";
+					$text .= sprintf( __( 'To stop receiving these emails, go to %s.', INCSUB_SBE_LANG_DOMAIN ), esc_url( $this->get_unsubscribe_url( $key ) ) ) . "\r\n\r\n";
 				}
 				$text .= strip_tags( $this->settings['footer_text'] );
 
@@ -427,20 +427,36 @@ class Incsub_Subscribe_By_Email_Template {
 			if ( ! $this->dummy ) {
 
 				if ( ! $jump_user ) {
-					$boundary = uniqid( rand(), true );
-					$headers = "X-Mailer: PHP/".phpversion() ."\r\n".
-"MIME-Version: 1.0" . "\r\n".
-"Content-Type: multipart/alternative; boundary=$boundary". "\r\n";
 
-    				$message = "--".$boundary."\r\n".
-"Content-Type: text/plain; charset=utf-8; format=fixed" . "\r\n" .
-"Content-Transfer-Encoding: 7bit" . "\r\n\r\n" .
+					$unsubscribe_url = $this->get_unsubscribe_url( $key );
+					$headers = array(
+						"X-Mailer:PHP/".phpversion(),
+						"Reply-To: <$mail>",
+						'MIME-Version:1.0',
+						"List-Unsubscribe: <$unsubscribe_url>"
+					);
+
+					if ( ! $this->is_microsoft( $mail ) ) {
+
+						$boundary = uniqid( rand(), true );
+						$headers[] = "Content-Type:multipart/alternative; boundary=$boundary";
+
+						$charset = get_bloginfo( 'charset' );
+	    				$message = "--".$boundary."\r\n".
+"Content-Type: text/plain; charset=$charset; format=fixed" . "\r\n" .
+"Content-Transfer-Encoding: 8bit" . "\r\n\r\n" .
 $text_content . "\r\n" . 
 "--".$boundary . "\r\n" .
 "Content-Type: text/html;" . "\r\n" . 
-"Content-Transfer-Encoding: 7bit" . "\r\n\r\n" . 
+"Content-Transfer-Encoding: 8bit" . "\r\n\r\n" . 
 $content."\r\n".
 "--".$boundary."--";
+					}
+					else {
+						$headers[] = "Content-Type:text/html";
+						$message = $content;
+					}
+
 					$subscriber_id = $model->get_subscriber_id( $mail );
 					$is_digest_sent = $model->is_digest_sent( $subscriber_id, $mail_log_id );
 					if ( ! $is_digest_sent ) {
@@ -506,6 +522,27 @@ $content."\r\n".
 		remove_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		remove_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
 
+	}
+
+
+	/**
+	 * Microsoft has its own standards.
+	 * Let's detect it
+	 * 
+	 * @return Boolean
+	 */
+	private function is_microsoft( $email ) {
+		$email_domain = explode( '@', $email );
+		$email_domain = strtolower( $email_domain[1] );
+		$needle = array( 'hotmail', 'outlook', 'outlookexpress', 'msn' );
+	    foreach( $needle as $domain ) {
+	        if( strpos( $email_domain, $domain ) !== false ) return true; // stop on first true result
+	    }
+	    return false;
+	}
+
+	private function get_unsubscribe_url( $key ) {
+		return add_query_arg( 'sbe_unsubscribe', $key, get_home_url() );
 	}
 
 	

@@ -371,9 +371,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				<?php endforeach; ?>
 			</select>
 			<br/><br/>
+
 			<div id="time-wrap">
 				<label for="time-select"><?php _e( 'What time should the digest email be sent?', INCSUB_SBE_LANG_DOMAIN ); ?>
-					<select name="<?php echo $this->settings_name; ?>[time]" id="time-select">
+					<select name="<?php echo $this->settings_name; ?>[daily-time]" id="time-select">
 						<?php foreach ( incsub_sbe_get_digest_times() as $key => $t ): ?>
 							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $this->settings['time'] ); ?>><?php echo $t; ?></option>
 						<?php endforeach; ?>
@@ -391,7 +392,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 					</select>
 				</label><br/>
 				<label for="time-select"><?php _e( 'What time should the digest email be sent?', INCSUB_SBE_LANG_DOMAIN ); ?>
-					<select name="<?php echo $this->settings_name; ?>[time]" id="time-select">
+					<select name="<?php echo $this->settings_name; ?>[weekly-time]" id="time-select">
 						<?php foreach ( incsub_sbe_get_digest_times() as $key => $t ): ?>
 							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $this->settings['time'] ); ?>><?php echo $t; ?></option>
 						<?php endforeach; ?>
@@ -849,29 +850,25 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			}
 
 			// For daily frequencies
-			if ( 'daily' == $new_settings['frequency'] && array_key_exists( $input['time'], incsub_sbe_get_digest_times() ) ) {
-				$new_settings['time'] = $input['time'];
-				if ( 'daily' != $this->settings['frequency'] || $input['time'] != $this->settings['time'] ) {
-					// We have changed this setting
-					Incsub_Subscribe_By_Email::set_next_day_schedule_time( $input['time'] );
-				}
+			if ( 'daily' == $new_settings['frequency'] && array_key_exists( $input['daily-time'], incsub_sbe_get_digest_times() ) ) {
+				$new_settings['time'] = $input['daily-time'];
+				// We have changed this setting
+				Incsub_Subscribe_By_Email::set_next_day_schedule_time( $input['daily-time'] );
 			}
 			else {
 				$default_settings = incsub_sbe_get_default_settings();
-				$new_settings['time'] = $default_settings['time'];
 			}
 
 			// For weekly frequencies
-			if ( 'weekly' == $new_settings['frequency'] && array_key_exists( $input['day_of_week'], incsub_sbe_get_digest_days_of_week() ) && array_key_exists( $input['time'], incsub_sbe_get_digest_times() ) ) {
+			if ( 'weekly' == $new_settings['frequency'] && array_key_exists( $input['day_of_week'], incsub_sbe_get_digest_days_of_week() ) && array_key_exists( $input['weekly-time'], incsub_sbe_get_digest_times() ) ) {
 				$new_settings['day_of_week'] = $input['day_of_week'];
-				$new_settings['time'] = $input['time'];
-				Incsub_Subscribe_By_Email::set_next_week_schedule_time( $input['day_of_week'], $input['time'] );
+				$new_settings['time'] = $input['weekly-time'];
+				Incsub_Subscribe_By_Email::set_next_week_schedule_time( $input['day_of_week'], $input['weekly-time'] );
 
 			}
 			else {
 				$default_settings = incsub_sbe_get_default_settings();
 				$new_settings['day_of_week'] = $default_settings['day_of_week'];
-				$new_settings['time'] = $default_settings['time'];
 			}
 
 			// Management Page

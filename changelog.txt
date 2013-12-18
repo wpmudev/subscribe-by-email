@@ -5,6 +5,27 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.5 - 2013/12/18
+----------------------------------------------------------------------
+* Emails are now sent with HTML + plain text support
+* New feature: Custom fields for each user.
+* Additional checks to prevent duplicated emails.
+* widget CSS customizer.
+* Changed site_url for home_url.
+* Some styles improved.
+* Added actions/filters.
+* Less files loading now on startup.
+* Export page merged into subscribers page.
+* New feature: Time selection on weekly digests.
+* Added post meta to identify which posts have been sent already.
+* Added dark/light schemas for follow button.
+* Some Code reorganized.
+* Added cache system.
+* Easier and faster queries when getting subscribers.
+* Preventing delete logs when log ID does not exist.
+* Fixed bug in content generator.
+* More small improvements.
+
 2.4.9 - 2013/11/13
 ----------------------------------------------------------------------
 * Fixed memory issue with logs.

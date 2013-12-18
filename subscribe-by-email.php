@@ -518,7 +518,7 @@ class Incsub_Subscribe_By_Email {
 	 */
 	public function send_mails( $posts_ids = array(), $log_id = false ) {
 		
-		set_transient( 'sbe_sending', true, 25200 );
+		set_transient( 'sbe_sending', true, 600 );
 
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 
