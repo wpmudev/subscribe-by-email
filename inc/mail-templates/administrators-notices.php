@@ -16,7 +16,9 @@ abstract class Incsub_Subscribe_By_Email_Administrators_Notice_Template {
 		for ( $i = 0; $i < count( $administrators ); $i++ ) {
 			$administrators[ $i ] = $administrators[ $i ]->data->user_email;
 		}
-		return $administrators;
+
+
+		return array_unique( $administrators );
 	}
 
 	public abstract function send_email();

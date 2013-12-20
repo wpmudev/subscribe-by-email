@@ -382,12 +382,14 @@ class Incsub_Subscribe_By_Email_Template {
 		//add_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
 		add_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		add_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
+		add_filter( 'wp_mail_charset', array( &$this, 'set_mail_charset' ) );
 
 		
 		$mails_sent = 0;
 
 		// We are going to try to send the mail to all subscribers
 		$sent_to_all_subscribers = true;
+		$emails_list = array_unique( $emails_list );
 		foreach ( $emails_list as $mail ) {
 
 			$jump_user = false;
@@ -521,7 +523,12 @@ $content."\r\n".
 		//remove_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
 		remove_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		remove_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
+		remove_filter( 'wp_mail_charset', array( &$this, 'set_mail_charset' ) );
 
+	}
+
+	public function set_mail_charset( $charset ) {
+		return get_bloginfo( 'charset' );
 	}
 
 
