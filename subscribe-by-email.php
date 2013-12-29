@@ -155,17 +155,20 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/settings.php' );
 		
 		// WPMUDEV Dashboard class
-		global $wpmudev_notices;
-		$wpmudev_notices[] = array( 
-			'id'=> 127,
-			'name'=> 'Subscribe By Email', 
-			'screens' => array( 
-				'toplevel_page_sbe-subscribers',
-				'subscriptions_page_sbe-add-subscribers',
-				'subscriptions_page_sbe-settings',
-				'subscriptions_page_sbe-sent-mails' 
-			) 
-		);
+		if ( is_admin() ) {
+			global $wpmudev_notices;
+			$wpmudev_notices[] = array( 
+				'id'=> 127,
+				'name'=> 'Subscribe By Email', 
+				'screens' => array( 
+					'toplevel_page_sbe-subscribers',
+					'subscriptions_page_sbe-add-subscribers',
+					'subscriptions_page_sbe-settings',
+					'subscriptions_page_sbe-sent-mails' 
+				) 
+			);
+			include_once( INCSUB_SBE_PLUGIN_DIR . 'externals/wpmudev-dash-notification.php' );
+		}
 
 		// Model
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'model/model.php' );
