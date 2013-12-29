@@ -155,7 +155,8 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/settings.php' );
 		
 		// WPMUDEV Dashboard class
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/dash-notifications.php' );
+		if ( is_admin() )
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/dash-notifications.php' );
 
 		// Model
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'model/model.php' );
@@ -333,6 +334,16 @@ class Incsub_Subscribe_By_Email {
 		
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 
+		if ( $model->is_already_subscribed( $user_email ) ) {
+			$subscriber = incsub_sbe_get_subscriber( $user_email );
+			if ( $subscriber && ! $subscriber->get_confirmation_flag() ) {
+				self::send_confirmation_mail( $subscriber->get_subscription_ID() );
+			}
+			else {
+				return false;
+			}
+		}
+
 		$sid = $model->add_subscriber( $user_email, $note, $type, 0 );
 
 		if ( $sid && ! empty( $meta ) ) {
@@ -367,13 +378,13 @@ class Incsub_Subscribe_By_Email {
 	 * @param Integer $subscription_id 
 	 */
 	public static function send_confirmation_mail( $subscription_id ) {
-		$model = Incsub_Subscribe_By_Email_Model::get_instance();
+		$model = incsub_sbe_get_model();
 		$settings = incsub_sbe_get_settings();
 
-		$subscriber = $model->get_subscriber( $subscription_id );
+		$subscriber = incsub_sbe_get_subscriber( $subscription_id );
 
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/confirmation-mail-template.php' );
-		$confirmation_mail = new Incsub_Subscribe_By_Email_Confirmation_Template( $settings, $subscriber->subscription_email );
+		$confirmation_mail = new Incsub_Subscribe_By_Email_Confirmation_Template( $settings, $subscriber->get_subscription_email() );
 		$confirmation_mail->send_mail();
 	}
 

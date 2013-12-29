@@ -29,5 +29,9 @@ function incsub_sbe_get_subscribers( $args = array() ) {
 }
 
 function incsub_sbe_get_subscriber( $sid ) {
+	if ( is_email( $sid ) ) {
+		$model = incsub_sbe_get_model();
+		$sid = $model->get_subscriber_id( $sid );
+	}
 	return Subscribe_By_Email_Subscriber::get_instance( $sid );
 }

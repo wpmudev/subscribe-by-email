@@ -385,6 +385,8 @@ class Incsub_Subscribe_By_Email_Template {
 		add_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
 		add_filter( 'wp_mail_charset', array( &$this, 'set_mail_charset' ) );
 
+		do_action( 'sbe_pre_send_emails' );
+
 		
 		$mails_sent = 0;
 
@@ -522,6 +524,8 @@ $content."\r\n".
 			}
 		}
 
+
+		do_action( 'sbe_after_send_emails' );
 
 		//remove_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
 		remove_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );

@@ -95,7 +95,7 @@ class Subscribe_By_Email_Subscriber {
 		return $this->subscription_email;
 	}
 	public function get_confirmation_flag() {
-		return $this->confirmation_flag;
+		return absint( $this->confirmation_flag );
 	}
 	public function get_subscription_type() {
 		return stripslashes_deep( $this->subscription_type );
