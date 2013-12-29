@@ -628,7 +628,8 @@ class Incsub_Subscribe_By_Email_Model {
     public function get_old_logs_ids( $time ) {
         global $wpdb;
 
-        return $wpdb->get_col( $wpdb->prepare( "SELECT id FROM $this->subscriptions_log_table WHERE mail_date < %d AND mail_settings = ''", $time ) );
+        $results = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM $this->subscriptions_log_table WHERE mail_date < %d AND mail_settings = ''", $time ) );
+        return $results;
     }
 
     public function delete_log( $log_id ) {

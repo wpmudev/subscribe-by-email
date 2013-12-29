@@ -380,7 +380,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 						<?php endforeach; ?>
 					</select>
 				</label> 
-				<span class="description"><?php printf( __( 'The time now is %s', INCSUB_SBE_LANG_DOMAIN ), date_i18n( $time_format ) ); ?></span>
+				<span class="description"><?php printf( __( 'The time now is %s', INCSUB_SBE_LANG_DOMAIN ), date( $time_format ) ); ?></span>
 			</div>
 
 			<div id="day-of-week-wrap">

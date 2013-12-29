@@ -379,6 +379,7 @@ class Incsub_Subscribe_By_Email_Template {
 				return false;
 		}
 
+
 		//add_filter( 'wp_mail_content_type', array( &$this, 'set_html_content_type' ) );
 		add_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		add_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
@@ -514,8 +515,10 @@ $content."\r\n".
 		if ( $sent_to_all_subscribers && ! $this->dummy ) {
 			$model->clear_mail_log_settings( $mail_log_id );
 			$posts_ids = $this->content_generator->get_posts_ids();
-			foreach ( $posts_ids as $post_id ) {
-				update_post_meta( $post_id, 'sbe_sent', true );
+			if ( ! empty( $posts_ids ) && is_array( $posts_ids ) ) {
+				foreach ( $posts_ids as $post_id ) {
+					$result_meta = update_post_meta( $post_id, 'sbe_sent', true );
+				}
 			}
 		}
 

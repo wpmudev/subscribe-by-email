@@ -22,7 +22,7 @@ class Incsub_Subscribe_By_Email {
 	static $max_subject_length = 120;
 
 	// Time between batches
-	static $time_between_batches = 1800;
+	static $time_between_batches = 1200;
 
 	// Max time in seconds during which the user can activate his subscription
 	static $max_confirmation_time = 604800;
@@ -137,9 +137,6 @@ class Incsub_Subscribe_By_Email {
 
 		define( 'INCSUB_SBE_PLUGIN_FILE', plugin_basename( __FILE__ ) );
 
-		if ( ! defined( 'INCSUB_SBE_DEBUG' ) )
-			define( 'INCSUB_SBE_DEBUG', false );
-
 	}
 
 	/**
@@ -170,6 +167,7 @@ class Incsub_Subscribe_By_Email {
 
 		// Log class
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/logger.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/debugger.php' );
 
 		// Subscriber class
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/subscriber.php' );
@@ -583,14 +581,17 @@ class Incsub_Subscribe_By_Email {
 				$this->send_mails();
 			}
 		}
-		elseif ( 'daily' == $settings['frequency'] && $next_time = get_option( self::$freq_daily_transient_slug ) ) {
+		elseif ( 'daily' == $settings['frequency'] && $next_time = get_option( self::$freq_daily_transient_slug ) ) {	
+
 			// Are we currently sending? Stop please
 			if ( get_transient( 'sbe_sending' ) )
 				return;
-
+			
 			if ( current_time( 'timestamp' ) > $next_time ) {
+
 				self::set_next_day_schedule_time( $settings['time'] );
 				$this->send_mails();
+
 			}
 		}
 
@@ -654,11 +655,11 @@ class Incsub_Subscribe_By_Email {
 	public static function get_next_scheduled_date() {
 		$settings = incsub_sbe_get_settings();
 		if ( 'daily' == $settings['frequency'] && $time = get_option( self::$freq_daily_transient_slug ) ) {
-			return date_i18n( get_option('date_format', 'Y-m-d' ) . ' ' . get_option( 'time_format', 'H:i:s') , $time );
+			return date( get_option('date_format', 'Y-m-d' ) . ' ' . get_option( 'time_format', 'H:i:s') , $time );
 		}
 
 		if ( 'weekly' == $settings['frequency'] && $time = get_option( self::$freq_weekly_transient_slug ) ) {
-			return date_i18n( get_option('date_format', 'Y-m-d' ) . ' ' . get_option( 'time_format', 'H:i:s') , $time );
+			return date( get_option('date_format', 'Y-m-d' ) . ' ' . get_option( 'time_format', 'H:i:s') , $time );
 		}
 
 		
@@ -676,10 +677,12 @@ class Incsub_Subscribe_By_Email {
 			$timestamp_old = current_time( 'timestamp' ) - ( $days_old * 24 * 60 * 60 );
 			$logs_ids = $model->get_old_logs_ids( $timestamp_old );
 
-			$model->delete_log( $logs_ids );
+			if ( ! empty( $logs_ids ) ) {
+				$model->delete_log( $logs_ids );
 			
-			foreach ( $logs_ids as $log_id ) {
-				Subscribe_By_Email_Logger::delete_log( $log_id );
+				foreach ( $logs_ids as $log_id ) {
+					Subscribe_By_Email_Logger::delete_log( $log_id );
+				}
 			}
 			set_transient( 'incsub_sbe_check_logs', true, 86400 ); // We'll check every day
 		}
@@ -691,3 +694,4 @@ class Incsub_Subscribe_By_Email {
 
 global $subscribe_by_email_plugin;
 $subscribe_by_email_plugin = new Incsub_Subscribe_By_Email();
+

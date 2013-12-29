@@ -173,15 +173,7 @@ function sbe_terms_checklist( $post_id = 0, $args = array() ) {
 function incsub_sbe_download_csv( $sep, $sample = false ) {
     header( 'Content-Type: text/csv' );
     header( 'Content-Disposition: attachment;filename=' . date( 'YmdHi' ) . '.csv' );
-    
-    $extra_fields_slugs = incsub_sbe_get_extra_fields_slugs();
 
-    sort($extra_fields_slugs);
-
-    echo '"email"' . $sep . '"type"' . $sep . '"note"';
-    if ( ! empty( $extra_fields_slugs ) )
-    	echo $sep . '"' . implode( '"' . $sep . '"', $extra_fields_slugs ) . '"';
-    echo "\n";
     
     $args = array(
         'per_page' => -1
@@ -191,8 +183,6 @@ function incsub_sbe_download_csv( $sep, $sample = false ) {
     	$subscriptions = array();
     	$_subscription = new stdClass();
     	$_subscription->subscription_email = 'sample_email_1@email.com';
-    	$_subscription->subscription_type = __( 'Instant', INCSUB_SBE_PLUGIN_DIR );
-    	$_subscription->subscription_note = __( 'Manual Subscription', INCSUB_SBE_PLUGIN_DIR );
     	$subscriptions[0] = new Subscribe_By_Email_Subscriber( $_subscription );
 
     	$_subscription->subscription_email = 'sample_email_2@email.com';
@@ -203,23 +193,7 @@ function incsub_sbe_download_csv( $sep, $sample = false ) {
     }
 
     foreach ( $subscriptions as $subscription ) {
-
-    	if ( ! $sample ) {
-    		$meta = $subscription->get_metas( $extra_fields_slugs );
-    	}
-    	else {
-    		$meta = array();
-    		foreach ( $extra_fields_slugs as $extra_field_slug )
-    			$meta[] = 'Sample';
-    	}
-    		
-
-        echo '"' . $subscription->get_subscription_email() . '"'
-        	. $sep . '"' . $subscription->get_subscription_type() . '"' 
-        	. $sep . '"' . $subscription->get_subscription_note() . '"';
-
-        echo $sep . '"' . implode( '"' . $sep . '"', stripslashes_deep( $meta ) ) . '"';
-        echo "\n";
+        echo $subscription->get_subscription_email() . "\n";
     }
     
     exit();     
@@ -227,23 +201,8 @@ function incsub_sbe_download_csv( $sep, $sample = false ) {
 
 
 
-function incsub_sbe_log( $message ) {        
-    // full path to log file
-    $file = INCSUB_SBE_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'sbe_log.log';
-
-    /* backtrace */
-    $bTrace = debug_backtrace(); // assoc array
-
-    /* Build the string containing the complete log line. */
-    $line = PHP_EOL.sprintf('[%s, <%s>, (%d)]==> %s', 
-                            date("Y/m/d h:i:s", mktime()),
-                            basename($bTrace[0]['file']), 
-                            $bTrace[0]['line'], 
-                            $message );
-    
-    // log to file
-    file_put_contents( $file, $line, FILE_APPEND );
-    
-    return true;
+function incsub_sbe_debug( $message ) {        
+    $debugger = Subscribe_By_Email_Debugger::get_instance();
+    $debugger->debug( $message );
 }
 
