@@ -54,7 +54,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	    		// Checking email
 				$email = sanitize_email( $_POST['subscription-email'] );
 				if ( ! is_email( $email ) )
-					$this->errors[]  = __( 'Invalid e-mail address', 'subscribe-by-email' );
+					$this->errors[]  = __( 'Invalid e-mail address', INCSUB_SBE_LANG_DOMAIN );
 
 				// Checking extra fields
 				$settings = incsub_sbe_get_settings();
