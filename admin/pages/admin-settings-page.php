@@ -654,7 +654,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			<?php 
 				require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
 				$template = new Incsub_Subscribe_By_Email_Template( $this->settings, true ); 
-				$template->render_mail_template();
+				$template->render_mail_contents();
 			?>
 		<?php
 	}
