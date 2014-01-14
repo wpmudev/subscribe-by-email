@@ -142,5 +142,7 @@
 	-webkit-border-radius: 3px;
 	-moz-border-radius: 3px;
 	border-radius: 3px;
+	list-style: none;
+	margin: 0;
 }
 .sbe-follow-updated {}

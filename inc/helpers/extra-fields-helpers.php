@@ -27,14 +27,14 @@ function incsub_sbe_render_extra_field( $type, $slug, $title, $value, $atts = ar
 	switch ( $type ) {
 		case 'text': {
 			?>
-				<input type="text" id="<?php echo esc_attr( $atts['id'] ); ?>" class="<?php echo $atts['class']; ?>" name="<?php echo $atts['name']; ?>" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php echo $atts['placeholder']; ?>">
+				<input type="text" id="<?php echo esc_attr( $atts['id'] ); ?>" class="<?php echo $atts['class']; ?> sbe-form-field" name="<?php echo $atts['name']; ?>" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php echo $atts['placeholder']; ?>">
 			<?php
 			break;
 		}
 		case 'checkbox': {
 			?>
 				<label>
-					<input type="checkbox" name="<?php echo $atts['name']; ?>" <?php checked( ! empty( $value ) ); ?>>
+					<input type="checkbox" class="sbe-form-field" name="<?php echo $atts['name']; ?>" <?php checked( ! empty( $value ) ); ?>>
 					<?php echo $atts ['show_label'] ? $title : ''; ?>
 				</label>
 			<?php

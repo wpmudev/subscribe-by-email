@@ -1,33 +1,62 @@
 jQuery(document).ready(function($) {
-	$( '.subscribe-by-email-loader' ).hide();
-	var sbe_already_submitted = false;
-	$( '#subscribe-by-email-subscribe-form' ).submit( function() {
-		$( '.subscribe-by-email-loader' ).show();
-		$( 'input[name="submit-subscribe-user"]').attr( 'disabled', true );
 
-		if ( sbe_already_submitted ) {
-			$( '.subscribe-by-email-loader' ).hide();
+	var sbe_widget = {
+		init: function() {
+			var sbe_widgets = $( '.sbe-widget-subscribe-form' );
+
+			if ( sbe_widgets.length ) {
+				$( '.sbe-widget-subscribe-form' ).submit( function(e) {
+					e.preventDefault();
+					var elems = $(this).find('.sbe-form-field');
+
+					var form_data = {};
+					elems.each(function() {
+						if ( $(this).attr( 'type' ) == 'checkbox' )
+							form_data[ $(this).attr("name") ] = $(this).is(':checked') ? $(this).val() : '';
+						else
+					    	form_data[ $(this).attr("name") ] = $(this).val();
+					});
+
+					form_data['nonce'] = sbe_widget_captions.nonce;
+
+				  	sbe_widget.submit_form( form_data, $(this).attr('id') );
+				  	return false;
+				});
+			}
+		},
+		submit_form: function( form_data, form_id ) {
+			var the_form = $('#' + form_id);
+			var spinner = the_form
+				.find( '.sbe-spinner' )
+				.css( 'visibility','visible' );
+
+			$.ajax({
+				url: sbe_widget_captions.ajaxurl,
+				type: 'POST',
+				data: form_data
+			})
+			.done(function(return_data,xhr) {
+				
+				$('.sbe-widget-error').hide();
+				if ( return_data.success ) {
+					the_form.find('*').detach();
+					var message_container = $('<p class="sbe-widget-updated"></p>').text(return_data.data['message']).hide();
+				}
+				else {
+					var message_container = $('<ul class="sbe-widget-error"></ul>').hide();
+					for ( var i = 0; i < return_data.data.length; i++ ) {
+						message_container.append( '<li>' + return_data.data[i] + '</li>' );
+					}
+					
+				}
+				$('#' + form_id).prepend(message_container);
+				message_container.slideDown();
+
+				spinner.css( 'visibility', 'hidden' );
+			});
 			return false;
 		}
-		
-		var data = $(this).serialize();
-		$.post( sbe_localized.ajaxurl, data, function(response) {
-			if ( 'MAIL ERROR' === response ) {
-				$( '.subscribe-by-email-updated' ).hide();
-				$( '.subscribe-by-email-error' ).slideDown();
-				$( 'input[name="submit-subscribe-user"]').attr( 'disabled', false );
-			}
-			else {
-				$( '.subscribe-by-email-error' ).hide();
-				$( '.subscribe-by-email-updated' ).slideDown();
-				sbe_already_submitted = true;
-			}
-			$( '.subscribe-by-email-loader' ).hide();
+	}
 
-		});
-
-		
-
-		return false;
-	});
+	sbe_widget.init();
 });

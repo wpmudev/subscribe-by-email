@@ -2,6 +2,24 @@
 	vertical-align: middle;
 }
 
+.sbe-widget-subscribe-form .sbe-spinner {
+	/**display: none;**/
+	vertical-align: middle;
+	visibility:hidden;
+}
+
+.sbe-widget-subscribe-form .sbe-spinner {
+	background: url(../../images/ajax-loader.gif) no-repeat;
+	background-size: 20px 20px;
+	opacity: .7;
+	filter: alpha(opacity=70);
+	width: 20px;
+	height: 20px;
+	margin: 2px 5px 0;
+	display: inline-block;
+
+}
+
 /** Text at the top of the form (defined by user in widget options) **/
 .sbe-widget-top-text {}
 
