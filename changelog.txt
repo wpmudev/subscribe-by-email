@@ -5,6 +5,17 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.5.1 - 2014/01/14
+----------------------------------------------------------------------
+* Fixed raw HTML format for some email providers.
+* AJAX in widget restored
+* Custom fields were not being added when subscribing on widget.
+* Forcing charset due to an issue on RTL languages.
+* Reduced time between batches.
+* CSV feature simplified
+* Plugin now resends the confirmation email if the subscriber tries to subscribe again and is not yet confirmed
+
+
 2.5 - 2013/12/18
 ----------------------------------------------------------------------
 * Emails are now sent with HTML + plain text support
