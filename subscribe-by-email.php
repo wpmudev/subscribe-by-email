@@ -111,7 +111,14 @@ class Incsub_Subscribe_By_Email {
 	}
 
 	public function enqueue_styles() {
-		wp_enqueue_style( 'sbe-admin-icon', INCSUB_SBE_ASSETS_URL . 'css/icon-styles.css', array(), '20130605' );
+		global $wp_version;
+
+		if ( version_compare( $wp_version, '3.8', '>=' ) || is_plugin_active( 'mp6/mp6.php' ) ) {
+			wp_enqueue_style( 'sbe-admin-icon', INCSUB_SBE_ASSETS_URL . 'css/icon-38-styles.css', array(), '20140114' );
+		}
+		else {
+			wp_enqueue_style( 'sbe-admin-icon', INCSUB_SBE_ASSETS_URL . 'css/icon-styles.css', array(), '20140115' );
+		}
 	}
 
 	public function load_text_domain() {

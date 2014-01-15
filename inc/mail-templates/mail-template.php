@@ -72,8 +72,7 @@ class Incsub_Subscribe_By_Email_Template {
 						<div style="<?php echo $featured_image_style_dummy; ?>"></div>
 					<?php endif; ?>
 					<div <?php echo $text_float; ?>>
-						<h3 style="margin-top:0;"><a <?php echo $title_style; ?> href="<?php echo $permalink; ?>" target="_blank"><?php echo $title; ?></a> <span style="display:none !important"><?php echo $permalink; ?></span></h3>
-						<div style="display:none !important">=============================</div>
+						<h3 style="margin-top:0;"><a <?php echo $title_style; ?> href="<?php echo $permalink; ?>" target="_blank"><?php echo $title; ?></a> </h3>
 						<div <?php echo $text_style; ?>>
 							<?php the_excerpt(); ?>
 						</div>
@@ -82,7 +81,6 @@ class Incsub_Subscribe_By_Email_Template {
 					<div <?php echo $meta_style; ?>>
 						<?php printf( __( 'by %s on %s', INCSUB_SBE_LANG_DOMAIN ), get_the_author(), get_the_date( $date_format ) ); ?>
 					</div>
-					<div style="display:none !important">********************</div>
 					<div style="clear:both;"></div>
 				<?php
 			endforeach;
@@ -255,11 +253,11 @@ class Incsub_Subscribe_By_Email_Template {
 												<tr>
 													<td <?php echo $footer_style; ?>>
 														<p>
-															<?php printf( __( 'You are subscribed to email updates from <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), get_home_url(), get_bloginfo( 'name' ) ); ?>  <span style="display:none !important"><?php echo get_home_url(); ?></span><br/>
+															<?php printf( __( 'You are subscribed to email updates from <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), get_home_url(), get_bloginfo( 'name' ) ); ?>  <br/>
 															<?php if ( $this->settings['manage_subs_page'] ): ?>
-																<?php printf( __( 'To manage your subscriptions, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sub_key', $key, get_permalink( $this->settings['manage_subs_page'] ) ) ) ); ?> <span style="display:none !important"><?php get_permalink( $this->settings['manage_subs_page'] ); ?></span> <br/>	
+																<?php printf( __( 'To manage your subscriptions, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sub_key', $key, get_permalink( $this->settings['manage_subs_page'] ) ) ) ); ?> <br/>	
 															<?php endif; ?>
-															<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( $this->get_unsubscribe_url( $key ) ) ); ?> <span style="display:none !important"><?php echo $this->get_unsubscribe_url( $key ); ?></span>
+															<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( $this->get_unsubscribe_url( $key ) ) ); ?> 
 														</p>
 														<p><?php echo wpautop( $this->settings['footer_text'] ); ?></p>
 													</td>
