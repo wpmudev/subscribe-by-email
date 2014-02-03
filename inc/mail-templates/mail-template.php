@@ -55,6 +55,13 @@ class Incsub_Subscribe_By_Email_Template {
 
 			add_filter( 'excerpt_more', array( &$this, 'set_excerpt_more' ), 80 );
 			add_filter( 'excerpt_length', array( &$this, 'set_excerpt_length' ), 80 );
+			remove_all_filters( 'the_content' );
+			add_filter( 'the_content', 'wptexturize'        );
+			add_filter( 'the_content', 'convert_smilies'    );
+			add_filter( 'the_content', 'convert_chars'      );
+			add_filter( 'the_content', 'wpautop'            );
+			add_filter( 'the_content', 'shortcode_unautop'  );
+			add_filter( 'the_content', 'prepend_attachment' );
 
 			foreach ( $content as $content_post ):
 				
@@ -90,6 +97,7 @@ class Incsub_Subscribe_By_Email_Template {
 			endforeach;
 			remove_filter( 'excerpt_more', array( &$this, 'set_excerpt_more' ), 80 );
 			remove_filter( 'excerpt_length', array( &$this, 'set_excerpt_length' ), 80 );
+			add_filter( 'the_content', array( $GLOBALS['wp_embed'], 'autoembed' ), 8 );
 		}
 
 		// Just in case...
