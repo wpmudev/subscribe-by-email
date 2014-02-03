@@ -201,6 +201,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			add_settings_section( 'other-styling-settings', __( 'Other options', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'featured-images', __( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_featured_image' ), $this->get_menu_slug(), 'other-styling-settings' ); 
+			add_settings_field( 'full-posts', __( 'Show full posts', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_full_posts_field' ), $this->get_menu_slug(), 'other-styling-settings' ); 
 
 			add_settings_section( 'email-preview', __( 'Email preview', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_preview_section' ), $this->get_menu_slug() );
 		}
@@ -577,6 +578,15 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		?>
 			<input type="checkbox" name="<?php echo $this->settings_name; ?>[featured_image]" id="featured-image" <?php checked( $this->settings['featured_image'] ); ?>> 
 			<span class="description"><?php _e( 'If your theme allows it, the featured image for each post will appear to the left of the post excerpt.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+		<?php
+	}
+
+	/**
+	 * Logo field
+	 */
+	public function render_full_posts_field() {
+		?>
+			<input type="checkbox" name="<?php echo $this->settings_name; ?>[send_full_post]" id="featured-image" <?php checked( $this->settings['send_full_post'] ); ?>> 
 		<?php
 	}
 
@@ -958,6 +968,12 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			else
 				$new_settings['featured_image'] = false;
 
+			// Full post/just excerpt
+			if ( isset( $input['send_full_post'] ) )
+				$new_settings['send_full_post'] = true;
+			else
+				$new_settings['send_full_post'] = false;
+
 			// Colors
 			if ( preg_match( '/^#[a-f0-9]{6}$/i', $input['header_color'] ) ) {
 				$new_settings['header_color'] = $input['header_color'];
@@ -1082,6 +1098,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			$this->settings['header_color'] = $default_settings['header_color'];
 			$this->settings['header_text_color'] = $default_settings['header_text_color'];
 			$this->settings['featured_image'] = $default_settings['featured_image'];
+			$this->settings['send_full_post'] = $default_settings['send_full_post'];
 
 			incsub_sbe_update_settings( $this->settings );
 

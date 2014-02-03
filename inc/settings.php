@@ -192,6 +192,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'header_color' => '#66aec2',
 			'header_text_color' => '#000000',
 			'mails_batch_size' => 80,
+			'send_full_post' => false,
 			'subscribe_email_content' => $subscribe_email_content,
 
 			'keep_logs_for' => 31,

@@ -127,7 +127,9 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 					exit;		
 				}
 				else {
-					$text = $instance['subscribed_placeholder'];
+					$default_settings = $this->get_default_settings();
+					$text = trim( $instance['subscribed_placeholder'] );
+					$text = empty( $text ) || $text == 'null' ? $default_settings['subscribed_placeholder'] : $text;
 					wp_send_json_success( array( 'message' => $text ) );
 				}
 				
@@ -154,7 +156,10 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	    if ( $title )
 	     	echo $before_title . $title . $after_title; 
 
-	    $message = $instance['subscribed_placeholder'];
+	    $default_settings = $this->get_default_settings();
+	    $message = trim( $instance['subscribed_placeholder'] );
+	    $message = empty( $message ) || $message == 'null' ? $default_settings['subscribed_placeholder'] : $instance['subscribed_placeholder'];
+
 	    $model = incsub_sbe_get_model();
 
 	    $settings = incsub_sbe_get_settings();

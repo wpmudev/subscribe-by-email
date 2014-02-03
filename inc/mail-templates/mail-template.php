@@ -74,7 +74,11 @@ class Incsub_Subscribe_By_Email_Template {
 					<div <?php echo $text_float; ?>>
 						<h3 style="margin-top:0;"><a <?php echo $title_style; ?> href="<?php echo $permalink; ?>" target="_blank"><?php echo $title; ?></a> </h3>
 						<div <?php echo $text_style; ?>>
-							<?php the_excerpt(); ?>
+							<?php if ( $this->settings['send_full_post'] ): ?>
+								<?php the_content(); ?>
+							<?php else: ?>
+								<?php the_excerpt(); ?>
+							<?php endif; ?>
 						</div>
 					</div>
 					<div style="clear:both;"></div>
