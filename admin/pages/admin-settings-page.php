@@ -162,6 +162,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			add_settings_section( 'follow-button', __( 'Follow button', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'follow-button-field', __( 'Display a follow button?', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_field' ), $this->get_menu_slug(), 'follow-button' ); 
 			add_settings_field( 'follow-button-schema-field', __( 'Schema', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_schema_field' ), $this->get_menu_slug(), 'follow-button' ); 
+			add_settings_field( 'follow-button-position-field', __( 'Position', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_position_field' ), $this->get_menu_slug(), 'follow-button' ); 
 
 			add_settings_section( 'logs-settings', __( 'Logs', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'keep-logs-for', __( 'Keep logs files during', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_keep_logs_for_field' ), $this->get_menu_slug(), 'logs-settings' ); 
@@ -524,6 +525,20 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				<label>
 					<input type="radio" name="<?php echo $this->settings_name; ?>[follow_button_schema]" value="<?php echo esc_attr( $schema['slug'] ); ?>" <?php checked( $this->settings['follow_button_schema'] == $schema['slug'] ); ?> /> 
 					<?php echo $schema['label']; ?>
+				</label><br/>
+			<?php
+		}
+			
+	}
+
+	public function render_follow_button_position_field() {
+		$settings = incsub_sbe_get_settings();
+		$positions = incsub_sbe_get_follow_button_positions();
+		foreach ( $positions as $position ) {
+			?>
+				<label>
+					<input type="radio" name="<?php echo $this->settings_name; ?>[follow_button_position]" value="<?php echo esc_attr( $position['slug'] ); ?>" <?php checked( $this->settings['follow_button_position'] == $position['slug'] ); ?> /> 
+					<?php echo $position['label']; ?>
 				</label><br/>
 			<?php
 		}
@@ -895,6 +910,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			$new_settings['follow_button'] = isset( $input['follow_button'] );
 			if ( ! empty( $input['follow_button_schema'] ) && array_key_exists( $input['follow_button_schema'], incsub_sbe_get_follow_button_schemas() ) )
 				$new_settings['follow_button_schema'] = $input['follow_button_schema'];
+
+			$new_settings['follow_button'] = isset( $input['follow_button'] );
+			if ( ! empty( $input['follow_button_position'] ) && array_key_exists( $input['follow_button_position'], incsub_sbe_get_follow_button_positions() ) )
+				$new_settings['follow_button_position'] = $input['follow_button_position'];
 
 			$new_settings['get_notifications_role'] = $input['get_notifications_role'];
 

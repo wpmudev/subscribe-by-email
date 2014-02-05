@@ -78,8 +78,9 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 
 	public function render_follow_button() {
 		$is_opened = count( $this->errors ) > 0 || ( isset( $_GET['sbe-followsubs'] ) && isset( $_GET['sbe-followsubs'] ) == 'true' );
-		$style = $is_opened ? 'style="bottom:0px;"' : 'style="bottom:-1500px"';
+		
 		$settings = incsub_sbe_get_settings();
+		$style = 'style="' . $settings['follow_button_position'] . ':-1500px"';
 	    $extra_fields = empty( $settings['extra_fields'] ) ? array() : $settings['extra_fields'];
 		?>
 			<div id="sbe-follow" <?php echo $style; ?> class="<?php echo $is_opened ? 'sbe-follow-opened' : ''; ?>">
@@ -155,6 +156,50 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 
 				</div>
 			</div>
+			<script>
+				jQuery(window).load(function() {
+					sbe_follow_button.init( jQuery('#sbe-follow'), jQuery('#sbe-follow-wrap'), '<?php echo $settings["follow_button_position"]; ?>' );
+				});
+			</script>
+			<style>
+				/** Main wrap **/
+				#sbe-follow {
+					z-index: 999000;
+					position: fixed;
+					
+					<?php if ( $settings['follow_button_position'] == 'bottom' ): ?>
+						margin-right: 10%;
+						right: 0px;
+						bottom:0px;
+					<?php elseif ( $settings['follow_button_position'] == 'left' ): ?>
+						left:0px;
+						top:10%;
+					<?php elseif ( $settings['follow_button_position'] == 'right' ): ?>
+						right:0px;
+						top:10%;
+						margin-right:0;
+					<?php endif; ?>
+				}
+				<?php if ( $settings['follow_button_position'] == 'left' ): ?>
+					#sbe-follow .sbe-follow-link {
+						float: right;
+						margin-left: -31px;
+						margin-top: 56px;
+					}
+					#sbe-follow-wrap {
+						float:left;
+					}
+				<?php elseif ( $settings['follow_button_position'] == 'right' ): ?>
+					#sbe-follow .sbe-follow-link {
+						float: left;
+						margin-right: -31px;
+						margin-top: 56px;
+					}
+					#sbe-follow-wrap {
+						float:right;
+					}
+				<?php endif; ?>
+			</style>
 		<?php
 	}
 }

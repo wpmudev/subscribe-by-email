@@ -86,6 +86,17 @@ function incsub_sbe_get_confirmation_flag_captions() {
 	return $settings_handler->get_confirmation_flag();
 }
 
+
+/**
+ * Get the Follow Button possible positions
+ * 
+ * @return Array
+ */
+function incsub_sbe_get_follow_button_positions() {
+	$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
+	return $settings_handler->get_follow_button_positions();
+}
+
 function incsub_sbe_get_follow_button_schemas() {
 	$settings_handler = incsub_sbe_get_settings_handler();
 	return $settings_handler->get_follow_button_schemas();

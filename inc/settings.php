@@ -117,6 +117,21 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 			) 
 		);
 
+		$this->follow_button_positions = array( 
+			'bottom' => array(
+				'label' => __( 'Bottom', INCSUB_SBE_LANG_DOMAIN ),
+				'slug' => 'bottom'
+			),
+			'left' => array(
+				'label' => __( 'Left', INCSUB_SBE_LANG_DOMAIN ),
+				'slug' => 'left' 
+			),
+			'right' => array(
+				'label' => __( 'Right', INCSUB_SBE_LANG_DOMAIN ),
+				'slug' => 'right' 
+			) 
+		);
+
 	}
 
 	public function get_settings() {
@@ -179,6 +194,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 
 			'follow_button' => false,
 			'follow_button_schema' => 'dark',
+			'follow_button_position' => 'bottom',
 
 			'post_types' => array( 'post' ),
 			'taxonomies' => array( 'post' => array( 'category' => array( 'all' ) ) ),
@@ -250,6 +266,10 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 
 	public function get_follow_button_schemas() {
 		return $this->follow_button_schemas;
+	}
+
+	public function get_follow_button_positions() {
+		return $this->follow_button_positions;
 	}
 
 }
