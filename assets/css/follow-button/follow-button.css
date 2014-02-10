@@ -1,0 +1,126 @@
+/** Tab **/
+#sbe-follow {
+	display:block;
+	z-index: 999000;
+	position: fixed;
+	width:230px;
+}
+
+.sbe-follow-link {
+	-webkit-border-top-left-radius: 3px;
+	-webkit-border-top-right-radius: 3px;
+	-moz-border-radius-topleft: 3px;
+	-moz-border-radius-topright: 3px;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+	overflow:hidden;
+	display: block;
+	padding: 10px 10px 16px 10px;
+	float: left;
+	text-decoration: none !important;
+	font-family:proxima-nova-soft, Verdana, sans-serif;
+	border: 0;
+	line-height: 14px;
+	font-size:15px;
+	outline: none;
+	z-index: 50;
+	cursor: pointer;
+	position: relative;
+	top: 2px;
+}
+
+.sbe-follow-link span {
+	display: inline-block;
+	padding-left: 23px;
+}
+
+.sbe-follow-link:hover {
+}
+
+/** Secondary wrap **/
+#sbe-follow-wrap {
+	float:left;
+	padding: 15px;
+	margin-top: 37px;
+	position: relative;
+	top:-37px;
+	-moz-border-radius: 2px 0 0 0;
+	-webkit-border-radius: 2px 0 0 0;
+	-o-border-radius: 2px 0 0 0;
+	-ms-border-radius: 2px 0 0 0;
+	border-radius: 2px;
+	z-index: 999999;
+	line-height: 25px;
+	min-height: 145px;
+}
+
+#sbe-follow-wrap h2 {
+    font-size: 18px;
+    margin-bottom: 0.7em;
+}
+
+#sbe-follow-wrap p {
+	margin: 0.5em 0;
+	font-size:13px;
+}
+
+/** Fields **/
+.sbe-follow-form-field-title {
+	margin-bottom:3px;
+}
+.sbe-follow-form-field {
+	margin-bottom:15px;
+    outline: none;
+    width:94%;
+    box-sizing: border-box;
+	padding: 3px 6px;
+}
+
+.sbe-follow-form-field::-webkit-input-placeholder {
+}
+.sbe-follow-form-field:-moz-placeholder {
+}
+.sbe-follow-form-field::-moz-placeholder {
+}
+.sbe-follow-form-field:-ms-input-placeholder {
+}
+
+.sbe-widget-form-field:focus {}
+
+/** Submit button **/
+.sbe-follow-form-submit-container {
+	margin-top:20px;
+	text-align:right;
+}
+.sbe-follow-form-submit-container .sbe-follow-form-submit {
+	padding: 5px 10px;
+	line-height: 1.0;
+	font-weight: normal;
+	font-size: 12px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	text-decoration: none;
+	vertical-align: middle;
+	box-shadow:none;
+	border-left:none;
+	border-right:none;
+	cursor: pointer;
+}
+.sbe-follow-form-submit-container .sbe-follow-form-submit:hover {
+
+}
+.sbe-follow-form-submit-container .sbe-follow-form-submit:active {
+}
+
+/** Errors/updates **/
+.sbe-follow-error {
+	padding: 9px;
+	font-size: 12px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	list-style: none;
+	margin: 0;
+}
+.sbe-follow-updated {}

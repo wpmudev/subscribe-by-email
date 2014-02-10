@@ -161,8 +161,9 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			add_settings_section( 'follow-button', __( 'Follow button', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'follow-button-field', __( 'Display a follow button?', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_field' ), $this->get_menu_slug(), 'follow-button' ); 
-			add_settings_field( 'follow-button-schema-field', __( 'Schema', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_schema_field' ), $this->get_menu_slug(), 'follow-button' ); 
 			add_settings_field( 'follow-button-position-field', __( 'Position', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_position_field' ), $this->get_menu_slug(), 'follow-button' ); 
+			add_settings_field( 'follow-button-schema-field', __( 'Schema', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_schema_field' ), $this->get_menu_slug(), 'follow-button' ); 
+			
 
 			add_settings_section( 'logs-settings', __( 'Logs', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'keep-logs-for', __( 'Keep logs files during', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_keep_logs_for_field' ), $this->get_menu_slug(), 'logs-settings' ); 
@@ -382,7 +383,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 						<?php endforeach; ?>
 					</select>
 				</label> 
-				<span class="description"><?php printf( __( 'The time now is %s', INCSUB_SBE_LANG_DOMAIN ), date( $time_format ) ); ?></span>
+				<span class="description"><?php printf( __( 'The time now is %s', INCSUB_SBE_LANG_DOMAIN ), date_i18n( $time_format, current_time( 'timestamp' ) ) ); ?></span>
 			</div>
 
 			<div id="day-of-week-wrap">
@@ -512,7 +513,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		?>	
 			<label>
 				<input type="checkbox" name="<?php echo $this->settings_name; ?>[follow_button]" <?php checked( $this->settings['follow_button'] ); ?> /> 
-				<?php _e( 'Will place a follow button permanently in the bottom right of your site.', INCSUB_SBE_LANG_DOMAIN ); ?>
+				<?php _e( 'Will place a follow button permanently in the selected position of your site.', INCSUB_SBE_LANG_DOMAIN ); ?>
 			</label>
 		<?php
 	}

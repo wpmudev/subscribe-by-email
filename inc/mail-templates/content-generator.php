@@ -16,38 +16,46 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 
 	public function get_content() {
 		
+		do_action( 'sbe_content_generator_before_get_content', $this );
+
 		if ( ! empty( $this->post_ids ) && ! $this->dummy ) {
-			$content = get_posts(  
-				array(
-					'numberposts'		=>	count( $this->post_ids ),
-					'offset'			=>	0,
-					'orderby'			=>	'post_date',
-					'order'				=>	'DESC',
-					'include'			=>	$this->post_ids,
-					'post_type'			=>	$this->post_types,
-					'post_status'		=>	'publish',
-					'ignore_sticky_posts' => 1
-				)
+
+			$model = incsub_sbe_get_model();
+			$args = array(
+				'post_type' => $this->post_types,
+				'include'	=>	$this->post_ids,
 			);
+			$_post_ids = $model->get_posts_ids( $args );
+
+			$content = array();
+			foreach ( $_post_ids as $post_id ) {
+				$content[] = get_post( $post_id );
+			}
+
 		}
 		elseif ( empty( $this->post_ids ) && ! $this->dummy) {
-			add_filter( 'posts_where', array( &$this, 'set_wp_query_filter' ) );
-			$query = new WP_Query(
-				array(
-					'post_type' => $this->post_types,
-					'nopaging ' => true,
-					'posts_per_page' => -1,
-					'post_status' => array( 'publish' )
-				)
+
+			$days = 1;
+			if ( 'daily' == $this->digest_type )
+				$days = self::get_last_x_days_sending_time( 1 );
+
+			if ( 'weekly' == $this->digest_type )
+				$days = self::get_last_x_days_sending_time( 7 );
+
+			$today_sending_time = self::get_today_sending_time();
+
+			$model = incsub_sbe_get_model();
+			$args = array(
+				'post_type' => $this->post_types,
+				'after_date' => date( 'Y-m-d H:i:s', $days )
 			);
-			
+			$this->post_ids = $model->get_posts_ids( $args );
 
-			$content = $query->posts;
-			remove_filter( 'posts_where', array( &$this, 'set_wp_query_filter' ) );
-
-			foreach ( $content as $post ) {
-				$this->post_ids[] = $post->ID;
+			$content = array();
+			foreach ( $this->post_ids as $post_id ) {
+				$content[] = get_post( $post_id );
 			}
+
 		}
 		else {
 			$content = $this->get_dummy_content();
@@ -55,12 +63,15 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 
 		$this->content = $content;
 
+
 		if ( ! $this->dummy ) {
 			$this->filter_sent_posts();
 			$this->filter_content_by_taxonomies();
 		}
 
 		$this->content = apply_filters( 'sbe_get_email_contents', $this->content );
+
+		do_action( 'sbe_content_generator_after_get_content', $this->content );
 
 		return $this->content;
 	}
@@ -181,29 +192,18 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 		return $this->post_ids;
 	}
 
-	/**
-	 * Sets the filter for WP_Query depending on the frequency
-	 * 
-	 * @param String $where Current Where sentence
-	 * 
-	 * @return String new WHERE sentence
-	 */
-	public function set_wp_query_filter( $where = '' ) {
 
-		$days = 1;
-		if ( 'daily' == $this->digest_type )
-			$days = $this->get_last_x_days_time( 1 );
-
-		if ( 'weekly' == $this->digest_type )
-			$days = $this->get_last_x_days_time( 7 );
-
-		$where .= " AND post_date > '" . date( 'Y-m-d H:i:s', $days ) . "'";
-
-		return $where;
+	public static function get_last_x_days_sending_time( $days ) {
+		$today_sending_time = self::get_today_sending_time();
+		return strtotime( '-' . $days . ' days', $today_sending_time );
 	}
 
-	private function get_last_x_days_time( $days ) {
-		return strtotime( '-' . $days . ' days', current_time( 'timestamp' ) );
+	public static function get_today_sending_time() {
+		$settings = incsub_sbe_get_settings();
+		$time = str_pad( $settings['time'], 2, '0', STR_PAD_LEFT );
+		$current_date = date( 'Y-m-d', current_time( 'timestamp' ) );
+		$sending_time = $current_date . ' ' . $time . ':00:00';
+		return strtotime( $sending_time );	
 	}
 
 	private function get_dummy_content() {

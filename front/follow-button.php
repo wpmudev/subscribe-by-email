@@ -20,6 +20,7 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 		$deps = apply_filters( 'sbe_follow_button_stylesheet_dependants', array() );
 
 		wp_enqueue_style( 'follow-button-styles', $follow_stylesheet, $deps, '20131128' );
+		wp_enqueue_style( 'follow-button-general-styles', INCSUB_SBE_ASSETS_URL . '/css/follow-button/follow-button.css', array(), '20131128' );
 		wp_enqueue_script( 'follow-button-scripts', INCSUB_SBE_ASSETS_URL . '/js/follow-button.js', array( 'jquery' ) );
 	}
 
@@ -163,10 +164,7 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 			</script>
 			<style>
 				/** Main wrap **/
-				#sbe-follow {
-					z-index: 999000;
-					position: fixed;
-					
+				#sbe-follow {					
 					<?php if ( $settings['follow_button_position'] == 'bottom' ): ?>
 						margin-right: 10%;
 						right: 0px;
@@ -183,17 +181,14 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 				<?php if ( $settings['follow_button_position'] == 'left' ): ?>
 					#sbe-follow .sbe-follow-link {
 						float: right;
-						margin-left: -31px;
-						margin-top: 56px;
-					}
-					#sbe-follow-wrap {
-						float:left;
+						top: 65px;
+						left: 52px;
 					}
 				<?php elseif ( $settings['follow_button_position'] == 'right' ): ?>
 					#sbe-follow .sbe-follow-link {
 						float: left;
-						margin-right: -31px;
-						margin-top: 56px;
+						top: 65px;
+						right: 52px;
 					}
 					#sbe-follow-wrap {
 						float:right;
