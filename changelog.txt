@@ -5,6 +5,14 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.6 - 2014/02/21
+----------------------------------------------------------------------
+* Improved sending system
+* Added shortcode
+* Added more positions settings for Follow Button
+* Added full content/excerpt in digests setting
+* Other minor fixes
+
 2.5.1 - 2014/01/14
 ----------------------------------------------------------------------
 * Fixed raw HTML format for some email providers.

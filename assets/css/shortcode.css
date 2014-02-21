@@ -1,0 +1,53 @@
+.sbe-shortcode-subscribe-form {
+	padding:15px;
+	color:<?php echo $textcolor; ?>;
+	background-color:<?php echo $bgcolor; ?>;
+	box-sizing:border-box;
+	width:<?php echo $width; ?>;
+	<?php if ( $center == 'true' ): ?>
+		margin:0 auto;
+	<?php endif; ?>
+}
+.sbe-shortcode-subscribe-form input[type="text"],
+.sbe-shortcode-subscribe-form input[type="email"] {
+	width:100%;
+	box-sizing:border-box;
+}
+.sbe-shortcode-subscribe-form .sbe-shortcode-form-field-title,
+.sbe-shortcode-subscribe-form label {
+	margin-top:15px;
+}
+
+.sbe-shortcode-subscribe-form label {
+	display: inline-block;
+}
+
+.sbe-shortcode-form-submit {
+	margin-top:15px;
+}
+.sbe-shortcode-error,.sbe-shortcode-updated {
+	width: 97%;
+	border-width: 1px;
+	border-style: solid;
+	padding: 5px;
+	border-radius: 3px;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	box-sizing: border-box;
+	list-style:none;
+	margin:0;
+}
+
+.sbe-shortcode-error {
+	background-color: #FFEBE8;
+	border-color: #C00;
+	color:black;
+
+}
+
+.sbe-shortcode-updated {
+	background-color: #DEFFCC;
+	border-color: #60B854;
+	color:black;
+}
