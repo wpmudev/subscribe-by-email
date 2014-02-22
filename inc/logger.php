@@ -31,7 +31,7 @@ class Subscribe_By_Email_Logger {
 		return true;
 	}
 
-	public function set_direct_filesystem_method() {
+	public static function set_direct_filesystem_method() {
 		return 'direct';
 	}
 
@@ -39,9 +39,7 @@ class Subscribe_By_Email_Logger {
 		global $wp_filesystem;
 
 		if ( null == $wp_filesystem ) {
-			add_filter( 'filesystem_method', array( &$this, 'set_direct_filesystem_method' ) );
 			WP_Filesystem();
-			remove_filter( 'filesystem_method', array( &$this, 'set_direct_filesystem_method' ) );
 		}
 
 		$is_dir = $wp_filesystem->is_dir( INCSUB_SBE_LOGS_DIR );
@@ -71,9 +69,7 @@ class Subscribe_By_Email_Logger {
 		global $wp_filesystem;
 
 		if ( null == $wp_filesystem ) {
-			add_filter( 'filesystem_method', array( &$this, 'set_direct_filesystem_method' ) );
 			WP_Filesystem();
-			remove_filter( 'filesystem_method', array( &$this, 'set_direct_filesystem_method' ) );
 		}
 
 		$filename = self::get_filename( $log_id );
@@ -88,9 +84,7 @@ class Subscribe_By_Email_Logger {
 		global $wp_filesystem;
 
 		if ( null == $wp_filesystem ) {
-			add_filter( 'filesystem_method', array( &$this, 'set_direct_filesystem_method' ) );
 			WP_Filesystem();
-			remove_filter( 'filesystem_method', array( &$this, 'set_direct_filesystem_method' ) );
 		}
 
 		$filename = self::get_filename( $log_id );
