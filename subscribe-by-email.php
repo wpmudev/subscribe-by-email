@@ -445,7 +445,7 @@ class Incsub_Subscribe_By_Email {
 			$subscriber = $model->get_subscriber_by_key( $_GET['sbe_unsubscribe'] );
 			$model->cancel_subscription( $_GET['sbe_unsubscribe'] );
 
-			$this->sbe_subscribing_notice( __( 'Your email subscription has been succesfully cancelled.', INCSUB_SBE_LANG_DOMAIN ) );
+			$this->sbe_subscribing_notice( __( 'Your email subscription has been successfully cancelled.', INCSUB_SBE_LANG_DOMAIN ) );
 			
 			$settings = incsub_sbe_get_settings();
 			if ( $settings['get_notifications'] ) {
