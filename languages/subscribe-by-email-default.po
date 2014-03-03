@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Subscribe By Email\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-21 14:18+0100\n"
-"PO-Revision-Date: 2014-02-21 14:18+0100\n"
+"POT-Creation-Date: 2014-03-03 12:13+0100\n"
+"PO-Revision-Date: 2014-03-03 12:13+0100\n"
 "Last-Translator: Ignacio <igmoweb@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -23,7 +23,7 @@ msgid "Thank you, your subscription has been confirmed."
 msgstr ""
 
 #: ../subscribe-by-email.php:448
-msgid "Your email subscription has been succesfully cancelled."
+msgid "Your email subscription has been successfully cancelled."
 msgstr ""
 
 #: ../subscribe-by-email.php:469
