@@ -70,8 +70,8 @@ class Incsub_Subscribe_By_Email_Confirmation_Template {
 												<td>
 													<?php 
 														echo wpautop( $this->settings['subscribe_email_content'] );
-														printf( __( '<p><strong>Blog Name:</strong> %s</p>
-<p><strong>Blog URL:</strong> <a href="%s">%s</a></p>
+														printf( __( '<p><strong>Site Name:</strong> %s</p>
+<p><strong>Site URL:</strong> <a href="%s">%s</a></p>
 <a %s href="%s">Confirm subscription</a>', INCSUB_SBE_LANG_DOMAIN ),
 															get_bloginfo( 'name' ),
 															get_home_url(),
@@ -79,7 +79,7 @@ class Incsub_Subscribe_By_Email_Confirmation_Template {
 															$button_style,
 															add_query_arg( 'sbe_confirm', $this->user_key, get_home_url() )
 														);
-													
+
 													?>
 												</td>
 											</tr>
