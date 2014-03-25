@@ -358,6 +358,11 @@ class Incsub_Subscribe_By_Email {
 	 */
 	public static function subscribe_user( $user_email, $note, $type, $autopt = false, $meta = array() ) {
 		
+		$subscribe_user = apply_filters( 'sbe_pre_subscribe_user', true, $user_email, $note, $type, $autopt, $meta );
+
+		if ( ! $subscribe_user )
+			return false;
+		
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 
 		if ( $model->is_already_subscribed( $user_email ) ) {
@@ -448,7 +453,7 @@ class Incsub_Subscribe_By_Email {
 			$this->sbe_subscribing_notice( __( 'Your email subscription has been successfully cancelled.', INCSUB_SBE_LANG_DOMAIN ) );
 			
 			$settings = incsub_sbe_get_settings();
-			if ( $settings['get_notifications'] ) {
+			if ( $settings['get_notifications'] && is_email( $subscriber->subscription_email ) ) {
 				require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
 				$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Unsubscribed_Notice_Template( $subscriber->subscription_email );
 				$admin_notice->send_email();

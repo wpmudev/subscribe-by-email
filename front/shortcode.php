@@ -6,6 +6,11 @@ class Subscribe_By_Email_Shortcode {
 	public $enqueue_scripts  = false;
 
 	public function __construct() {
+
+		$add_sbe_shortcode = apply_filters( 'sbe_register_shortcode', true );
+		if ( ! $add_sbe_shortcode )
+			return false;
+
 		add_shortcode( 'subscribe-by-email-form', array( $this, 'render_form' ) );
 		add_action( 'init', array( &$this, 'add_tinymce_buttons' ) );
 		add_action( 'wp_enqueue_scripts', array( &$this, 'register_scripts' ) );

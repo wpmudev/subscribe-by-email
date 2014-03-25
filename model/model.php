@@ -145,7 +145,7 @@ class Incsub_Subscribe_By_Email_Model {
 
     public function upgrade_schema() {
         global $wpdb;
-
+        
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
         $this->create_subscriptions_table();
         $this->create_subscriptions_log_table();

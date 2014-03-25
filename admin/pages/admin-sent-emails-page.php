@@ -120,7 +120,7 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 		<?php
 	}
 
-	protected function render_row( $title, $content ) {
+	protected function render_row( $title, $content, $args = array() ) {
 		?>
 			<tr valign="top">
 				<th scope="row"><label for="site_name"><?php echo $title; ?></label></th>

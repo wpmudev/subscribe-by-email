@@ -185,6 +185,8 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 
 					if ( ! $extra_fields_error )
 						$result = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'Manual Subscription', INCSUB_SBE_LANG_DOMAIN ), __( 'Instant', INCSUB_SBE_LANG_DOMAIN ), $autopt, $meta );
+
+					do_action( 'sbe_admin_add_new_single_subscriber', $result );
 				}
 				else {
 					// Email not valid

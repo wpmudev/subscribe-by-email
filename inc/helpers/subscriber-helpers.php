@@ -35,3 +35,8 @@ function incsub_sbe_get_subscriber( $sid ) {
 	}
 	return Subscribe_By_Email_Subscriber::get_instance( $sid );
 }
+
+function incsub_sbe_get_subscribes_count() {
+	$model = incsub_sbe_get_model();
+	return $model->get_all_subscribers( true );
+}
