@@ -24,40 +24,32 @@ class Subscribe_By_Email_Logger {
 	}
 
 	public function touch() {
-		global $wp_filesystem;
-
-		$wp_filesystem->touch( $this->filename );
-		
-		return true;
+		if ( $fh = @fopen( $this->filename, 'w' ) ) {
+			fwrite( $fh, '' );
+			fclose( $fh );
+		}
 	}
 
-	public static function set_direct_filesystem_method() {
-		return 'direct';
-	}
 
 	public function create_logs_folder() {
 		global $wp_filesystem;
 
-		if ( null == $wp_filesystem ) {
-			WP_Filesystem();
-		}
-
-		$is_dir = $wp_filesystem->is_dir( INCSUB_SBE_LOGS_DIR );
+		$is_dir = is_dir( INCSUB_SBE_LOGS_DIR );
 
 		if ( ! $is_dir ) {
-			$result = $wp_filesystem->mkdir( INCSUB_SBE_LOGS_DIR );
+			wp_mkdir_p( INCSUB_SBE_LOGS_DIR );
 
 			// .htaccess
-			$file = INCSUB_SBE_LOGS_DIR . '/.htaccess';
-			if ( $wp_filesystem->is_file( $file ) )
-				$wp_filesystem->delete( $file );
-
-			$wp_filesystem->touch( $file );
-			$wp_filesystem->put_contents( INCSUB_SBE_LOGS_DIR . '/.htaccess', 'deny from all' );
+			if ( $fh = @fopen( INCSUB_SBE_LOGS_DIR . '/.htaccess', 'w' ) ) {
+				fwrite( $fh, 'deny from all' );
+				fclose( $fh );
+			}
 
 			// index.html
-			$file = INCSUB_SBE_LOGS_DIR . '/index.html';
-			$wp_filesystem->touch( $file );
+			if ( $fh = @fopen( INCSUB_SBE_LOGS_DIR . '/index.html', 'w' ) ) {
+				fwrite( $fh, '' );
+				fclose( $fh );
+			}
 		}
 	}
 
@@ -66,12 +58,6 @@ class Subscribe_By_Email_Logger {
 	}
 
 	public static function open_log( $log_id ) {
-		global $wp_filesystem;
-
-		if ( null == $wp_filesystem ) {
-			WP_Filesystem();
-		}
-
 		$filename = self::get_filename( $log_id );
 		return @fopen( $filename, 'r' );
 	}
@@ -81,14 +67,7 @@ class Subscribe_By_Email_Logger {
 	}
 
 	public static function delete_log( $log_id ) {
-		global $wp_filesystem;
-
-		if ( null == $wp_filesystem ) {
-			WP_Filesystem();
-		}
-
 		$filename = self::get_filename( $log_id );
-
-		$wp_filesystem->delete( $filename );
+		unlink( $filename );
 	}
 }

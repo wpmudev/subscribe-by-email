@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: WPMU DEV
-Version: 2.6.2
+Version: 2.7
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -31,6 +31,7 @@ class Incsub_Subscribe_By_Email {
 	static $admin_subscribers_page;
 	static $admin_add_new_subscriber_page;
 	static $admin_settings_page;
+	static $network_settings_page;
 	static $admin_sent_emails_page;
 	static $admin_export_subscribers_page;
 
@@ -89,6 +90,11 @@ class Incsub_Subscribe_By_Email {
 		self::$admin_settings_page = new Incsub_Subscribe_By_Email_Admin_Settings_Page();
 		self::$admin_sent_emails_page = new Incsub_Subscribe_By_Email_Sent_Emails_Page();
 
+		if ( is_multisite() ) {
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/network-settings-page.php' );
+			self::$network_settings_page = new Incsub_Subscribe_By_Email_Network_Settings_Page();
+		}
+
 		$this->init_follow_button();
 
 		new Subscribe_By_Email_Shortcode();
@@ -135,7 +141,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.6.2' );
+		define( 'INCSUB_SBE_VERSION', '2.7' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'INCSUB_SBE_LOGS_DIR', WP_CONTENT_DIR . '/subscribe-by-email-logs' );
@@ -229,6 +235,9 @@ class Incsub_Subscribe_By_Email {
 		if ( ! $current_version )
 			$current_version = '1.0'; // This is the first version that includes some upgradings
 
+		if ( $current_version == INCSUB_SBE_VERSION )
+			return;
+
 		if ( version_compare( $current_version, '1.0', '<=' ) ) {
 			$new_settings = array();
 
@@ -249,7 +258,6 @@ class Incsub_Subscribe_By_Email {
 
 			incsub_sbe_update_settings( $new_settings );
 
-			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 		}
 
 
@@ -262,7 +270,6 @@ class Incsub_Subscribe_By_Email {
 				incsub_sbe_update_settings( $settings );
 			}
 
-			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 
 		}
 
@@ -279,7 +286,6 @@ class Incsub_Subscribe_By_Email {
 				self::set_next_day_schedule_time( $settings['time'] );
 			}
 
-			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 
 		}
 
@@ -290,7 +296,6 @@ class Incsub_Subscribe_By_Email {
 
 			$model->upgrade_247b();
 
-			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 
 		}
 
@@ -318,14 +323,12 @@ class Incsub_Subscribe_By_Email {
 			$settings['taxonomies'] = $new_taxonomies;
 			incsub_sbe_update_settings( $settings );
 
-			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 
 		}
 
 		if ( version_compare( $current_version, '2.4.7RC2', '<' ) ) {
 			$model = incsub_sbe_get_model();
 			$model->create_squema();
-			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 		}
 
 		if ( version_compare( $current_version, '2.4.9', '<' ) ) {
@@ -336,7 +339,6 @@ class Incsub_Subscribe_By_Email {
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
 			incsub_sbe_upgrade_249();
 
-			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 
 			delete_transient( 'incsub_sbe_updating' );
 
@@ -345,8 +347,14 @@ class Incsub_Subscribe_By_Email {
 		if ( version_compare( $current_version, '2.5', '<' ) ) {
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
 			incsub_sbe_upgrade_25();
-			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 		}
+
+		if ( version_compare( $current_version, '2.7', '<' ) ) {
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
+			incsub_sbe_upgrade_26();
+		}
+
+		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 		
 	}
 

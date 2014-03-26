@@ -18,10 +18,19 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 		add_action( 'admin_init', array( &$this, 'validate_form' ) );
 		add_action( 'admin_init', array( &$this, 'maybe_download_csv' ) );
+		add_action( 'load-toplevel_page_sbe-subscribers', array( &$this, 'set_screen_options' ) );		
+		add_filter( 'set-screen-option', array( $this, 'save_screen_options' ), 10, 3 );
 
-		//add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
-		//add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
+	}
 
+	public function save_screen_options( $status, $option, $value ) {
+		if ( 'subscribers_per_page' == $option ) 
+			return $value;
+	}
+
+	public function set_screen_options() {
+		
+		add_screen_option( 'per_page', array( 'label' => __( 'Subscribers per page', INCSUB_SBE_LANG_DOMAIN ), 'default' => 20, 'option' => 'subscribers_per_page' ) );
 	}
 
 

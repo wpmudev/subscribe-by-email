@@ -209,7 +209,17 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
     function prepare_items() {
         global $wpdb, $page;
 
-        $per_page = apply_filters( 'sbe_subscribers_per_page', 15 );
+        $user = get_current_user_id();
+
+        $current_screen = get_current_screen();
+        $screen_option = $current_screen->get_option( 'per_page', 'option' );
+
+        $per_page = get_user_meta( $user, $screen_option, true );
+        if ( empty ( $per_page) || $per_page < 1 ) {
+            $per_page = $current_screen->get_option( 'per_page', 'default' );
+        }
+        
+        $per_page = apply_filters( 'sbe_subscribers_per_page', $per_page );
       
         $columns = $this->get_columns();
         $hidden = array();

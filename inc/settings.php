@@ -19,6 +19,7 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 
 	// Settings slug name
 	private $settings_slug = 'incsub_sbe_settings';
+	private $settings_network_slug = 'incsub_sbe_network_settings';
 
 	public function __construct() {
 		$this->set_settings();
@@ -66,7 +67,12 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 			1 => __( 'Email confirmed')
 		);
 
-		$current_settings = get_option( $this->settings_slug );		
+		$current_settings = $this->get_blog_settings();		
+
+		if ( is_multisite() ) {
+			$current_network_settings = $this->get_network_settings();
+			$current_settings = array_merge( $current_settings, $current_network_settings );
+		}
 
 		$this->settings = wp_parse_args( $current_settings, $this->get_default_settings() );
 
@@ -134,6 +140,31 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 
 	}
 
+	public function get_network_settings() {
+		$defaults = $this->get_default_network_settings();
+		$default_keys = array_keys( $defaults );
+		$current_settings = get_site_option( $this->settings_network_slug, $defaults );
+		$network_settings = array();
+		foreach ( $current_settings as $current_setting => $value ) {
+			if ( in_array( $current_setting, $default_keys ) )
+				$network_settings[ $current_setting ] = $value;
+		}
+		return wp_parse_args( $network_settings, $defaults );
+	}
+
+	public function get_blog_settings() {
+		$defaults = $this->get_default_blog_settings();
+		$default_keys = array_keys( $defaults );
+		$current_settings = get_option( $this->settings_slug, $defaults );
+		$blog_settings = array();
+		foreach ( $current_settings as $current_setting => $value ) {
+			if ( in_array( $current_setting, $default_keys ) )
+				$blog_settings[ $current_setting ] = $value;
+		}
+
+		return wp_parse_args( $blog_settings, $defaults );
+	}
+
 	public function get_settings() {
 		if ( empty( $this->settings ) )
 			$this->set_settings();
@@ -142,34 +173,36 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 	}
 
 	public function update_settings( $settings ) {
-		$this->settings = $settings;
 
-		update_option( $this->settings_slug, $settings );
+		if ( is_multisite() ) {
+			$network_settings = $this->get_network_settings();
+			$blog_settings = $this->get_blog_settings();
+
+			foreach ( $settings as $setting => $value ) {
+				if ( array_key_exists( $setting, $network_settings ) )
+					$network_settings[ $setting ] = $value;
+				elseif ( array_key_exists( $setting, $blog_settings ) )
+					$blog_settings[ $setting ] = $value;
+			}
+
+			update_site_option( $this->settings_network_slug, $network_settings );
+			update_option( $this->settings_slug, $blog_settings );
+
+		}
+		else {
+			update_option( $this->settings_slug, $settings );
+		}
+
+		$this->set_settings();
 	}
 
 	public function get_default_settings() {
+		return array_merge( $this->get_default_blog_settings(), $this->get_default_network_settings() );
+	}
+
+	public function get_default_blog_settings() {
 
 		global $current_site;			
-
-		if ( is_multisite() && is_subdomain_install() ) {
-			$blog_details = get_blog_details();
-			$base_domain = $blog_details->domain;
-		}
-		elseif ( is_multisite() && ! is_subdomain_install() ) {
-			$blog_details = get_blog_details();
-			$base_domain = $blog_details->path;
-			$base_domain = preg_replace( '/^\//', '', $base_domain );
-			$base_domain = preg_replace( '/\/$/', '', $base_domain );
-			$base_domain = str_replace( '/', '.', $base_domain );
-		}
-		else {
-			$base_domain = get_bloginfo('wpurl');
-			$base_domain = str_replace( 'http://', '', $base_domain );
-			$base_domain = preg_replace( '/^\//', '', $base_domain );
-			$base_domain = preg_replace( '/\/$/', '', $base_domain );
-			$base_domain = str_replace( '/', '.', $base_domain );
-			$base_domain = str_replace( 'www.', '', $base_domain );
-		}
 
 		$subscribe_email_content = __( 'Howdy.
 
@@ -182,7 +215,6 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 		return array(
 			'auto-subscribe' => false,
 			'subscribe_new_users' => false,
-			'from_email' => 'no-reply@' . $base_domain,
 			'from_sender' => get_bloginfo( 'name' ),
 			'subject' => get_bloginfo( 'name' ) . __( ': New post' ),
 			'frequency' => 'inmediately',
@@ -207,13 +239,39 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'footer_text' => '',
 			'header_color' => '#66aec2',
 			'header_text_color' => '#000000',
-			'mails_batch_size' => 80,
+			
 			'send_full_post' => false,
 			'subscribe_email_content' => $subscribe_email_content,
 
-			'keep_logs_for' => 31,
-
 			'extra_fields' => array()
+		);
+	}
+
+	function get_default_network_settings() {
+		if ( is_multisite() && is_subdomain_install() ) {
+			$blog_details = get_blog_details();
+			$base_domain = $blog_details->domain;
+		}
+		elseif ( is_multisite() && ! is_subdomain_install() ) {
+			$blog_details = get_blog_details();
+			$base_domain = $blog_details->path;
+			$base_domain = preg_replace( '/^\//', '', $base_domain );
+			$base_domain = preg_replace( '/\/$/', '', $base_domain );
+			$base_domain = str_replace( '/', '.', $base_domain );
+		}
+		else {
+			$base_domain = get_bloginfo('wpurl');
+			$base_domain = str_replace( 'http://', '', $base_domain );
+			$base_domain = preg_replace( '/^\//', '', $base_domain );
+			$base_domain = preg_replace( '/\/$/', '', $base_domain );
+			$base_domain = str_replace( '/', '.', $base_domain );
+			$base_domain = str_replace( 'www.', '', $base_domain );
+		}
+
+		return array(
+			'from_email' => 'no-reply@' . $base_domain,
+			'keep_logs_for' => 31,
+			'mails_batch_size' => 80
 		);
 	}
 

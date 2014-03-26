@@ -14,6 +14,12 @@ function incsub_sbe_get_settings() {
 	return wp_parse_args( $settings_handler->get_settings(), $default );
 }
 
+function incsub_sbe_get_network_settings() {
+	$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
+	$defaults = $settings_handler->get_default_network_settings();
+	return wp_parse_args( $settings_handler->get_network_settings(), $defaults );
+}
+
 function incsub_sbe_get_settings_handler() {
 	return Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
 }

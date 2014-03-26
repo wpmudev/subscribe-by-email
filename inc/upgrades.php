@@ -60,3 +60,11 @@ function incsub_sbe_upgrade_25() {
     $model = incsub_sbe_get_model();
     $model->create_squema();
 }
+
+function incsub_sbe_upgrade_26() {
+    $defaults = incsub_sbe_get_default_settings();
+    $settings = get_option( incsub_sbe_get_settings_slug() );
+    $settings = wp_parse_args( $settings, $defaults );
+    
+    incsub_sbe_update_settings( $settings );
+}

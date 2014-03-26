@@ -8,6 +8,7 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 	private $page_title;
 	private $menu_title;
 	private $capability;
+	private $network = false;
 	private $parent = false;
 
 	public function __construct( $args ) {
@@ -17,10 +18,19 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 		$this->page_title = $page_title;
 		$this->menu_title = $menu_title;
 		$this->capability = $capability;
+
+		if ( ! empty( $network ) )
+			$this->network = true;
+
 		if ( ! empty( $parent ) )
 			$this->parent = $parent;
 
-		add_action( 'admin_menu', array( &$this, 'add_menu' ) );
+		if ( $this->network ) {
+			add_action( 'network_admin_menu', array( &$this, 'add_menu' ) );
+		}
+		else {
+			add_action( 'admin_menu', array( &$this, 'add_menu' ) );
+		}
 
 	}
 
@@ -30,6 +40,7 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 	public function add_menu() {
 
 		if ( ! empty( $this->parent ) ) {
+
 			$this->page_id = add_submenu_page( 
 				$this->parent,
 				$this->page_title, 
@@ -97,7 +108,7 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 		return add_query_arg( 
 			'page',
 			$this->get_menu_slug(),
-			admin_url( 'admin.php' )
+			$this->network ? network_admin_url( 'admin.php' ) : admin_url( 'admin.php' )
 		);
 	}
 

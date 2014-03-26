@@ -14,6 +14,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 	public function __construct() {
 
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/settings-page-helpers.php' );
+
 		$subscribers_page = Incsub_Subscribe_By_Email::$admin_subscribers_page;
 
 		$this->tabs = array(
@@ -146,14 +148,19 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		register_setting( $this->settings_group, $this->settings_name, array( &$this, 'sanitize_settings' ) );
 
 		if ( $this->get_current_tab() == 'general' ) {
+
 			add_settings_section( 'general-settings', __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
-			//add_settings_field( 'auto-subscribe', __( 'Auto-subscribe', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_auto_subscribe_field' ), $this->get_menu_slug(), 'general-settings' ); 
-			//add_settings_field( 'subscribe-new-users', __( 'Subscribe new users', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribe_new_users_field' ), $this->get_menu_slug(), 'general-settings' ); 
 			add_settings_field( 'from-sender', __( 'Notification From Sender', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_sender_field' ), $this->get_menu_slug(), 'general-settings' ); 
-			add_settings_field( 'from-email', __( 'Notification From Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_email_field' ), $this->get_menu_slug(), 'general-settings' ); 
+
+			if ( ! is_multisite() )
+				add_settings_field( 'from-email', __( 'Notification From Email', INCSUB_SBE_LANG_DOMAIN ), 'incsub_sbe_render_from_email_field', $this->get_menu_slug(), 'general-settings' ); 
+
 			add_settings_field( 'subject', __( 'Mail subject', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subject_field' ), $this->get_menu_slug(), 'general-settings' ); 
 			add_settings_field( 'frequency', __( 'Email Frequency', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_frequency_field' ), $this->get_menu_slug(), 'general-settings' ); 
-			add_settings_field( 'mail_batch', __( 'Mail batches', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_mail_batches_field' ), $this->get_menu_slug(), 'general-settings' ); 
+
+			if ( ! is_multisite() )
+				add_settings_field( 'mail_batch', __( 'Mail batches', INCSUB_SBE_LANG_DOMAIN ), 'incsub_sbe_render_mail_batches_field', $this->get_menu_slug(), 'general-settings' ); 
+
 			add_settings_field( 'get-nofitications', __( 'Get notifications', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_get_notifications_field' ), $this->get_menu_slug(), 'general-settings' ); 
 
 			add_settings_section( 'user-subs-page-settings', __( 'Subscription page', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscription_page_section' ), $this->get_menu_slug() );
@@ -165,8 +172,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			add_settings_field( 'follow-button-schema-field', __( 'Schema', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_follow_button_schema_field' ), $this->get_menu_slug(), 'follow-button' ); 
 			
 
-			add_settings_section( 'logs-settings', __( 'Logs', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
-			add_settings_field( 'keep-logs-for', __( 'Keep logs files during', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_keep_logs_for_field' ), $this->get_menu_slug(), 'logs-settings' ); 
+			if ( ! is_multisite() ) {
+				add_settings_section( 'logs-settings', __( 'Logs', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+				add_settings_field( 'keep-logs-for', __( 'Keep logs files during', INCSUB_SBE_LANG_DOMAIN ), 'incsub_sbe_render_keep_logs_for_field', $this->get_menu_slug(), 'logs-settings' ); 
+			}
 		}
 		elseif ( $this->get_current_tab() == 'content' ) {
 			$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
@@ -316,15 +325,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		<?php
 	}
 
-	/**
-	 * From Email field
-	 */
-	public function render_from_email_field() {
-		?>
-			<input type="text" name="<?php echo $this->settings_name; ?>[from_email]" class="regular-text" value="<?php echo esc_attr( $this->settings['from_email'] ); ?>"><br/>
-			<span class="description"><?php _e( 'Recommended: no-reply@yourdomain.com as spam filters may block other addresses.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
-		<?php
-	}
+	
 
 	/**
 	 * Subject field
@@ -333,17 +334,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		?>
 			<input type="text" name="<?php echo $this->settings_name; ?>[subject]" class="regular-text" value="<?php echo esc_attr( $this->settings['subject'] ); ?>"><br/>
 			<span><?php _e( 'You can use the <strong>%title%</strong> wildcard to show the latest post title/s, they will be shortened to no more than 50 charactes', INCSUB_SBE_LANG_DOMAIN ); ?></span>
-		<?php
-	}
-
-	/**
-	 * Subject field
-	 */
-	public function render_mail_batches_field() {
-		$minutes = Incsub_Subscribe_By_Email::$time_between_batches / 60;
-		?>
-			<label for="mail_batches"><?php printf( __( 'Send %s mails every %d minutes (maximum).', INCSUB_SBE_LANG_DOMAIN ), '<input id="mail_batches" type="number" name="' . $this->settings_name . '[mail_batches]" class="small-text" value="' . esc_attr( $this->settings['mails_batch_size'] ) . '">', $minutes ); ?></label><br/>
-			<span class="description"><?php printf( __( 'If you are experiencing problems when sending mails, your server may be limiting the email volume. Try reducing this number. Mails will be sent every %d minutes in groups of X mails.', INCSUB_SBE_LANG_DOMAIN ), $minutes ); ?></span>
 		<?php
 	}
 
@@ -694,11 +684,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		<?php
 	}
 
-	public function render_keep_logs_for_field() {
-		?>
-			<input type="number" class="small-text" size="2" name="<?php echo $this->settings_name; ?>[keep_logs_for]" value="<?php echo absint( $this->settings['keep_logs_for'] ); ?>" /> <?php _e( 'Days', INCSUB_SBE_LANG_DOMAIN ); ?> <br/><span class="description"><?php _e( '31 max.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
-		<?php
-	}
+	
 
 	public function render_extra_fields_section() {
 		?>
@@ -711,9 +697,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		?>
 			<label><?php _e( 'Field title', INCSUB_SBE_LANG_DOMAIN ); ?>
 				<input type="text" name="<?php echo $this->settings_name; ?>[extra_field_name]" />
-			</label>
-			<label><?php _e( 'Field Slug', INCSUB_SBE_LANG_DOMAIN ); ?>
-				<input type="text" name="<?php echo $this->settings_name; ?>[extra_field_slug]" />
 			</label>
 			<select name="<?php echo $this->settings_name; ?>[extra_field_type]" id="extra_field_type">
 				<option value="">-- <?php _e( 'Field type', INCSUB_SBE_LANG_DOMAIN ); ?> --</option>
@@ -743,7 +726,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 							</td>
 							<td class="extra-field-item-title"><strong><?php echo esc_html( $value['title'] ); ?></strong></td>
 							
-							<td class="extra-field-item-slug"><em><?php echo urldecode( $value['slug'] );?></em></td>
 							<td class="extra-field-item-type"><?php echo $allowed_types[ $value['type'] ]['name']; ?> </td>
 							<td class="extra-field-item-required">
 								<?php _e( 'Required', INCSUB_SBE_LANG_DOMAIN ); ?>:
@@ -832,26 +814,18 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		$new_settings = $this->settings;
 
 		if ( isset( $input['submit_settings_general'] ) ) {
-
-			// Auto subscribe
-			//if ( 'yes' == $input['auto_subscribe'] )
-			//	$new_settings['auto-subscribe'] = true;
-			//else
-			//	$new_settings['auto-subscribe'] = false;
-
-			// Subscribe new users
-			//if ( 'yes' == $input['subscribe_new_users'] )
-			//	$new_settings['subscribe_new_users'] = true;
-			//else
-			//	$new_settings['subscribe_new_users'] = false;
-
 			// From Sender
-			$from_email = sanitize_email( $input['from_email'] );
+			if ( ! is_multisite() ) {
+				$result = incsub_sbe_sanitize_from_email( $input['from_email'] );
 
-			if ( is_email( $from_email ) )
-				$new_settings['from_email'] = $from_email;
-			else
-				add_settings_error( $this->settings_name, 'invalid-from-email', __( 'Notification From Email is not a valid email', INCSUB_SBE_LANG_DOMAIN ) );
+				if ( is_wp_error( $result ) ) {
+					add_settings_error( $this->settings_name, $result->get_error_code(), $result->get_error_message() );
+				}
+				else {
+					$new_settings['from_email'] = $result;
+				}
+					
+			}
 
 			$from_sender = sanitize_text_field( $input['from_sender'] );
 			if ( ! empty( $from_sender ) )
@@ -903,7 +877,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			}
 
 			// Batches
-		    if ( ! empty( $input['mail_batches'] ) )
+		    if ( ! is_multisite() && ! empty( $input['mail_batches'] ) )
 				$new_settings['mails_batch_size'] = absint( $input['mail_batches'] );
 
 			$new_settings['get_notifications'] = isset( $input['get_notifications'] );
@@ -918,7 +892,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			$new_settings['get_notifications_role'] = $input['get_notifications_role'];
 
-			if ( ! empty( $input['keep_logs_for'] ) ) {
+			if ( ! is_multisite() &&  ! empty( $input['keep_logs_for'] ) ) {
 				$option = absint( $input['keep_logs_for'] );
 				if ( $option > 31 ) {
 					$new_settings['keep_logs_for'] = 31;
@@ -1048,10 +1022,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			}
 
 			if ( ! $extra_field_error ) {
-				if ( empty( $input['extra_field_slug'] ) )
-					$slug = sanitize_title_with_dashes( $name );
-				else
-					$slug = sanitize_title_with_dashes( remove_accents( $input['extra_field_slug'] ) );
+				$slug = sanitize_title_with_dashes( $name );
 
 				$settings = incsub_sbe_get_settings();
 				$slug_found = false;
@@ -1060,7 +1031,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 						$slug_found = true;
 				}
 				if ( $slug_found ) {
-					add_settings_error( $this->settings_name, 'extra-field-slug', __( 'Slug already exist', INCSUB_SBE_LANG_DOMAIN ) );
+					add_settings_error( $this->settings_name, 'extra-field-slug', __( 'Field already exists', INCSUB_SBE_LANG_DOMAIN ) );
 					$extra_field_error = true;
 				}
 
