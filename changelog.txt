@@ -5,6 +5,15 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.7 - 2014/03/27
+----------------------------------------------------------------------
+* Mail batches, From Email and Log File Settings have been moved to Network Admin in multisites.
+* Removed slug field from custom fields.
+* Added screen options in subscribers page.
+* Improved performance
+* Fixed warning.
+* Fixed: User Email could be empty on administrator email notices.
+
 2.6.2 - 2014/03/03
 ----------------------------------------------------------------------
 * Fixed typo on unsubscribe screen.

@@ -145,6 +145,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 * Register the settings, sections and fields
 	 */
 	public function register_settings() {
+
 		register_setting( $this->settings_group, $this->settings_name, array( &$this, 'sanitize_settings' ) );
 
 		if ( $this->get_current_tab() == 'general' ) {
@@ -907,6 +908,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		}
 
 		if ( isset( $input['submit_settings_content'] ) ) {
+
 			// Post types
 			if ( isset( $input['post_types'] ) && is_array( $input['post_types'] ) ) {
 				$new_settings['post_types'] = $input['post_types'];
@@ -1076,7 +1078,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 //				$new_settings['extra_fields'][ $extra_field_id ]['required'] = ! empty( $input['extra_field_required-' . $extra_field_id ] );
 //	    	} 
 //		}
-
 		return $new_settings;
 
 	}

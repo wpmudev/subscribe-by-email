@@ -67,7 +67,8 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 			1 => __( 'Email confirmed')
 		);
 
-		$current_settings = $this->get_blog_settings();		
+		$current_settings = $this->get_blog_settings();
+
 
 		if ( is_multisite() ) {
 			$current_network_settings = $this->get_network_settings();
@@ -154,6 +155,10 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 
 	public function get_blog_settings() {
 		$defaults = $this->get_default_blog_settings();
+
+		if ( ! is_multisite() )
+			$defaults = array_merge( $defaults, $this->get_default_network_settings() );
+		
 		$default_keys = array_keys( $defaults );
 		$current_settings = get_option( $this->settings_slug, $defaults );
 		$blog_settings = array();

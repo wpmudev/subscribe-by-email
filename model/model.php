@@ -149,7 +149,7 @@ class Incsub_Subscribe_By_Email_Model {
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
         $this->create_subscriptions_table();
         $this->create_subscriptions_log_table();
-
+        
         $wpdb->query( "UPDATE $this->subscriptions_table SET confirmation_flag = 1");
 
         $result = $this->get_all_subscribers();
@@ -565,6 +565,7 @@ class Incsub_Subscribe_By_Email_Model {
                 $batch_size 
             )
         );
+
 
         return $subscribers;
     }

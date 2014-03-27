@@ -211,6 +211,7 @@ class Incsub_Subscribe_By_Email {
 	public function activate() {
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 		$model->create_squema();
+		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 	}
 
 	public function deactivate() {
@@ -351,7 +352,7 @@ class Incsub_Subscribe_By_Email {
 
 		if ( version_compare( $current_version, '2.7', '<' ) ) {
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
-			incsub_sbe_upgrade_26();
+			incsub_sbe_upgrade_27();
 		}
 
 		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
@@ -541,7 +542,8 @@ class Incsub_Subscribe_By_Email {
 		if ( ! get_transient( self::$pending_mails_transient_slug ) ) {
 
 			set_transient( self::$pending_mails_transient_slug, 'next', self::$time_between_batches );
-
+			$model = incsub_sbe_get_model();
+			
 			$model = Incsub_Subscribe_By_Email_Model::get_instance();
 			$mail_log = $model->get_remaining_batch_mail();
 

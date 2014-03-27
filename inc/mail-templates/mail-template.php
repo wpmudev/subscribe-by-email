@@ -316,6 +316,7 @@ class Incsub_Subscribe_By_Email_Template {
 
 		if ( $mail_log_id ) {
 			$emails_list = $model->get_log_emails_list( $mail_log_id, absint( $this->settings['mails_batch_size'] ) );
+
 			if ( $emails_list === false )
 				return false;
 		}
