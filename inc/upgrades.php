@@ -63,7 +63,19 @@ function incsub_sbe_upgrade_25() {
 
 function incsub_sbe_upgrade_27() {
     $defaults = incsub_sbe_get_default_settings();
-    $settings = get_option( incsub_sbe_get_settings_slug() );
+
+
+    if ( defined( 'BLOG_ID_CURRENT_SITE' ) )
+        $main_blog_id = BLOG_ID_CURRENT_SITE;
+    else {
+        $blog_details = get_blog_details( 1 );
+        if ( ! empty( $blog_details ) )
+            $main_blog_id = 1;
+        else
+            $main_blog_id = get_current_blog_id();
+    }
+
+    $settings = get_blog_option( $main_blog_id, incsub_sbe_get_settings_slug() );
     $settings = wp_parse_args( $settings, $defaults );
     
     incsub_sbe_update_settings( $settings );
