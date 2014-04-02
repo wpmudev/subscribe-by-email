@@ -3,7 +3,8 @@
         init : function(ed, url) {
             ed.addButton('sbeform', {
                 cmd : 'insert_sbe_shortcode',
-                image : url + '/../images/tinymceicon.png',
+                title: sbe_l10n.title,
+                image : sbe_l10n.png_icon
             });
 
             ed.addCommand('insert_sbe_shortcode', function() {

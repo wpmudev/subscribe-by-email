@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Subscribe By Email\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-27 10:32+0100\n"
-"PO-Revision-Date: 2014-03-27 10:32+0100\n"
+"POT-Creation-Date: 2014-04-02 09:49+0100\n"
+"PO-Revision-Date: 2014-04-02 09:49+0100\n"
 "Last-Translator: Ignacio <igmoweb@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -713,7 +713,7 @@ msgid "Do not send a confirmation email"
 msgstr ""
 
 #: ../admin/pages/admin-add-subscribers-page.php:110 ../front/widget.php:152
-#: ../front/widget.php:263 ../front/shortcode.php:110
+#: ../front/widget.php:263 ../front/shortcode.php:138
 msgid "Subscribe"
 msgstr ""
 
@@ -926,28 +926,28 @@ msgstr ""
 msgid "Subscribe by Email"
 msgstr ""
 
-#: ../front/widget.php:83 ../front/shortcode.php:131
+#: ../front/widget.php:83 ../front/shortcode.php:161
 #: ../front/follow-button.php:36
 msgid "Invalid e-mail address"
 msgstr ""
 
-#: ../front/widget.php:100 ../front/shortcode.php:148
+#: ../front/widget.php:100 ../front/shortcode.php:178
 #: ../front/follow-button.php:53
 #, php-format
 msgid "%s is a mandatory field."
 msgstr ""
 
-#: ../front/widget.php:115 ../front/shortcode.php:160
+#: ../front/widget.php:115 ../front/shortcode.php:190
 #: ../front/follow-button.php:64
 msgid "User subscribed"
 msgstr ""
 
-#: ../front/widget.php:182 ../front/shortcode.php:76
+#: ../front/widget.php:182 ../front/shortcode.php:104
 #: ../front/follow-button.php:118
 msgid "Email address"
 msgstr ""
 
-#: ../front/widget.php:183 ../front/shortcode.php:77
+#: ../front/widget.php:183 ../front/shortcode.php:105
 #: ../front/follow-button.php:119
 msgid "ex: someone@mydomain.com"
 msgstr ""
@@ -988,7 +988,11 @@ msgstr ""
 msgid "Custom CSS"
 msgstr ""
 
-#: ../front/shortcode.php:51
+#: ../front/shortcode.php:32
+msgid "Insert Subscribe By Email Form"
+msgstr ""
+
+#: ../front/shortcode.php:77
 msgid "Thanks, a confirmation email has been sent to you"
 msgstr ""
 

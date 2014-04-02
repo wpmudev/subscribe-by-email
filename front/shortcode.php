@@ -14,6 +14,30 @@ class Subscribe_By_Email_Shortcode {
 		add_shortcode( 'subscribe-by-email-form', array( $this, 'render_form' ) );
 		add_action( 'init', array( &$this, 'add_tinymce_buttons' ) );
 		add_action( 'wp_enqueue_scripts', array( &$this, 'register_scripts' ) );
+		add_action( 'admin_head', array( $this,'add_icon_styles' ) );
+	}
+
+	function add_icon_styles() {
+		global $wp_version;
+
+		?>
+		<style>
+			span.mce_sbeform:before {
+				content: "\f466";
+			}
+		</style>
+		<script>
+			<?php
+				$l10n = array(
+					'title' => __( 'Insert Subscribe By Email Form', INCSUB_SBE_LANG_DOMAIN ),
+					'png_icon' => version_compare( $wp_version, '3.8', '>=' ) ? '' : INCSUB_SBE_ASSETS_URL . '/images/tinymceicon.png'
+				);
+				$l10n = json_encode($l10n);
+				echo "var sbe_l10n = ". $l10n . ";\n";
+			?>
+			console.log(sbe_l10n);
+		</script>
+		<?php
 	}
 
 
@@ -29,6 +53,8 @@ class Subscribe_By_Email_Shortcode {
 
 	public function add_buttons( $plugin_arr ) {
 		$plugin_arr['sbeshortcode'] = INCSUB_SBE_ASSETS_URL . 'js/tiny-mce-buttons.js';
+		
+		wp_localize_script( 'sbeshortcode', 'sbe_l10n', $l10n );
 		return $plugin_arr;
 	}
 
@@ -55,6 +81,8 @@ class Subscribe_By_Email_Shortcode {
 
 		$settings = incsub_sbe_get_settings();
 		$extra_fields = empty( $settings['extra_fields'] ) ? array() : $settings['extra_fields'];
+
+		ob_start();
 
 		if ( count( $this->errors ) == 0 && isset( $_POST['submit-subscribe-user'] ) ) {
 			echo '<div class="sbe-shortcode-updated"><p>' . $success_text . '</p></div>';
@@ -115,6 +143,8 @@ class Subscribe_By_Email_Shortcode {
 
 			<?php
 		}
+
+		return ob_get_clean();
 	}
 
 	private function process() {
