@@ -12,31 +12,26 @@ class Subscribe_By_Email_Shortcode {
 			return false;
 
 		add_shortcode( 'subscribe-by-email-form', array( $this, 'render_form' ) );
-		add_action( 'init', array( &$this, 'add_tinymce_buttons' ) );
-		add_action( 'wp_enqueue_scripts', array( &$this, 'register_scripts' ) );
-		add_action( 'admin_head', array( $this,'add_icon_styles' ) );
+		
+		add_action( 'wp_enqueue_scripts', array( &$this, 'register_scripts' ), 999 );
+
+
+		if ( is_admin() || apply_filters( 'sbe_display_tinymce_buttons_in_front', true ) ) {
+			add_action( 'init', array( &$this, 'add_tinymce_buttons' ) );
+			add_action( 'admin_head', array( &$this, 'register_footer_scripts' ) );
+			add_action( 'admin_head', array( $this,'add_icon_styles' ) );
+			add_action( 'wp_head', array( &$this, 'register_footer_scripts' ) );
+			add_action( 'wp_head', array( $this,'add_icon_styles' ) );
+		}
 	}
 
 	function add_icon_styles() {
-		global $wp_version;
-
 		?>
 		<style>
 			span.mce_sbeform:before {
 				content: "\f466";
 			}
 		</style>
-		<script>
-			<?php
-				$l10n = array(
-					'title' => __( 'Insert Subscribe By Email Form', INCSUB_SBE_LANG_DOMAIN ),
-					'png_icon' => version_compare( $wp_version, '3.8', '>=' ) ? '' : INCSUB_SBE_ASSETS_URL . '/images/tinymceicon.png'
-				);
-				$l10n = json_encode($l10n);
-				echo "var sbe_l10n = ". $l10n . ";\n";
-			?>
-			console.log(sbe_l10n);
-		</script>
 		<?php
 	}
 
@@ -50,11 +45,23 @@ class Subscribe_By_Email_Shortcode {
 		wp_enqueue_style( 'sbe-form-css', INCSUB_SBE_ASSETS_URL . '/css/shortcode.css', array(), '20140212' );
 	}
 
+	public function register_footer_scripts() {
+		global $wp_version;
+		$l10n = array(
+			'title' => __( 'Insert Subscribe By Email Form', INCSUB_SBE_LANG_DOMAIN ),
+			'png_icon' => version_compare( $wp_version, '3.8', '>=' ) ? '' : INCSUB_SBE_ASSETS_URL . '/images/tinymceicon.png'
+		);
+		$l10n = json_encode($l10n);
+		?>
+			<script>
+				var sbe_l10n = <?php echo $l10n; ?>;
+			</script>
+		<?php
+	}
+
 
 	public function add_buttons( $plugin_arr ) {
 		$plugin_arr['sbeshortcode'] = INCSUB_SBE_ASSETS_URL . 'js/tiny-mce-buttons.js';
-		
-		wp_localize_script( 'sbeshortcode', 'sbe_l10n', $l10n );
 		return $plugin_arr;
 	}
 
