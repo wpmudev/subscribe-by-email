@@ -16,7 +16,7 @@ class Subscribe_By_Email_Shortcode {
 		add_action( 'wp_enqueue_scripts', array( &$this, 'register_scripts' ), 999 );
 
 
-		if ( is_admin() || apply_filters( 'sbe_display_tinymce_buttons_in_front', true ) ) {
+		if ( ( is_admin() || apply_filters( 'sbe_display_tinymce_buttons_in_front', true ) ) && current_user_can( apply_filters( 'sbe_display_tinymce_buttons_cap', 'publish_posts' ) ) ) {
 			add_action( 'init', array( &$this, 'add_tinymce_buttons' ) );
 			add_action( 'admin_head', array( &$this, 'register_footer_scripts' ) );
 			add_action( 'admin_head', array( $this,'add_icon_styles' ) );
