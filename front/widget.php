@@ -39,7 +39,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		wp_enqueue_script( 'sbe-widget-js', INCSUB_SBE_ASSETS_URL . 'js/widget.js', array( 'jquery' ) );
 
 		$l10n = array(
-			'ajaxurl' => admin_url( 'admin-ajax.php' ),
+			'ajaxurl' => admin_url( 'admin-ajax.php', ( is_ssl() ? 'https' : 'http' ) ),
 			'nonce' => wp_create_nonce( "sbe_widget_subscribe" )
 		);
 		wp_localize_script( 'sbe-widget-js', 'sbe_widget_captions', $l10n );
