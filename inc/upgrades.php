@@ -77,13 +77,28 @@ function incsub_sbe_upgrade_27() {
                 $main_blog_id = get_current_blog_id();
         }
 
-        $settings = get_blog_option( $main_blog_id, incsub_sbe_get_settings_slug() );
+        $tmp_settings = get_blog_option( $main_blog_id, incsub_sbe_get_settings_slug() );
+        $settings = array();
+
+        if ( isset( $tmp_settings['from_email'] ) )
+            $settings['from_email'] = $tmp_settings['from_email'];
+
+        if ( isset( $tmp_settings['keep_logs_for'] ) )
+            $settings['keep_logs_for'] = $tmp_settings['keep_logs_for'];
+
+        if ( isset( $tmp_settings['mails_batch_size'] ) )
+            $settings['mails_batch_size'] = $tmp_settings['mails_batch_size'];
+
+        $tmp_settings = get_option( incsub_sbe_get_settings_slug() );
+
+        $settings = wp_parse_args( $tmp_settings, $settings );
+
     }
     else {
         $settings = get_option( incsub_sbe_get_settings_slug() );
     }
 
-
+    
     $settings = wp_parse_args( $settings, $defaults );
     incsub_sbe_update_settings( $settings );
 }

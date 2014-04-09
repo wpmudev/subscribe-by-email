@@ -162,6 +162,10 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 		$default_keys = array_keys( $defaults );
 		$current_settings = get_option( $this->settings_slug, $defaults );
 		$blog_settings = array();
+
+		if ( ! is_array( $current_settings ) )
+			$current_settings = $defaults;
+		
 		foreach ( $current_settings as $current_setting => $value ) {
 			if ( in_array( $current_setting, $default_keys ) )
 				$blog_settings[ $current_setting ] = $value;
