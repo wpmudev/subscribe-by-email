@@ -28,7 +28,8 @@ class Subscribe_By_Email_Shortcode {
 	function add_icon_styles() {
 		?>
 		<style>
-			span.mce_sbeform:before {
+			.mce-i-sbeform:before {
+				font: normal 20px/1 'dashicons';
 				content: "\f466";
 			}
 		</style>
