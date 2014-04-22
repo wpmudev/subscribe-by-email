@@ -1,8 +1,11 @@
 jQuery(document).ready(function($) {
 	var sbe_settings = {
+		orig_send_attachment: wp.media.editor.send.attachment,
+
 		init: function() {
-			
-			$( '#upload-logo' ).click( sbe_settings.upload_logo );
+
+			$( '#upload-logo' ).on( 'click', $.proxy( sbe_settings.upload_logo, this ) );
+
 
 			if ( $( '#upload-logo-value' ).val() == '' )
 				$( '#remove-logo-button' ).hide();
@@ -25,21 +28,18 @@ jQuery(document).ready(function($) {
 		upload_logo: function( e ) {
 			e.preventDefault();
 
-			// We'll save the value on an hidden input
-			var input = $( '#upload-logo-value' );
- 	
- 			// Opening media uploader
-	        tb_show( sbe_captions.title_text, 'media-upload.php?type=image&TB_iframe=true&post_id=0', false );
-	 
-	        window.send_to_editor = function( html ) {
-	        	// Action triggered when sending the button
-	            var src = $( 'img', html ).attr( 'src' );
+			var button = e.target;
+ 			
+ 			wp.media.editor.send.attachment = function(props, attachment){
+				$( '#upload-logo-value' ).val(attachment.url);
+				if ( attachment.url )
+					$('#sbe-logo-img').attr('src',attachment.url);
+		    }
 
-	            input.attr( 'value', src );
-	            $( '#sbe-logo-img' ).attr( 'src', src );
-	            tb_remove();
-	        }
-	        return false;
+		    wp.media.editor.open($(button));
+		    $('.media-frame-menu').hide();
+		    return false;
+
 		},
 		toggle_colorpicker: function( e ) {
 			var id = $(this).attr('id');

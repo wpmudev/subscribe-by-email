@@ -74,11 +74,12 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . 'js/settings-content.js', array( 'jquery' ), '20130721' );
 			}
 			elseif ( 'template' == $this->get_current_tab() ) {
-				wp_enqueue_script( 'thickbox' );
-			    wp_enqueue_script( 'media-upload' );
+				add_filter( 'media_view_settings', array( $this, 'set_media_uploader_settings' ) );
+				add_filter( 'media_view_strings', array( $this, 'set_media_uploader_strings' ) );
+				wp_enqueue_media();
 			    wp_enqueue_script( 'farbtastic' );
 			    wp_enqueue_script( 'jquery-ui-slider' );
-				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . 'js/settings-template.js', array( 'thickbox', 'media-upload' ), '20130721' );
+				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . 'js/settings-template.js', array(), '20130721' );
 			}
 			elseif ( 'extra-fields' == $this->get_current_tab() ) {
 				wp_enqueue_script( 'jquery-ui-sortable' );
@@ -92,6 +93,20 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			wp_localize_script( 'sbe-settings-scripts', 'sbe_captions', $l10n );
 
 		}
+	}
+
+	public function set_media_uploader_settings( $settings ) {
+		unset( $settings['mimeTypes']['video'] );
+		unset( $settings['mimeTypes']['audio'] );
+		return $settings;
+	}
+
+
+	function set_media_uploader_strings( $strings ) {
+		unset( $strings['insertFromUrlTitle'] );
+		$strings['insertIntoPost'] = __( 'Choose image as logo', INCSUB_SBE_LANG_DOMAIN );
+		$strings['insertMediaTitle'] = __( 'Choose a logo', INCSUB_SBE_LANG_DOMAIN );
+	    return $strings;
 	}
 
 
@@ -542,12 +557,14 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 */
 	public function render_logo_field() {
 		?>
-			
-			<input type="hidden" name="<?php echo $this->settings_name; ?>[logo]" id="upload-logo-value" value="<?php echo esc_url( $this->settings['logo'] ); ?>">
-			<input type="button" class="button-secondary" id="upload-logo" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
+			<div class="logo-uploader">
+				<input type="hidden" name="<?php echo $this->settings_name; ?>[logo]" id="upload-logo-value" value="<?php echo esc_url( $this->settings['logo'] ); ?>"/>
+				<input type="button" class="button-secondary" id="upload-logo" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
+				<?php submit_button( __( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[remove-logo]', false, array( 'id' => 'remove-logo-button' ) ); ?>
+			</div>
+
 			<div class="sbe-logo-preview">
 				<img style="max-width:300px;border:1px solid #DDD;padding:3px;background:#EFEFEF;margin-top:20px;" id="sbe-logo-img" src="<?php echo esc_url( $this->settings['logo'] ); ?>"></img>
-				<?php submit_button( __( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[remove-logo]', true, array( 'id' => 'remove-logo-button' ) ); ?>
 			</div>
 		<?php
 	}

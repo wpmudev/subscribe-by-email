@@ -1,5 +1,7 @@
 Plugin Name: Subscribe by Email
 Author: WPMUDEV
+Requires at least: 3.6
+Tested up to: 3.9
 
 Change Log:
 ----------------------------------------------------------------------
