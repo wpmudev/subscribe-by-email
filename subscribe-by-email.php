@@ -65,6 +65,8 @@ class Incsub_Subscribe_By_Email {
 
 		add_action( 'admin_notices', array( &$this, 'upgrade_database_notice' ) );
 
+		add_action( 'admin_head', array( &$this, 'render_icon_styles' ) );
+
 	}
 
 	public function upgrade_database_notice() {
@@ -73,6 +75,44 @@ class Incsub_Subscribe_By_Email {
 				<div class="error"><p><?php printf( __( 'Subscribe By Email needs to be upgraded manually. <a href="%s">Click here to start with the update</a>', INCSUB_SBE_LANG_DOMAIN ), add_query_arg( 'upgrade_db', 'true', self::$admin_subscribers_page->get_permalink() ) ); ?></p></div>
 			<?php
 		}
+	}
+
+	public function render_icon_styles() {
+		?>
+		<style type="text/css">
+			@font-face {
+				font-family: 'SBEFont';
+				src:url('<?php echo INCSUB_SBE_ASSETS_URL; ?>fonts/sbe.eot?-6xkqvi');
+				src:url('<?php echo INCSUB_SBE_ASSETS_URL; ?>fonts/sbe.eot?#iefix-6xkqvi') format('embedded-opentype'),
+					url('<?php echo INCSUB_SBE_ASSETS_URL; ?>fonts/sbe.woff?-6xkqvi') format('woff'),
+					url('<?php echo INCSUB_SBE_ASSETS_URL; ?>fonts/sbe.ttf?-6xkqvi') format('truetype'),
+					url('<?php echo INCSUB_SBE_ASSETS_URL; ?>fonts/sbe.svg?-6xkqvi#icomoon') format('svg');
+				font-weight: normal;
+				font-style: normal;
+			}
+
+		    .sbe_icon:before {
+		    	font-family: 'SBEFont' !important;
+		    }
+
+
+		    .sbe_status_confirmed:before {
+		    	content:"\e604";
+		    }
+
+		   
+
+		    .sbe_status_confirmed:before {
+		    	content:"\e603";
+		    	color:green;
+		    }
+		    .sbe_status_awaiting:before {
+		    	content:"\e602";
+		    	color:#D55252;
+		    }
+
+		</style>
+		<?php
 	}
 
 	public function init_plugin() {

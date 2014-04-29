@@ -60,9 +60,9 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
 
     function column_note( $item ) {
         if ( $item->is_confirmed() )
-            return __( 'Email confirmed', INCSUB_SBE_LANG_DOMAIN );
+            return '<span class="sbe_icon sbe_status sbe_status_confirmed"> ' . __( 'Email confirmed', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
         else
-            return __( 'Awaiting confirmation', INCSUB_SBE_LANG_DOMAIN );
+            return '<span class="sbe_icon sbe_status sbe_status_awaiting"> ' . __( 'Awaiting confirmation', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
     }
 
     function column_subscription_type( $item ) {
@@ -100,7 +100,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
             'cb'                    => '<input type="checkbox" />', //Render a checkbox instead of text
             'email'                 => __( 'Email', INCSUB_SBE_LANG_DOMAIN ),
             'created'               => __( 'Created', INCSUB_SBE_LANG_DOMAIN ),
-            'note'                  => __( 'Note', INCSUB_SBE_LANG_DOMAIN ),
+            'note'                  => __( 'Status', INCSUB_SBE_LANG_DOMAIN ),
             'subscription_type'     => __( 'Subscription Type', INCSUB_SBE_LANG_DOMAIN ),
             'subscribed_to'  	    => __( 'Subscribed to', INCSUB_SBE_LANG_DOMAIN )
         );
