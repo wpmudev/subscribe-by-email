@@ -246,7 +246,6 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/debugger.php' );
 
 		// Subscriber class
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/subscriber.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/class-subscriber.php' );
 
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
