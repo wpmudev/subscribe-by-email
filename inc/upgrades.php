@@ -80,14 +80,16 @@ function incsub_sbe_upgrade_27() {
         $tmp_settings = get_blog_option( $main_blog_id, incsub_sbe_get_settings_slug() );
         $settings = array();
 
-        if ( isset( $tmp_settings['from_email'] ) )
-            $settings['from_email'] = $tmp_settings['from_email'];
+        if ( $main_blog_id == get_current_blog_id() ) {
+            if ( isset( $tmp_settings['from_email'] ) )
+                $settings['from_email'] = $tmp_settings['from_email'];
 
-        if ( isset( $tmp_settings['keep_logs_for'] ) )
-            $settings['keep_logs_for'] = $tmp_settings['keep_logs_for'];
+            if ( isset( $tmp_settings['keep_logs_for'] ) )
+                $settings['keep_logs_for'] = $tmp_settings['keep_logs_for'];
 
-        if ( isset( $tmp_settings['mails_batch_size'] ) )
-            $settings['mails_batch_size'] = $tmp_settings['mails_batch_size'];
+            if ( isset( $tmp_settings['mails_batch_size'] ) )
+                $settings['mails_batch_size'] = $tmp_settings['mails_batch_size'];
+        }
 
         $tmp_settings = get_option( incsub_sbe_get_settings_slug() );
 
@@ -107,9 +109,12 @@ function incsub_sbe_upgrade_27() {
 function incsub_sbe_render_upgrade_database_screen_28RC1() {
     global $wpdb;
 
+    if ( ! get_option( 'sbe_upgrade_database_28RC1' ) )
+        wp_die( __( 'The database is already up to date', INCSUB_SBE_LANG_DOMAIN ) );
+
     $table = $wpdb->prefix . 'subscriptions';
     $total_users = $wpdb->get_var( "SELECT COUNT(subscription_ID) FROM $table" );
-    
+    $redirect = Incsub_Subscribe_By_Email::$admin_subscribers_page->get_permalink();
     ?>
         <div class="wrap">
             <h3><?php printf( __( 'Total subscribers: %s', INCSUB_SBE_LANG_DOMAIN ), $total_users ); ?></h3>
@@ -117,18 +122,21 @@ function incsub_sbe_render_upgrade_database_screen_28RC1() {
                 <p><?php _e( 'This could take a while, please be patient and do not close this window' ); ?></p>
             <?php endif; ?>
 
-            <p><?php _e( 'Updating users:', INCSUB_SBE_LANG_DOMAIN ); ?> <span id="subscriber-count">0</span> / <?php echo $total_users; ?> <span class="spinner" style="float:none;display:inline-block;"></span></p>
+            <p id="update_step-1"><strong><?php _e( 'Step 1:', INCSUB_SBE_LANG_DOMAIN ); ?> </strong><?php _e( 'Updating users:', INCSUB_SBE_LANG_DOMAIN ); ?> <span id="subscriber-count">0</span> % <span class="spinner step-1-spinner" style="float:none;"></span></p>
+            <p id="update_step-2"><strong><?php _e( 'Step 2:', INCSUB_SBE_LANG_DOMAIN ); ?> </strong><?php _e( 'Updating logs:', INCSUB_SBE_LANG_DOMAIN ); ?><span class="spinner step-2-spinner" style="float:none;"></span></p>
 
-            <h3 id="success-message" style="display:none"><?php _e( 'Subscribe By Email was successfully updated.', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+            <h3 id="success-message" style="display:none"><?php _e( 'Subscribe By Email was successfully updated. Redirecting to subscribers page...', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
 
 
             <script>
                 jQuery(document).ready(function($) {
                     var subscribers_count = 0;
+                    var percentaje = 0;
 
                     import_subscribers();
 
                     function import_subscribers() {
+                        $('.step-1-spinner').css( 'display', 'inline-block' );
                         $.ajax({
                             url: ajaxurl,
                             type: 'post',
@@ -136,18 +144,48 @@ function incsub_sbe_render_upgrade_database_screen_28RC1() {
                             data: {
                                 'counter': subscribers_count,
                                 'nonce': "<?php echo wp_create_nonce( 'sbe_upgrade_database' ); ?>",
-                                'action': 'sbe_upgrade_database_28rc1'
+                                'action': 'sbe_upgrade_database_28rc1_step1'
+                            },
+                        })
+                        .done(function( response ) {
+                            if ( response.data.done ) {
+                                $('.step-1-spinner').hide();
+                                update_logs();
+                                return true;
+                            }
+                            subscribers_count = subscribers_count + 50;
+                            percentaje = ( subscribers_count ) / <?php echo $total_users; ?>;
+
+                            if ( subscribers_count > 1 ) {
+                                percentaje = 100;
+                            }
+                            else {
+                                percentaje = percentaje.toFixed(2);
+                            }
+                            
+                            $( '#subscriber-count' ).text( percentaje );
+                            import_subscribers();
+                        });
+                    }
+
+                    function update_logs() {
+                        $('.step-2-spinner').css( 'display', 'inline-block' );
+                        $.ajax({
+                            url: ajaxurl,
+                            type: 'post',
+                            data: {
+                                'counter': subscribers_count,
+                                'nonce': "<?php echo wp_create_nonce( 'sbe_upgrade_database' ); ?>",
+                                'action': 'sbe_upgrade_database_28rc1_step2'
                             },
                         })
                         .done(function( response ) {
                             if ( response.data.done ) {
                                 $('#success-message').show();
-                                $('.spinner').hide();
+                                $('.step-2-spinner').hide();
+                                location.href="<?php echo $redirect; ?>";
                                 return true;
                             }
-                            subscribers_count++;
-                            $( '#subscriber-count' ).text( subscribers_count );
-                            import_subscribers();
                         });
                     }
                     

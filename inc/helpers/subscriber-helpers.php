@@ -25,7 +25,7 @@ function incsub_sbe_get_subscribers( $args = array() ) {
 	);
 
 	if ( ! empty( $args['include'] ) )
-		$r['post__in'] = $include;
+		$r['post__in'] = $args['include'];
 
 	if ( $args['confirmed'] )
 		$r['post_status'] = 'publish';
@@ -119,6 +119,8 @@ function incsub_sbe_insert_subscriber( $email, $autopt = false, $args = array(),
 				add_post_meta( $subscriber_id, $meta_key, $meta_value );
 			}
 		}
+		//var_dump("CREATING USER: " . $subscriber_id);
+		//var_dump(get_post_meta($subscriber_id, 'post_types', true));
 
 		if ( ! empty( $args['type'] ) )
 			add_post_meta( $subscriber_id, 'type', $args['type'] );
@@ -164,23 +166,31 @@ function incsub_sbe_get_subscriber_by_key( $key ) {
             'post_status' => 'any',
             'posts_per_page' => 1,
             'meta_query' => array(
-                'key'     => 'key',
-                'value'   => $key,
-                'compare' => '='
+            	array(
+	                'key'     => 'key',
+	                'value'   => $key,
+	                'compare' => '='
+	               )
             )
         )
     );
 
     if ( ! empty( $query->posts ) ) {
-    	return new SBE_Subscriber( $query->posts[0] );
+    	$subscriber = new SBE_Subscriber( $query->posts[0] );
+    	return $subscriber;
     }
 
     return false;
 }
 
-function incsub_sbe_get_subscribers_count() {
-	$count = wp_count_posts( 'subscriber' );
-	return absint( $count->publish ) + absint( $count->pending );
+function incsub_sbe_get_subscribers_count( $max_id = false ) {
+	global $wpdb;
+	$query = "SELECT COUNT(ID) FROM $wpdb->posts WHERE post_type = 'subscriber'";
+	if ( $max_id )
+		$query .= $wpdb->prepare( "AND ID <= %d AND post_status = 'publish'", $max_id );
+
+	$count = $wpdb->get_var( $query );
+	return absint( $count );
 }
 
 function incsub_sbe_cancel_subscription( $sid ) {

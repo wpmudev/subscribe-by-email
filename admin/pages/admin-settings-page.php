@@ -167,6 +167,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			add_settings_section( 'general-settings', __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'from-sender', __( 'Notification From Sender', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_sender_field' ), $this->get_menu_slug(), 'general-settings' ); 
+			add_settings_field( 'replyto-email', __( 'Reply-to Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_reply_to_email_field' ), $this->get_menu_slug(), 'general-settings' ); 
 
 			if ( ! is_multisite() )
 				add_settings_field( 'from-email', __( 'Notification From Email', INCSUB_SBE_LANG_DOMAIN ), 'incsub_sbe_render_from_email_field', $this->get_menu_slug(), 'general-settings' ); 
@@ -338,6 +339,15 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	public function render_from_sender_field() {
 		?>
 			<input type="text" name="<?php echo $this->settings_name; ?>[from_sender]" class="regular-text" value="<?php echo esc_attr( $this->settings['from_sender'] ); ?>">
+		<?php
+	}
+
+	/**
+	 * Reply-to email field
+	 */
+	public function render_reply_to_email_field() {
+		?>
+			<input type="text" name="<?php echo $this->settings_name; ?>[replyto_email]" class="regular-text" value="<?php echo esc_attr( $this->settings['replyto_email'] ); ?>">
 		<?php
 	}
 
@@ -850,6 +860,12 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				$new_settings['from_sender'] = $from_sender;
 			else
 				add_settings_error( $this->settings_name, 'invalid-from-sender', __( 'Notification From Sender cannot be empty', INCSUB_SBE_LANG_DOMAIN ) );
+
+			$replyto_email = sanitize_email( $input['replyto_email'] );
+			if ( is_email( $replyto_email ) )
+				$new_settings['replyto_email'] = $replyto_email;
+			else
+				add_settings_error( $this->settings_name, 'invalid-reply-to', __( 'Reply-to email must ve a valid email', INCSUB_SBE_LANG_DOMAIN ) );
 
 			// Mail subject
 			$subject = sanitize_text_field( $input['subject'] );

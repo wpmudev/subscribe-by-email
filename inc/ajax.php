@@ -1,7 +1,9 @@
 <?php
 
-add_action( 'wp_ajax_sbe_upgrade_database_28rc1', 'incsub_sbe_upgrade_28RC1' );
-function incsub_sbe_upgrade_28RC1() {
+add_action( 'wp_ajax_sbe_upgrade_database_28rc1_step1', 'incsub_sbe_upgrade_28RC1_step1' );
+function incsub_sbe_upgrade_28RC1_step1() {
+
+    check_ajax_referer( 'sbe_upgrade_database', 'nonce' );
     $counter = absint( $_POST['counter'] );
 
     global $wpdb;
@@ -11,16 +13,16 @@ function incsub_sbe_upgrade_28RC1() {
     $total_users = $wpdb->get_var( "SELECT COUNT(subscription_ID) FROM $table" );
     
 
-    $user = $wpdb->get_row( "SELECT * FROM $table LIMIT $counter, 1" );
+    $users = $wpdb->get_results( "SELECT * FROM $table LIMIT $counter, 50" );
 
-
-    if ( ! $user ) {
-    	delete_option( 'sbe_upgrade_database' );
-    	$data = array(
-    		'done' => true
-    	);
+    if ( empty( $users ) ) {
+        delete_option( 'sbe_upgrade_database_28RC1' );
+        $data = array(
+            'done' => true
+        );
     }
-    else {
+
+    foreach ( $users as $user ) {
     	$autopt = $user->confirmation_flag == 1 ? true : false;
     	$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_meta WHERE subscription_id = %d", $user->subscription_ID ) );
     	$new_meta = array();
@@ -34,6 +36,7 @@ function incsub_sbe_upgrade_28RC1() {
     		$new_meta[ $key ] = $value;
     	}
 
+        add_filter( 'sbe_send_confirmation_email', '__return_false' );
     	$sid = Incsub_Subscribe_By_Email::subscribe_user( $user->subscription_email, $user->subscription_note, $user->subscription_type, $autopt );
 
     	if ( $sid && is_array( $new_meta ) && ! empty( $new_meta ) ) {
@@ -70,12 +73,29 @@ function incsub_sbe_upgrade_28RC1() {
 	        'done' => false,
 	        'email' => $user->subscription_email
 	    );
-	}
-
-    // UPDATE MAIL LOGS IDS !!!!
+    }
     
 	if ( ! isset( $_POST['unittest'] ) )
     	wp_send_json_success( $data );
     else
     	return $data;
+}
+
+add_action( 'wp_ajax_sbe_upgrade_database_28rc1_step2', 'incsub_sbe_upgrade_28RC1_step2' );
+function incsub_sbe_upgrade_28RC1_step2() {
+    global $wpdb;
+
+    check_ajax_referer( 'sbe_upgrade_database', 'nonce' );
+
+    $subscriptions_log_table = $wpdb->prefix . 'subscriptions_log_table';
+    $max_ID = $wpdb->get_var( "SELECT MAX(ID) FROM $wpdb->posts WHERE post_type = 'subscriber'" );
+    if ( ! $max_ID )
+        $max_ID = 0;
+
+    $wpdb->query( "UPDATE $subscriptions_log_table SET max_email_ID = $max_ID" );
+
+    if ( ! isset( $_POST['unittest'] ) )
+        wp_send_json_success( array( 'done' => true ) );
+    else
+        return true;
 }

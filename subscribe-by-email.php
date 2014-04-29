@@ -70,7 +70,7 @@ class Incsub_Subscribe_By_Email {
 	}
 
 	public function upgrade_database_notice() {
-		if ( get_option( 'sbe_upgrade_database' ) && ! isset( $_GET['upgrade_db'] ) ) {
+		if ( get_option( 'sbe_upgrade_database_28RC1' ) && ! isset( $_GET['upgrade_db'] ) ) {
 			?>
 				<div class="error"><p><?php printf( __( 'Subscribe By Email needs to be upgraded manually. <a href="%s">Click here to start with the update</a>', INCSUB_SBE_LANG_DOMAIN ), add_query_arg( 'upgrade_db', 'true', self::$admin_subscribers_page->get_permalink() ) ); ?></p></div>
 			<?php
@@ -454,7 +454,7 @@ class Incsub_Subscribe_By_Email {
 		}
 
 		if ( version_compare( $current_version, '2.8RC1', '<' ) ) {
-			update_option( 'sbe_upgrade_database', true );
+			update_option( 'sbe_upgrade_database_28RC1', true );
 		}
 
 		do_action( 'sbe_upgrade', $current_version, INCSUB_SBE_VERSION );
@@ -493,6 +493,10 @@ class Incsub_Subscribe_By_Email {
 	 * @param Integer $subscription_id 
 	 */
 	public static function send_confirmation_mail( $subscription_id ) {
+
+		if ( ! apply_filters( 'sbe_send_confirmation_email', true, $subscription_id ) )
+			return;
+
 		$model = incsub_sbe_get_model();
 		$settings = incsub_sbe_get_settings();
 

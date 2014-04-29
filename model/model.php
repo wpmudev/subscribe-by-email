@@ -77,9 +77,9 @@ class Incsub_Subscribe_By_Email_Model {
 
     public function upgrade_schema() {
         global $wpdb;
-        
+        return;
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-        $this->create_subscriptions_table();
+        //$this->create_subscriptions_table();
         $this->create_subscriptions_log_table();
         
         $wpdb->query( "UPDATE $this->subscriptions_table SET confirmation_flag = 1");
@@ -100,7 +100,7 @@ class Incsub_Subscribe_By_Email_Model {
 
     public function upgrade_247b() {
         global $wpdb;
-
+        return;
         $results = $wpdb->get_results( "SELECT * FROM $this->subscriptions_log_table WHERE mail_settings != '' AND ( mails_list = '' OR mails_list IS NULL )");
 
         $emails_list = $this->get_email_list();
@@ -171,18 +171,42 @@ class Incsub_Subscribe_By_Email_Model {
 
     }
 
+    public function add_new_mail_log( $subject ) {
+        global $wpdb;
+
+        $max_id = $wpdb->get_var( "SELECT MAX(ID) max_id FROM $wpdb->posts WHERE post_type = 'subscriber'" );
+
+        $wpdb->insert( 
+            $this->subscriptions_log_table,
+            array( 
+                'mail_subject' => $subject,
+                'mail_recipients' => 0,
+                'mail_date' => current_time( 'timestamp' ),
+                'mail_settings' => '',
+                'mails_list' => '',
+                'max_email_ID' => $max_id
+            ),
+            array(
+                '%s',
+                '%d',
+                '%d',
+                '%s',
+                '%s',
+                '%d'
+            )
+        );
+
+        $insert_id = $wpdb->insert_id;
+
+        return $insert_id;
+
+    }
+
     public function increment_mail_log( $id ) {
         global $wpdb;
 
         $wpdb->query( $wpdb->prepare( "UPDATE $this->subscriptions_log_table SET mail_recipients = mail_recipients + 1 WHERE id = %d", $id ) );
 
-    }
-
-    public function _get_log_emails_list( $id ) {
-        global $wpdb;
-
-        $emails_list = $wpdb->get_var( $wpdb->prepare( "SELECT mails_list FROM $this->subscriptions_log_table WHERE id = %d", $id ) );
-        return maybe_unserialize( $emails_list );
     }
 
     public function get_log_emails_list( $log_id, $batch_size ) {
@@ -198,7 +222,7 @@ class Incsub_Subscribe_By_Email_Model {
 
         $subscribers_ids = $wpdb->get_col( 
             $wpdb->prepare( 
-                "SELECT ID FROM $this->posts 
+                "SELECT ID FROM $wpdb->posts 
                 WHERE post_status = 'publish'
                 AND post_type = 'subscriber'
                 AND ID <= %d
@@ -215,7 +239,8 @@ class Incsub_Subscribe_By_Email_Model {
         );
         $results = incsub_sbe_get_subscribers( $args );
 
-        return $results->subscribers;
+        $emails = wp_list_pluck( $results->subscribers, 'subscription_email' );
+        return $emails;
     }
 
     public function update_log_emails_list( $id, $emails_list ) {

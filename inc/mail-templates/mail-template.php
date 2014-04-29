@@ -380,9 +380,10 @@ class Incsub_Subscribe_By_Email_Template {
 				if ( ! $jump_user ) {
 
 					$unsubscribe_url = $this->get_unsubscribe_url( $key );
+					$reply_to = $this->settings['replyto_email'];
 					$headers = array(
 						"X-Mailer:PHP/".phpversion(),
-						"Reply-To: <$mail>",
+						"Reply-To: <$reply_to>",
 						"List-Unsubscribe: <$unsubscribe_url>"
 					);
 

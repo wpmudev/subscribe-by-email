@@ -73,7 +73,7 @@ class SBE_Subscriber {
 	public function get_meta( $meta_key, $default = false ) {
 		$meta = get_post_meta( $this->ID, $meta_key, true );
 
-		$meta = apply_filters( 'sbe_get_subscriber_meta', $meta, $this->ID );
+		$meta = apply_filters( 'sbe_get_subscriber_meta', $meta, $this->ID, $meta_key );
 
 		if ( ! $meta )
 			return $default;

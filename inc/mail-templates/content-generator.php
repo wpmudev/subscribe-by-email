@@ -171,6 +171,7 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 		}
 
 		$user_content = apply_filters( 'sbe_get_subscriber_email_contents', $user_content, $subscriber->ID );
+
 		return $user_content;
 		
 	}

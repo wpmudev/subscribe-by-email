@@ -35,7 +35,7 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 						$max_email_id = $log->max_email_ID;
 
 						$model = incsub_sbe_get_model();
-						$total = $model->get_subscribers_count( $max_email_id );
+						$total = incsub_sbe_get_subscribers_count( $max_email_id );
 						$pending = absint( $total - $users_processed );
 
 						$file = Subscribe_By_Email_Logger::open_log( $_GET['log_id'] );

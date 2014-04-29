@@ -225,6 +225,7 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'auto-subscribe' => false,
 			'subscribe_new_users' => false,
 			'from_sender' => get_bloginfo( 'name' ),
+			'replyto_email' => get_option( 'admin_email' ),
 			'subject' => get_bloginfo( 'name' ) . __( ': New post' ),
 			'frequency' => 'inmediately',
 			'time' => 0,
