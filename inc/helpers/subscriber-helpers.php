@@ -24,7 +24,7 @@ function incsub_sbe_get_subscribers( $args = array() ) {
 		's' => $args['s']
 	);
 
-	if ( ! empty( $args['include'] )
+	if ( ! empty( $args['include'] ) )
 		$r['post__in'] = $include;
 
 	if ( $args['confirmed'] )
