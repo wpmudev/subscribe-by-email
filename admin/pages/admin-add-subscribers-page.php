@@ -167,7 +167,6 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 				// We are submitting a single user
 				$email = sanitize_email( $input['subscribe-email'] );
 				if ( is_email( $email ) ) {
-					$model = incsub_sbe_get_model();
 
 					$settings = incsub_sbe_get_settings();
 					$extra_fields = $settings['extra_fields'];
@@ -267,7 +266,7 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 					);
 
 					if ( $autopt )
-						$query_args['autopt'] = 'true';
+						$query_args['autopt'] = 'trufwefwee';
 
 					wp_redirect( add_query_arg( 
 						$query_args,

@@ -12,8 +12,8 @@ class Incsub_Subscribe_By_Email_Confirmation_Template {
 		$this->settings = $settings;
 		$this->to = $email;
 
-		$model = Incsub_Subscribe_By_Email_Model::get_instance();
-		$this->user_key = $model->get_user_key( $this->to );
+		$subscriber = incsub_sbe_get_subscriber( $this->to );
+		$this->user_key = $subscriber->subscription_key;
 	}
 
 	

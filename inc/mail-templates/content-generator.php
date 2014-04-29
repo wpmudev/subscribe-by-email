@@ -154,12 +154,10 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 
 	public function filter_user_content( $key ) {
 
-		$model = Incsub_Subscribe_By_Email_Model::get_instance();
-		$_subscriber = $model->get_subscriber_by_key( $key );
-		$subscriber = new Subscribe_By_Email_Subscriber( $_subscriber );
+		$subscriber = incsub_sbe_get_subscriber_by_key( $key );
 
 		// These are the post types that the user wants to get
-		$user_post_types = $subscriber->get_post_types();
+		$user_post_types = $subscriber->subscription_post_types;
 		$user_post_types = empty( $user_post_types ) || ! is_array( $user_post_types ) ? $this->post_types : $user_post_types;
 		
 		$user_content = array();
@@ -172,7 +170,7 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 			$user_content[] = $post;
 		}
 
-		$user_content = apply_filters( 'sbe_get_subscriber_email_contents', $user_content, $subscriber->get_subscription_ID() );
+		$user_content = apply_filters( 'sbe_get_subscriber_email_contents', $user_content, $subscriber->ID );
 		return $user_content;
 		
 	}

@@ -102,3 +102,60 @@ function incsub_sbe_upgrade_27() {
     $settings = wp_parse_args( $settings, $defaults );
     incsub_sbe_update_settings( $settings );
 }
+
+
+function incsub_sbe_render_upgrade_database_screen_28RC1() {
+    global $wpdb;
+
+    $table = $wpdb->prefix . 'subscriptions';
+    $total_users = $wpdb->get_var( "SELECT COUNT(subscription_ID) FROM $table" );
+    
+    ?>
+        <div class="wrap">
+            <h3><?php printf( __( 'Total subscribers: %s', INCSUB_SBE_LANG_DOMAIN ), $total_users ); ?></h3>
+            <?php if ( $total_users > 500 ): ?>
+                <p><?php _e( 'This could take a while, please be patient and do not close this window' ); ?></p>
+            <?php endif; ?>
+
+            <p><?php _e( 'Updating users:', INCSUB_SBE_LANG_DOMAIN ); ?> <span id="subscriber-count">0</span> / <?php echo $total_users; ?> <span class="spinner" style="float:none;display:inline-block;"></span></p>
+
+            <h3 id="success-message" style="display:none"><?php _e( 'Subscribe By Email was successfully updated.', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+
+
+            <script>
+                jQuery(document).ready(function($) {
+                    var subscribers_count = 0;
+
+                    import_subscribers();
+
+                    function import_subscribers() {
+                        $.ajax({
+                            url: ajaxurl,
+                            type: 'post',
+                            
+                            data: {
+                                'counter': subscribers_count,
+                                'nonce': "<?php echo wp_create_nonce( 'sbe_upgrade_database' ); ?>",
+                                'action': 'sbe_upgrade_database_28rc1'
+                            },
+                        })
+                        .done(function( response ) {
+                            if ( response.data.done ) {
+                                $('#success-message').show();
+                                $('.spinner').hide();
+                                return true;
+                            }
+                            subscribers_count++;
+                            $( '#subscriber-count' ).text( subscribers_count );
+                            import_subscribers();
+                        });
+                    }
+                    
+                    
+                });
+            </script>
+        </div>
+    <?php
+}
+
+

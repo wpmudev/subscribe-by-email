@@ -63,8 +63,8 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 		$this->day_of_week = $wp_locale->weekday;
 
 		$this->confirmation_flag = array(
-			0 => __( 'Awaiting confirmation'),
-			1 => __( 'Email confirmed')
+			0 => __( 'Awaiting confirmation', INCSUB_SBE_LANG_DOMAIN ),
+			1 => __( 'Email confirmed', INCSUB_SBE_LANG_DOMAIN )
 		);
 
 		$current_settings = $this->get_blog_settings();

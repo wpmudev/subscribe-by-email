@@ -20,91 +20,23 @@ class Incsub_Subscribe_By_Email_Model {
 
 	public function __construct() {
         global $wpdb;
-        
-        $this->subscriptions_table = $wpdb->prefix . 'subscriptions';
-        $this->subscriptions_meta_table = $wpdb->prefix . 'subscriptions_meta';
         $this->subscriptions_log_table = $wpdb->prefix . 'subscriptions_log_table';
-
         $this->create_squema();
 
     }
 
     public function create_squema() {
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-        $this->create_subscriptions_table();
         $this->create_subscriptions_log_table();
-        $this->create_subscriptions_meta_table();
     }
 
     public function get_tables_list() {
         return array(
-            $this->subscriptions_table,
-            $this->subscriptions_meta_table,
             $this->subscriptions_log_table
         );
     }
 
-    /**
-     * Creates/upgrade FAQ table
-     * 
-     * @since 1.8
-     */
-    private function create_subscriptions_table() {
-
-        global $wpdb;
-
-         // Get the correct character collate
-        $db_charset_collate = '';
-        if ( ! empty($wpdb->charset) )
-          $db_charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
-        if ( ! empty($wpdb->collate) )
-          $db_charset_collate .= " COLLATE $wpdb->collate";
-
-        $sql = "CREATE TABLE $this->subscriptions_table (
-              subscription_ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-              subscription_email varchar(100) NOT NULL,
-              subscription_type varchar(200) NOT NULL,
-              subscription_created bigint(20) NOT NULL,
-              subscription_note varchar(200) NOT NULL,
-              confirmation_flag tinyint(1) DEFAULT 0,
-              user_key varchar(50) NOT NULL,
-              subscription_settings text,
-              PRIMARY KEY  (subscription_ID),
-              UNIQUE KEY subscription_email (subscription_email)
-            )  ENGINE=MyISAM $db_charset_collate;";
-       
-        dbDelta($sql);
-
-        $alter = "ALTER TABLE $this->subscriptions_table MODIFY COLUMN subscription_settings text";
-        $wpdb->query( $alter );
-
-    }
-
-    private function create_subscriptions_meta_table() {
-
-        global $wpdb;
-
-         // Get the correct character collate
-        $db_charset_collate = '';
-        if ( ! empty($wpdb->charset) )
-          $db_charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
-        if ( ! empty($wpdb->collate) )
-          $db_charset_collate .= " COLLATE $wpdb->collate";
-
-        $sql = "CREATE TABLE $this->subscriptions_meta_table (
-              id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-              subscription_id bigint(20) NOT NULL,
-              meta_key varchar(64) NOT NULL,
-              meta_value longtext NOT NULL,
-              PRIMARY KEY  (id),
-              UNIQUE KEY id (id),
-              KEY subscription_id (subscription_id),
-              KEY meta_key (meta_key)
-            )  ENGINE=MyISAM $db_charset_collate;";
-       
-        dbDelta($sql);
-
-    }
+   
 
     /**
      * Creates/upgrade FAQ table
@@ -192,297 +124,7 @@ class Incsub_Subscribe_By_Email_Model {
         unset( $emails_list );
     }
 
-    private function generate_user_key( $email ) {
-        return substr( md5( time() . rand() . $email ), 0, 16 );
-    }
 
-    public function get_user_key( $email ) {
-        global $wpdb;
-
-        return $wpdb->get_var( 
-            $wpdb->prepare( 
-                "SELECT user_key FROM $this->subscriptions_table WHERE subscription_email = %s",
-                $email 
-            )
-        );
-    }
-
-    public function get_subscribers( $args ) {
-        global $wpdb;
-
-        extract( $args );
-
-        if ( ! in_array( strtoupper( $sort_type ), array( 'ASC', 'DESC' ) ) )
-            $sort_type = 'ASC';
-
-        if ( ! in_array( $sort, array( 'subscription_email', 'subscription_created', 'subscription_note' ) ) )
-            $sort = 'subscription_ID';
-        
-        $where = array();
-
-        $where[] = "1=1";
-
-        if ( ! empty ( $s ) )
-            $where[] = $wpdb->prepare( "subscription_email LIKE '%s'", '%' . $s . '%' );
-
-        if ( $confirmed !== false )
-            $where[] = $wpdb->prepare( "confirmation_flag = %d", absint( $confirmed ) );
-
-        if ( $subscription_created_from > 0 )
-            $where[] = $wpdb->prepare( "subscription_created >= %d", absint( $subscription_created_from ) );
-
-        if ( is_array( $include ) && ! empty( $include ) ) {
-            $in = array();
-            foreach ( $include as $subscriber_id )
-                $in[] = absint( $subscriber_id );
-
-            $in = implode( ', ', $in );
-            $where[] = "subscription_ID IN ($in)";
-        }
-
-        $where = "WHERE " . implode( " AND ", $where );
-
-        $order = "ORDER BY $sort $sort_type";
-
-        $limit = '';
-        if ( $per_page > -1 )
-            $limit .= "LIMIT " . ( absint( $current_page ) - 1 ) * absint( $per_page ) . ", " . absint( $per_page );
-
-        $query = "SELECT * FROM $this->subscriptions_table $where $order $limit";
-
-        return $wpdb->get_results( $query );
-        
-    }
-
-    public function get_subscribers_count( $max_id ) {
-        global $wpdb;
-
-        $results = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(subscription_ID) FROM $this->subscriptions_table WHERE confirmation_flag = 1 AND subscription_ID <= %d", $max_id ) );
-
-        if ( empty( $results ) )
-            return 0;
-
-        return absint( $results );
-    }
-
-    public function get_all_subscribers( $count = false ) {
-        global $wpdb;
-
-        if ( ! $count ) {
-            $query = "SELECT * FROM $this->subscriptions_table ORDER BY subscription_ID";
-            $subscriptions = $wpdb->get_results( $query, ARRAY_A );
-        }
-        else {
-            $query = "SELECT COUNT( subscription_ID ) subscriptions FROM $this->subscriptions_table ORDER BY subscription_ID";
-            $subscriptions = $wpdb->get_row( $query, ARRAY_A );
-            $subscriptions = absint( $subscriptions['subscriptions'] );
-        }
-        return $subscriptions;
-    }
-
-    function get_active_subscribers_count() {
-        global $wpdb;
-        
-        $query = "SELECT COUNT( subscription_ID ) subscriptions FROM $this->subscriptions_table WHERE confirmation_flag = 1 ORDER BY subscription_ID";
-        $subscriptions = $wpdb->get_row( $query, ARRAY_A );
-        return absint( $subscriptions['subscriptions'] );
-    }
-
-
-    public function get_email_list() {
-        global $wpdb;
-
-        $query = "SELECT subscription_ID, subscription_email FROM $this->subscriptions_table WHERE confirmation_flag = 1 ORDER BY subscription_ID";
-        $subscriptions = $wpdb->get_results( $query, ARRAY_A );
-
-        $emails = array();
-        foreach ( $subscriptions as $subscription ) {
-            $emails[] = array(
-                'id' => $subscription['subscription_ID'],
-                'email' => $subscription['subscription_email']
-            );
-        }
-
-        return $emails;
-    }
-
-    /**
-     * Adds a subscriber or a list of them
-     * 
-     * @param String $email
-     * 
-     * @return Boolean False if the email already existed
-     */
-    public function add_subscriber( $email, $note, $type, $flag ) {
-         global $wpdb;
-
-         if ( ! $this->is_already_subscribed( $email ) ) {
-            $result = $wpdb->insert( 
-                $this->subscriptions_table, 
-                array( 
-                    'subscription_email' => $email, 
-                    'subscription_note' => $note, 
-                    'subscription_created' => time(), 
-                    'subscription_type' => $type,
-                    'user_key' => $this->generate_user_key( $email ),
-                    'confirmation_flag' => $flag,
-                    'subscription_settings' => ''
-                ),
-                array(
-                    '%s',
-                    '%s',
-                    '%d',
-                    '%s',
-                    '%s',
-                    '%d',
-                    '%s'
-                )
-            );
-
-            if ( ! $result ) {
-                define( 'DIEONDBERROR', true );
-                $wpdb->show_errors();
-                wp_die(var_dump($wpdb->print_error()));
-            }
-            return $wpdb->insert_id;
-         }
-         else {
-            return false;
-         }
-    }
-
-    public function get_subscriber( $sid ) {
-        global $wpdb;
-
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_table WHERE subscription_ID = %d", $sid ) );
-    }
-
-    public function get_subscriber_by_key( $key ) {
-        global $wpdb;
-
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_table WHERE user_key = %s", $key ) );
-    }
-    
-    public function get_subscriber_id( $email ) {
-        global $wpdb;
-        return $wpdb->get_var( $wpdb->prepare( "SELECT * FROM $this->subscriptions_table WHERE subscription_email = %s", $email ) );
-    }
-
-    public function confirm_subscription( $key ) {
-        global $wpdb;
-
-        return $wpdb->update(
-            $this->subscriptions_table,
-            array( 'confirmation_flag' => 1 ),
-            array( 'user_key' => $key ),
-            array( '%d' ),
-            array( '%s' )
-        );
-    }
-
-    public function cancel_subscription( $key ) {
-        global $wpdb;
-
-        $subscriber = $this->get_subscriber_by_key( $key );
-
-        if ( $subscriber ) {
-            $this->delete_subscriber_all_meta( $subscriber->subscription_ID );
-            $pq = $wpdb->prepare( "DELETE FROM $this->subscriptions_table WHERE user_key = %s", $key );
-
-            wp_cache_delete( $subscriber->subscription_ID, 'subscribers' );
-            return $wpdb->query( $pq );
-        }
-
-        return false;
-
-        
-    }
-
-    public function remove_old_subscriptions() {
-        global $wpdb;
-
-        $now = time();
-        $lastweek_time = $now - Incsub_Subscribe_By_Email::$max_confirmation_time;
-
-        $sids = $wpdb->get_col( "SELECT subscription_ID FROM $this->subscriptions_table WHERE confirmation_flag = 0 AND subscription_created < $lastweek_time" );
-
-        if ( ! empty( $sids ) ) {
-            $this->delete_subscriber_all_meta( $sids );
-            $wpdb->query( "DELETE FROM $this->subscriptions_table WHERE confirmation_flag = 0 AND subscription_created < $lastweek_time" );
-            foreach ( $sids as $sid ) {
-                wp_cache_delete( $sid, 'subscribers' );
-            }
-        }
-        
-    }
-
-
-
-    public function is_already_subscribed( $email ) {
-        global $wpdb;
-
-        $count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(subscription_ID) FROM $this->subscriptions_table WHERE subscription_email = %s", $email ) );
-
-        return ( $count > 0 ) ? true : false;
-        
-    }
-
-    public function is_already_confirmed( $key ) {
-        global $wpdb;
-
-        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_table WHERE user_key = %s", $key ), ARRAY_A );
-
-        if ( $result && isset( $result['confirmation_flag'] ) ) {
-            if ( 1 == $result['confirmation_flag'] )
-                return true;
-            else
-                return false;
-        }
-
-        return false;
-        
-    }
-
-    public function is_subscriber( $key ) {
-         global $wpdb;
-
-        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_table WHERE user_key = %s", $key ), ARRAY_A );
-
-        if ( ! empty( $result ) )
-            return true;
-
-        return false;
-    }
-
-
-    public function add_new_mail_log( $subject ) {
-        global $wpdb;
-
-        $max_id = $wpdb->get_var( "SELECT MAX(subscription_ID) max_id FROM $this->subscriptions_table" );
-
-        $wpdb->insert( 
-            $this->subscriptions_log_table,
-            array( 
-                'mail_subject' => $subject,
-                'mail_recipients' => 0,
-                'mail_date' => current_time( 'timestamp' ),
-                'mail_settings' => '',
-                'mails_list' => '',
-                'max_email_ID' => $max_id
-            ),
-            array(
-                '%s',
-                '%d',
-                '%d',
-                '%s',
-                '%s',
-                '%d'
-            )
-        );
-
-        return $wpdb->insert_id;
-
-    }
 
     public function update_mail_log_subject( $log_id, $subject ) {
         global $wpdb;
@@ -554,11 +196,12 @@ class Incsub_Subscribe_By_Email_Model {
         $continue_from = $log->mail_recipients;
         $end_on = $log->max_email_ID;
 
-        $subscribers = $wpdb->get_col( 
+        $subscribers_ids = $wpdb->get_col( 
             $wpdb->prepare( 
-                "SELECT subscription_email FROM $this->subscriptions_table 
-                WHERE confirmation_flag = 1 
-                AND subscription_ID <= %d
+                "SELECT ID FROM $this->posts 
+                WHERE post_status = 'publish'
+                AND post_type = 'subscriber'
+                AND ID <= %d
                 LIMIT %d, %d",
                 $end_on,
                 $continue_from,
@@ -566,8 +209,13 @@ class Incsub_Subscribe_By_Email_Model {
             )
         );
 
+        $args = array(
+            'per_page' => -1,
+            'include' => $subscribers_ids
+        );
+        $results = incsub_sbe_get_subscribers( $args );
 
-        return $subscribers;
+        return $results->subscribers;
     }
 
     public function update_log_emails_list( $id, $emails_list ) {
@@ -654,241 +302,14 @@ class Incsub_Subscribe_By_Email_Model {
     }
 
 
-    public function get_subscriber_settings( $user_key ) {
-        global $wpdb;
-
-        $results = $wpdb->get_var( 
-            $wpdb->prepare(
-                "SELECT subscription_settings FROM $this->subscriptions_table WHERE user_key = %s",
-                $user_key
-            )
-        );
-
-        if ( empty( $results ) )
-            return false;
-        else
-            return maybe_unserialize( $results );
-
-    }
-
-    public function update_subscriber_settings( $key, $settings ) {
-        global $wpdb;
-
-        $ser_settings = maybe_serialize( $settings );
-
-        $wpdb->update(
-            $this->subscriptions_table,
-            array( 'subscription_settings' => $ser_settings ),
-            array( 'user_key' => $key ),
-            array( '%s' ),
-            array( '%s' )
-        );
-    }
-
-    public function update_subscriber_email( $sid, $email ) {
-        global $wpdb;
-
-        $wpdb->update(
-            $this->subscriptions_table,
-            array( 'subscription_email' => $email ),
-            array( 'subscription_ID' => $sid ),
-            array( '%s' ),
-            array( '%d' )
-        );
-    }
 
     public function drop_schema() {
         global $wpdb;
-        $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_table" );
         $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_log_table" );
-        $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_meta_table" );
     }
 
-    public function add_subscriber_meta( $subscription_id, $meta_key, $meta_value ) {
-        global $wpdb;
 
-        $_meta_value = $this->get_subscriber_meta( $subscription_id, $meta_key );
-        if ( $_meta_value == $meta_value )
-            return true;
-
-        if ( ! empty( $_meta_value ) ) {
-            $this->update_subscriber_meta( $subscription_id, $meta_key, $meta_value );
-        }
-        else {
-            return $wpdb->insert(
-                $this->subscriptions_meta_table,
-                array(
-                    'subscription_id' => $subscription_id,
-                    'meta_key' => $meta_key,
-                    'meta_value' => maybe_serialize( $meta_value )
-                ),
-                array( '%d', '%s', '%s' )
-            );
-        }
-    }
-
-    public function get_subscriber_meta( $subscription_id, $meta_key, $default = false ) {
-        global $wpdb;
-
-        if ( ! is_array( $meta_key ) ) {
-            $result = $wpdb->get_var( 
-                $wpdb->prepare( 
-                    "SELECT meta_value FROM $this->subscriptions_meta_table 
-                    WHERE subscription_id = %d
-                    AND meta_key = %s",
-                    $subscription_id,
-                    $meta_key
-                )
-            );
-
-            if ( empty( $result ) )
-                return $default;
-
-            return maybe_unserialize( $result );
-        }
-        else {
-            $in = "meta_key IN ('" . implode( "','", $meta_key ) . "')";
-            $q = $wpdb->prepare( 
-                "SELECT meta_key, meta_value FROM $this->subscriptions_meta_table 
-                WHERE subscription_id = %d
-                AND $in
-                ORDER BY meta_key ASC",
-                $subscription_id
-            );
-            $result = $wpdb->get_results( $q );
-
-            if ( empty( $result ) )
-                return array();
-
-            return $result;
-        }
-    }
-
-    public function update_subscriber_meta( $subscription_id, $meta_key, $meta_value ) {
-        global $wpdb;
-
-        $_meta_value = $this->get_subscriber_meta( $subscription_id, $meta_key );
-        if ( $_meta_value == $meta_value )
-            return true;
-
-        $rows_updated = $wpdb->update(
-            $this->subscriptions_meta_table,
-            array( 'meta_value' => maybe_serialize( $meta_value ) ),
-            array( 
-                'subscription_id' => $subscription_id,
-                'meta_key' => $meta_key 
-            ),
-            array( '%s' ),
-            array( '%d', '%s' )
-        );
-
-
-        if ( $rows_updated === 0 )
-            return $this->add_subscriber_meta( $subscription_id, $meta_key, $meta_value );
-
-        wp_cache_delete( $subscription_id . $meta_key, 'subscribers_meta' );
-
-        return true;
-    }
-
-    public function delete_subscriber_meta( $subscription_id, $meta_key ) {
-        global $wpdb;
-
-        $wpdb->query( 
-            $wpdb->prepare(
-                "DELETE FROM $this->subscriptions_meta_table 
-                WHERE subscription_id = %d
-                AND meta_key = %s",
-                $subscription_id,
-                $meta_key
-            )
-        );
-
-        wp_cache_delete( $subscription_id . $meta_key, 'subscribers_meta' );
-    }
-
-    public function is_digest_sent( $sid, $mail_log_id ) {
-        global $wpdb;
-
-        $meta_key = 'digest_sent_' . $mail_log_id;
-        $results = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT meta_value FROM $this->subscriptions_meta_table WHERE meta_key = '$meta_key' AND subscription_id = %d",
-                $sid
-            )
-        );
-
-        if ( empty( $results ) )
-            return false;
-
-        return true;
-
-    }
-    public function set_digest_sent( $sid, $mail_log_id ) {
-        global $wpdb;
-
-        $meta_key = 'digest_sent_' . $mail_log_id;
-
-        $wpdb->insert(
-            $this->subscriptions_meta_table,
-            array( 
-                'meta_key' => $meta_key,
-                'meta_value' => 1,
-                'subscription_id' => $sid
-            ),
-            array( '%s', '%d', '%d' )
-        );
-    }
-
-    public function get_subscriber_all_meta( $subscription_id ) {
-        global $wpdb;
-
-        return $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT meta_key, meta_value FROM $this->subscriptions_meta_table
-                WHERE subscription_id = %d",
-                $subscription_id
-            )
-        );  
-    }
-
-    public function delete_subscriber_all_meta( $sid ) {
-        global $wpdb;
-
-        $q = "DELETE FROM $this->subscriptions_meta_table";
-
-        if ( is_array( $sid ) ) {
-            $where = array();
-            foreach ( $sid as $value )
-                $where[] = $wpdb->prepare( "%d", $value );
-
-            $where = implode( ', ', $where );
-            $where = "subscription_id IN ($where)";
-            $q .= " WHERE $where";
-        }
-        else {
-            $q = $wpdb->prepare(
-                "DELETE FROM $this->subscriptions_meta_table
-                WHERE subscription_id = %d",
-                $sid
-            );
-        }
-
-        return $wpdb->query( $q );
-    }
-
-    public function delete_subscribers_all_meta( $meta_key ) {
-        global $wpdb;
-
-        return $wpdb->query(
-            $wpdb->prepare(
-                "DELETE FROM $this->subscriptions_meta_table
-                WHERE meta_key = %s",
-                $meta_key
-            )
-        );  
-    }
-
+ 
     public function get_posts_ids( $args ) {
         global $wpdb;
 

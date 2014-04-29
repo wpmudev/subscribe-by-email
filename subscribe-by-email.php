@@ -4,12 +4,11 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: WPMUDEV
-Version: 2.7.5
+Version: 2.8RC1
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
 */
-
 
 class Incsub_Subscribe_By_Email {
 
@@ -64,20 +63,25 @@ class Incsub_Subscribe_By_Email {
 
 		add_action( 'wpmu_drop_tables', array( &$this, 'uninstall' ) );
 
+		add_action( 'admin_notices', array( &$this, 'upgrade_database_notice' ) );
+
+	}
+
+	public function upgrade_database_notice() {
+		if ( get_option( 'sbe_upgrade_database' ) && ! isset( $_GET['upgrade_db'] ) ) {
+			?>
+				<div class="error"><p><?php printf( __( 'Subscribe By Email needs to be upgraded manually. <a href="%s">Click here to start with the update</a>', INCSUB_SBE_LANG_DOMAIN ), add_query_arg( 'upgrade_db', 'true', self::$admin_subscribers_page->get_permalink() ) ); ?></p></div>
+			<?php
+		}
 	}
 
 	public function init_plugin() {
 		// Do we have to remove old subscriptions?
-		$transient = get_transient( 'sbe_remove_old_subscriptions' );
-		if ( ! $transient ) {
-			$model = Incsub_Subscribe_By_Email_Model::get_instance();
-			$model->remove_old_subscriptions();
-			set_transient( 'sbe_remove_old_subscriptions', true, 86400 );
-		}
-
 		$this->maybe_upgrade();
 
 		$this->maybe_send_pending_emails();
+
+		$this->register_taxonomies();
 
 		if ( ! is_admin() ) {
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'front/manage-subscription.php' );
@@ -140,7 +144,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.7.5' );
+		define( 'INCSUB_SBE_VERSION', '2.8RC1' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'INCSUB_SBE_LOGS_DIR', WP_CONTENT_DIR . '/subscribe-by-email-logs' );
@@ -157,7 +161,7 @@ class Incsub_Subscribe_By_Email {
 	/**
 	 * Include needed files
 	 */
-	private function includes() {		
+	public function includes() {		
 
 		// Admin pages
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-page.php' );
@@ -203,6 +207,10 @@ class Incsub_Subscribe_By_Email {
 
 		// Subscriber class
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/subscriber.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/class-subscriber.php' );
+
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/ajax.php' );
 
 
 	}
@@ -210,6 +218,8 @@ class Incsub_Subscribe_By_Email {
 	public function activate() {
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 		$model->create_squema();
+		$this->register_taxonomies();
+		flush_rewrite_rules();
 		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 	}
 
@@ -220,6 +230,56 @@ class Incsub_Subscribe_By_Email {
 		$model = incsub_sbe_get_model();
 		$new_tables = $model->get_tables_list();
 		return array_merge( $tables, $new_tables );
+	}
+
+	public function register_taxonomies() {
+		// Register the Subscriber Post Type
+		$labels = array(
+			'name'                => _x( 'Subscribers', 'Post Type General Name', 'subscribe-by-email' ),
+			'singular_name'       => _x( 'Subscriber', 'Post Type Singular Name', 'subscribe-by-email' ),
+			'menu_name'           => __( 'Subscribers', 'subscribe-by-email' ),
+			'parent_item_colon'   => __( 'Parent Subscriber:', 'subscribe-by-email' ),
+			'all_items'           => __( 'All Subscribers', 'subscribe-by-email' ),
+			'view_item'           => __( 'View Subscriber', 'subscribe-by-email' ),
+			'add_new_item'        => __( 'Add New Subscriber', 'subscribe-by-email' ),
+			'add_new'             => __( 'Add New', 'subscribe-by-email' ),
+			'edit_item'           => __( 'Edit Subscriber', 'subscribe-by-email' ),
+			'update_item'         => __( 'Update Subscriber', 'subscribe-by-email' ),
+			'search_items'        => __( 'Search Subscriber', 'subscribe-by-email' ),
+			'not_found'           => __( 'Not found', 'subscribe-by-email' ),
+			'not_found_in_trash'  => __( 'Not found in Trash', 'subscribe-by-email' ),
+		);
+		$capabilities = array(
+			'edit_post'           => 'manage_options',
+			'read_post'           => 'manage_options',
+			'delete_post'         => 'manage_options',
+			'edit_posts'          => 'manage_options',
+			'edit_others_posts'   => 'manage_options',
+			'publish_posts'       => 'manage_options',
+			'read_private_posts'  => 'manage_options',
+		);
+		$args = array(
+			'label'               => __( 'Subscriber', 'subscribe-by-email' ),
+			'description'         => __( 'Subscribers', 'subscribe-by-email' ),
+			'labels'              => $labels,
+			'supports'            => array( 'title' ),
+			'hierarchical'        => false,
+			'public'              => false,
+			'show_ui'             => false,
+			'show_in_menu'        => false,
+			'show_in_nav_menus'   => false,
+			'show_in_admin_bar'   => false,
+			'menu_position'       => 5,
+			'menu_icon'           => '',
+			'can_export'          => true,
+			'has_archive'         => false,
+			'exclude_from_search' => true,
+			'publicly_queryable'  => false,
+			'rewrite'             => false,
+			'capabilities'        => $capabilities,
+		);
+		register_post_type( 'subscriber', $args );
+
 	}
 
 
@@ -354,6 +414,10 @@ class Incsub_Subscribe_By_Email {
 			incsub_sbe_upgrade_27();
 		}
 
+		if ( version_compare( $current_version, '2.8RC1', '<' ) ) {
+			update_option( 'sbe_upgrade_database', true );
+		}
+
 		do_action( 'sbe_upgrade', $current_version, INCSUB_SBE_VERSION );
 
 		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
@@ -372,45 +436,16 @@ class Incsub_Subscribe_By_Email {
 
 		if ( ! $subscribe_user )
 			return false;
+
+
+		$args = array(
+			'note' => $note,
+			'type' => $type,
+			'meta' => $meta
+		);
+		$sid = incsub_sbe_insert_subscriber( $user_email, $autopt, $args );
 		
-		$model = Incsub_Subscribe_By_Email_Model::get_instance();
-
-		if ( $model->is_already_subscribed( $user_email ) ) {
-			$subscriber = incsub_sbe_get_subscriber( $user_email );
-			if ( $subscriber && ! $subscriber->get_confirmation_flag() ) {
-				self::send_confirmation_mail( $subscriber->get_subscription_ID() );
-			}
-			else {
-				return false;
-			}
-		}
-
-		$sid = $model->add_subscriber( $user_email, $note, $type, 0 );
-
-		if ( $sid && ! empty( $meta ) ) {
-			foreach ( $meta as $meta_key => $meta_value ) {
-				$model->add_subscriber_meta( $sid, $meta_key, $meta_value );
-			}
-		}
-
-		if ( $autopt && $sid ) {
-
-			$user_key = $model->get_user_key( $user_email );
-
-			if ( $user_key ) {
-				$model->confirm_subscription( $user_key );
-			}
-
-			return $sid;
-		}
-
-		if ( $sid ) {
-			self::send_confirmation_mail( $sid );
-			return $sid;	
-		}
-
-		return false;
-		
+		return $sid;		
 	}
 
 	/**
@@ -425,7 +460,7 @@ class Incsub_Subscribe_By_Email {
 		$subscriber = incsub_sbe_get_subscriber( $subscription_id );
 
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/confirmation-mail-template.php' );
-		$confirmation_mail = new Incsub_Subscribe_By_Email_Confirmation_Template( $settings, $subscriber->get_subscription_email() );
+		$confirmation_mail = new Incsub_Subscribe_By_Email_Confirmation_Template( $settings, $subscriber->subscription_email );
 		$confirmation_mail->send_mail();
 	}
 
@@ -434,20 +469,18 @@ class Incsub_Subscribe_By_Email {
 	 */
 	public function confirm_subscription() {
 		if ( isset( $_GET['sbe_confirm'] ) ) {
-			$model = Incsub_Subscribe_By_Email_Model::get_instance();
+			$subscriber = incsub_sbe_get_subscriber_by_key( $_GET['sbe_confirm'] );
 
-			if ( ! $model->is_already_confirmed( $_GET['sbe_confirm'] ) ) {
-				$result = $model->confirm_subscription( $_GET['sbe_confirm'] );
-
-				if ( ! $result ) {
-					$this->sbe_subscribing_notice( __( 'Sorry, your subscription no longer exists, please subscribe again.', INCSUB_SBE_LANG_DOMAIN ) );
-				}
-				else {
-					$this->sbe_subscribing_notice( __( 'Thank you, your subscription has been confirmed.', INCSUB_SBE_LANG_DOMAIN ) );
-				}
-
+			if ( ! $subscriber ) {
+				$this->sbe_subscribing_notice( __( 'Sorry, your subscription no longer exists, please subscribe again.', INCSUB_SBE_LANG_DOMAIN ) );
 				die();
 			}
+
+			incsub_sbe_confirm_subscription( $subscriber->ID );
+
+			$this->sbe_subscribing_notice( __( 'Thank you, your subscription has been confirmed.', INCSUB_SBE_LANG_DOMAIN ) );
+			die();
+
 		}
 	}
 
@@ -456,18 +489,19 @@ class Incsub_Subscribe_By_Email {
 	 */
 	public function cancel_subscription() {
 		if ( isset( $_GET['sbe_unsubscribe'] ) ) {
-			$model = Incsub_Subscribe_By_Email_Model::get_instance();
-			$subscriber = $model->get_subscriber_by_key( $_GET['sbe_unsubscribe'] );
-			$model->cancel_subscription( $_GET['sbe_unsubscribe'] );
+			$subscriber = incsub_sbe_get_subscriber_by_key( $_GET['sbe_unsubscribe'] );
+			if ( $subscriber ) {
+				incsub_sbe_cancel_subscription( $subscriber->ID );
+
+				$settings = incsub_sbe_get_settings();
+				if ( $settings['get_notifications'] ) {
+					require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
+					$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Unsubscribed_Notice_Template( $subscriber->subscription_email );
+					$admin_notice->send_email();
+				}
+			}
 
 			$this->sbe_subscribing_notice( __( 'Your email subscription has been successfully cancelled.', INCSUB_SBE_LANG_DOMAIN ) );
-			
-			$settings = incsub_sbe_get_settings();
-			if ( $settings['get_notifications'] && is_email( $subscriber->subscription_email ) ) {
-				require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
-				$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Unsubscribed_Notice_Template( $subscriber->subscription_email );
-				$admin_notice->send_email();
-			}
 
 			die();
 		}

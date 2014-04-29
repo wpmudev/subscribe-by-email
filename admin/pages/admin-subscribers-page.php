@@ -29,13 +29,20 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 	}
 
 	public function set_screen_options() {
-		
 		add_screen_option( 'per_page', array( 'label' => __( 'Subscribers per page', INCSUB_SBE_LANG_DOMAIN ), 'default' => 20, 'option' => 'subscribers_per_page' ) );
 	}
 
 
-
 	public function render_page() {
+
+		if ( isset( $_GET['upgrade_db'] ) ) {
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
+			$version = get_option( 'incsub_sbe_version' );
+			$function = 'incsub_sbe_render_upgrade_database_screen_' . str_replace( '.', '', $version );
+			if ( function_exists( $function ) )
+				call_user_func_array( $function, array() );
+			return;
+		}
 
 		$add_new_link = add_query_arg(
 			'page',
@@ -78,7 +85,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 					<form id="form-subscriptions-edit" action="" method="post">
 						<?php wp_nonce_field( 'edit_subscriber' ); ?>
-						<input type="hidden" name="sid" value="<?php echo $subscriber->get_subscription_ID(); ?>">
+						<input type="hidden" name="sid" value="<?php echo $subscriber->ID; ?>">
 						<table class="form-table">
 							<?php $this->render_row( __( 'Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_row' ), $subscriber ); ?>
 							<?php 
@@ -127,7 +134,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 	public function render_email_row( $subscriber ) {
 		?>
-			<input type="text" class="regular-text" name="subscribe-email" value="<?php echo esc_attr( $subscriber->get_subscription_email() ); ?>" />
+			<input type="text" class="regular-text" name="subscribe-email" value="<?php echo esc_attr( $subscriber->subscription_email ); ?>" />
 		<?php
 	}
 
@@ -137,7 +144,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 		$meta_value = isset( $_POST['subscribe-meta'][ $extra_field['slug'] ] ) ? 
 			incsub_sbe_validate_extra_field( $extra_field['type'], $_POST['subscribe-meta'][ $extra_field['slug'] ] ) : 
-			$subscriber->get_meta( $extra_field['slug'], '' );
+			$subscriber->$extra_field['slug'];
 
 		$atts = array(
 			'name' => 'subscribe-meta[' . $extra_field['slug'] . ']'
@@ -159,13 +166,13 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 			$error = false;
 
 			$subscriber = incsub_sbe_get_subscriber( $sid );
-
+			$args = array();
 			if ( ! is_email ( $email ) ) {
 				add_settings_error( 'subscribe', 'wrong-email', __( 'Please, insert a valid email', INCSUB_SBE_LANG_DOMAIN ) );
 				$error = true;
 			}
 			else {
-				$model->update_subscriber_email( $sid, $email );
+				$args['email'] = $email;
 			}
 
 			$settings = incsub_sbe_get_settings();
@@ -177,18 +184,21 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 				if ( empty( $meta_value ) && $extra_field['required'] ) {
 					add_settings_error( 'subscribe', 'required-extra-field', sprintf( __( '%s is a required field', INCSUB_SBE_LANG_DOMAIN ), $extra_field['title'] ) );
-					$_POST['subscribe-meta'][ $extra_field['slug'] ] = $subscriber->get_meta( $extra_field['slug'] );
+					$_POST['subscribe-meta'][ $extra_field['slug'] ] = $subscriber->$extra_field['slug'];
 					$error = true;
 				}
 
 				if ( $error )
 					break;
 
-				$model->update_subscriber_meta( $sid, $extra_field['slug'], $meta_value );
+				$args[ $extra_field['slug'] ] = $meta_value;
 			}
 
-			if ( ! $error )
+			if ( ! $error ) {
+				incsub_sbe_update_subscriber( $sid, $args );
 				wp_redirect( add_query_arg( 'updated', 'true' ) );
+				exit;
+			}
 
 
 		}

@@ -21,57 +21,59 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         return sprintf(
             '<input type="checkbox" name="%1$s[]" value="%2$s" />',
             	'subscriptor',  
-            	$item->get_subscription_ID()
+            	$item->ID
         );
     }
 
     function column_email( $item ) {
 
-        $edit_link = add_query_arg( array( 'action' => 'edit', 'sid' => absint( $item->get_subscription_ID() ) ) );
+        $edit_link = add_query_arg( array( 'action' => 'edit', 'sid' => absint( $item->ID ) ) );
     	$actions = array(
             'edit'    => sprintf( __( '<a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), 
                 esc_url( $edit_link ),
                 __( 'Edit', INCSUB_SBE_LANG_DOMAIN )
             ),
             'cancel'    => sprintf( __( '<span class="trash"><a class="trash" href="%s">%s</a></span>', INCSUB_SBE_LANG_DOMAIN ), 
-            	esc_url( add_query_arg( array( 'action' => 'cancel', 'sid' => absint( $item->get_subscription_ID() ) ) ) ),
+            	esc_url( add_query_arg( array( 'action' => 'cancel', 'sid' => absint( $item->ID ) ) ) ),
             	__( 'Cancel subscription', INCSUB_SBE_LANG_DOMAIN )
             ),
             
         );
 
-        if ( $item->get_confirmation_flag() == 0 ) {
+        if ( ! $item->is_confirmed() ) {
             $actions['send_confirmation'] = sprintf( __( '<span><a class="trash" href="%s">%s</a></span>', INCSUB_SBE_LANG_DOMAIN ), 
-                esc_url( add_query_arg( array( 'action' => 'send_confirmation', 'sid' => absint( $item->get_subscription_ID() ) ) ) ),
+                esc_url( add_query_arg( array( 'action' => 'send_confirmation', 'sid' => absint( $item->ID ) ) ) ),
                 __( 'Resend confirmation mail', INCSUB_SBE_LANG_DOMAIN )
             );
             $actions['confirm_subscription'] = sprintf( __( '<span><a class="trash" href="%s">%s</a></span>', INCSUB_SBE_LANG_DOMAIN ), 
-                esc_url( add_query_arg( array( 'action' => 'confirm_subscription', 'sid' => absint( $item->get_subscription_ID() ) ) ) ),
+                esc_url( add_query_arg( array( 'action' => 'confirm_subscription', 'sid' => absint( $item->ID ) ) ) ),
                 __( 'Confirm Subscription', INCSUB_SBE_LANG_DOMAIN )
             );
         }
         
-        return '<a href="' . esc_url( $edit_link ) . '">' . $item->get_subscription_email() . '</a>' . $this->row_actions( $actions );
+        return '<a href="' . esc_url( $edit_link ) . '">' . $item->subscription_email . '</a>' . $this->row_actions( $actions );
     }
 
     function column_created( $item ) { 
-        return date_i18n( get_option( 'date_format' ), (int)$item->get_subscription_created() );
+        return $item->subscription_created;
     }
 
     function column_note( $item ) {
-        $confirmation_flag_captions = incsub_sbe_get_confirmation_flag_captions();
-        return isset( $confirmation_flag_captions[ $item->get_confirmation_flag() ] ) ? $confirmation_flag_captions[ $item->get_confirmation_flag() ] : '';
+        if ( $item->is_confirmed() )
+            return __( 'Email confirmed', INCSUB_SBE_LANG_DOMAIN );
+        else
+            return __( 'Awaiting confirmation', INCSUB_SBE_LANG_DOMAIN );
     }
 
     function column_subscription_type( $item ) {
-        return $item->get_subscription_note();
+        return $item->subscription_note;
     }
 
     function column_subscribed_to( $item ) {
         $result = array();
 
-        if ( $item->get_confirmation_flag() ) {
-            $post_types = $item->get_post_types();
+        if ( $item->is_confirmed() ) {
+            $post_types = $item->subscription_post_types;
             if ( $post_types === false ) {
                 $settings = incsub_sbe_get_settings();
                 $post_types = $settings['post_types'];
@@ -145,20 +147,13 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         if( 'cancel' === $this->current_action() ) {
 
             $model = Incsub_Subscribe_By_Email_Model::get_instance();
-        	if ( ! isset( $_POST['subscriptor'] ) && isset( $_GET['sid'] ) ) {
-                $subscriber = $model->get_subscriber( absint( $_GET['sid'] ) );
-
-                if ( $subscriber )
-        			$model->cancel_subscription( $subscriber->user_key );
-        	}
+        	if ( ! isset( $_POST['subscriptor'] ) && isset( $_GET['sid'] ) )
+                incsub_sbe_cancel_subscription( absint( $_GET['sid'] ) );
         	else {
         		$subscriptions = $_POST['subscriptor'];
         		if ( ! empty( $subscriptions ) ) {
-        			foreach ( $subscriptions as $subscription ) {
-                        $subscriber = $model->get_subscriber( $subscription );
-                        if ( $subscriber )
-                        	$model->cancel_subscription( $subscriber->user_key );
-					}
+        			foreach ( $subscriptions as $subscription )
+                        incsub_sbe_cancel_subscription( absint( $subscription ) );
         		}
         	}
 
@@ -179,19 +174,14 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         }
 
         if ( 'confirm_subscription' == $this->current_action() && isset( $_GET['sid'] ) ) {
-            $model = Incsub_Subscribe_By_Email_Model::get_instance();
-            $subscriber = $model->get_subscriber( absint( $_GET['sid'] ) );
+            incsub_sbe_confirm_subscription( absint( $_GET['sid'] ) );
 
-            if ( ! empty( $subscriber ) ) {
-                $key = $model->get_user_key( $subscriber->subscription_email );
-                $model->confirm_subscription( $key );
-                ?>
-                    <div class="updated">
-                        <p><?php _e( 'Subscription confirmed', INCSUB_SBE_LANG_DOMAIN ); ?></p>
-                    </div>
-                <?php
-            }
-            
+            ?>
+                <div class="updated">
+                    <p><?php _e( 'Subscription confirmed', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+                </div>
+            <?php
+
         }
 
         
@@ -250,8 +240,10 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         if ( isset( $_POST['s'] ) )
             $args['s'] = stripslashes_deep( $_POST['s'] );
 
-        $this->items = incsub_sbe_get_subscribers( $args );
-        $total_subscribers = $model->get_all_subscribers( true );
+        $results = incsub_sbe_get_subscribers( $args );
+
+        $this->items = $results->subscribers;
+        $total_subscribers = $results->total;
 
         $this->set_pagination_args( array(
             'total_items' => $total_subscribers,                 

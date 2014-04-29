@@ -341,17 +341,23 @@ class Incsub_Subscribe_By_Email_Template {
 			$jump_user = false;
 			$status = true;
 
-			$key = $model->get_user_key( $mail );
-			if ( empty( $key ) && ! $this->dummy ) {
-				$status = 2;
-				$jump_user = true;
-				$key = false;
+			if ( ! $this->dummy ) {
+				$subscriber = incsub_sbe_get_subscriber( $mail );
+				if ( ! $subscriber ) {
+					$status = 2;
+					$jump_user = true;
+					$key = false;
+				}
+				else {
+					$key = $subscriber->subscription_key;
+				}
 			}
-			elseif ( $this->dummy ) {
+			else {
 				$key = '';
 			}
+					
 
-			if ( ! $this->dummy && $key ) {
+			if ( ! $this->dummy ) {
 				// The user may not want to get some types of posts
 				$user_content = $this->content_generator->filter_user_content( $key );
 
@@ -380,12 +386,7 @@ class Incsub_Subscribe_By_Email_Template {
 						"List-Unsubscribe: <$unsubscribe_url>"
 					);
 
-					$subscriber_id = $model->get_subscriber_id( $mail );
-					$is_digest_sent = $model->is_digest_sent( $subscriber_id, $mail_log_id );
-					if ( ! $is_digest_sent ) {
-						wp_mail( $mail, $this->subject, $content, $headers );
-						$model->set_digest_sent( $subscriber_id, $mail_log_id );
-					}
+					wp_mail( $mail, $this->subject, $content, $headers );
 				}
 				
 				if ( $status === true )

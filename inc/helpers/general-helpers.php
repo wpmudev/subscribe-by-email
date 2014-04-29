@@ -200,17 +200,20 @@ function incsub_sbe_download_csv( $sep, $sample = false ) {
     	$subscriptions = array();
     	$_subscription = new stdClass();
     	$_subscription->subscription_email = 'sample_email_1@email.com';
-    	$subscriptions[0] = new Subscribe_By_Email_Subscriber( $_subscription );
+    	$_subscription->ID = 0;
+    	$subscriptions[0] = new SBE_Subscriber( $_subscription );
 
     	$_subscription->subscription_email = 'sample_email_2@email.com';
-    	$subscriptions[1] = new Subscribe_By_Email_Subscriber( $_subscription );
+    	$_subscription->ID = 0;
+    	$subscriptions[1] = new SBE_Subscriber( $_subscription );
     }
     else {
     	$subscriptions = incsub_sbe_get_subscribers( $args );
+    	$subscriptions = $subscriptions->subscribers;
     }
 
     foreach ( $subscriptions as $subscription ) {
-        echo $subscription->get_subscription_email() . "\n";
+        echo $subscription->subscription_email . "\n";
     }
     
     exit();     
