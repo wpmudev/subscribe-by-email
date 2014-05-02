@@ -1,8 +1,16 @@
 <?php
 
-function incsub_sbe_get_model() {
-	return Incsub_Subscribe_By_Email_Model::get_instance();
+function incsub_sbe_get_model( $type = '' ) {
+	$classname = 'Incsub_Subscribe_By_Email_Model';
+	if ( ! empty( $type ) ) {
+		$_classname = $classname . '_' . ucfirst( $type );
+		if ( class_exists( $_classname ) )
+			$classname = $_classname;
+	}
+
+	return $classname::get_instance();
 }
+
 /**
  * Get the plugin settings
  * 

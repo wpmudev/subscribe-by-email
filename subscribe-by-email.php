@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: WPMUDEV
-Version: 2.8RC1
+Version: 2.8RC2
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -70,11 +70,24 @@ class Incsub_Subscribe_By_Email {
 	}
 
 	public function upgrade_database_notice() {
-		if ( get_option( 'sbe_upgrade_database_28RC1' ) && ! isset( $_GET['upgrade_db'] ) ) {
+		$upgrades = $this->db_needs_upgrades();
+		$upgrade_db = ! empty( $upgrades ) && ! isset( $_GET['upgrade_db'] );
+		if ( $upgrade_db  ) {
 			?>
 				<div class="error"><p><?php printf( __( 'Subscribe By Email needs to be upgraded manually. <a href="%s">Click here to start with the update</a>', INCSUB_SBE_LANG_DOMAIN ), add_query_arg( 'upgrade_db', 'true', self::$admin_subscribers_page->get_permalink() ) ); ?></p></div>
 			<?php
 		}
+	}
+
+	public function db_needs_upgrades() {
+		$upgrades = array();
+
+		$upgrade_28RC1 = get_option( 'sbe_upgrade_database_28RC1' );
+		if ( $upgrade_28RC1 )
+			$upgrades[] = '28RC1';
+
+		return $upgrades;
+
 	}
 
 	public function render_icon_styles() {
@@ -184,7 +197,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.8RC1' );
+		define( 'INCSUB_SBE_VERSION', '2.8RC2' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'INCSUB_SBE_LOGS_DIR', WP_CONTENT_DIR . '/subscribe-by-email-logs' );
@@ -231,6 +244,7 @@ class Incsub_Subscribe_By_Email {
 
 		// Model
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'model/model.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'model/model-network.php' );
 
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/integration.php' );
 
@@ -260,6 +274,9 @@ class Incsub_Subscribe_By_Email {
 		$this->register_taxonomies();
 		flush_rewrite_rules();
 		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+
+		$model_n = incsub_sbe_get_model( 'network' );
+		$model_n->create_squema();
 	}
 
 	public function deactivate() {
@@ -322,14 +339,17 @@ class Incsub_Subscribe_By_Email {
 	}
 
 
-	
-
 	/**
 	 * Upgrade settings and tables to the new version
 	 */
 	public function maybe_upgrade() {
 
 		$current_version = get_option( 'incsub_sbe_version' );
+
+		if ( $current_version === false ) {
+			$this->activate();
+			update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+		}
 
 		if ( ! $current_version )
 			$current_version = '1.0'; // This is the first version that includes some upgradings
@@ -455,6 +475,11 @@ class Incsub_Subscribe_By_Email {
 
 		if ( version_compare( $current_version, '2.8RC1', '<' ) ) {
 			update_option( 'sbe_upgrade_database_28RC1', true );
+		}
+
+		if ( version_compare( $current_version, '2.8RC2', '<' ) ) {
+			$model_n = incsub_sbe_get_model( 'network' );
+			$model_n->create_squema();
 		}
 
 		do_action( 'sbe_upgrade', $current_version, INCSUB_SBE_VERSION );
@@ -639,6 +664,38 @@ class Incsub_Subscribe_By_Email {
 	}
 
 	/**
+	 * Enqueue the emails to all the subscribers based on the Settings
+	 * 
+	 * @param Array $posts_ids A list of posts IDs to send. If not provided,
+	 * the mail template will select them automatically
+	 */
+	public function enqueue_mails( $posts_ids = array(), $log_id = false ) {
+		
+		$model = incsub_sbe_get_model();
+
+		$settings = incsub_sbe_get_settings();
+		$args = $settings;
+
+		if ( ! empty( $posts_ids ) )
+			$args['post_ids'] = $posts_ids;
+		else
+			$args['post_ids'] = array();
+
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
+		$mail_template = new Incsub_Subscribe_By_Email_Template( $args, false );
+
+		if ( ! $log_id )
+			$log_id = $model->add_new_mail_log();
+
+		$mail_template->enqueue_emails( $log_id );
+
+		foreach ( $args['post_ids'] as $post_id )
+			update_post_meta( $post_id, 'sbe_sent', true );
+
+		return $log_id;
+	}
+
+	/**
 	 * Send the emails to all the subscribers based on the Settings
 	 * 
 	 * @param Array $posts_ids A list of posts IDs to send. If not provided,
@@ -691,7 +748,7 @@ class Incsub_Subscribe_By_Email {
 			if ( get_transient( 'sbe_sending' ) )
 				return;
 
-			$this->send_mails( array( $post->ID ) );	
+			$this->enqueue_mails( array( $post->ID ) );	
 		}
 	}
 

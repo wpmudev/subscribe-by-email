@@ -105,95 +105,117 @@ function incsub_sbe_upgrade_27() {
     incsub_sbe_update_settings( $settings );
 }
 
+function incsub_sbe_render_upgrade_database_screen_start() {
+    $redirect = Incsub_Subscribe_By_Email::$admin_subscribers_page->get_permalink();
+
+    ?>
+        <div class="wrap">
+            <div id="sbe-upgrades"></div>
+            <h3 id="success-message" style="display:none"><?php printf( __( 'Subscribe By Email was successfully updated. <a href="%s">Click here</a> to return to subscribers page', INCSUB_SBE_LANG_DOMAIN ), $redirect ); ?></h3>
+        </div>
+        <script>
+            var sbe_upgrades = [];
+        </script>
+    <?php
+}
 
 function incsub_sbe_render_upgrade_database_screen_28RC1() {
     global $wpdb;
 
-    if ( ! get_option( 'sbe_upgrade_database_28RC1' ) )
-        wp_die( __( 'The database is already up to date', INCSUB_SBE_LANG_DOMAIN ) );
-
     $table = $wpdb->prefix . 'subscriptions';
     $total_users = $wpdb->get_var( "SELECT COUNT(subscription_ID) FROM $table" );
-    $redirect = Incsub_Subscribe_By_Email::$admin_subscribers_page->get_permalink();
+    
+    $html = '<h3>' . sprintf( __( 'Total subscribers: %s', INCSUB_SBE_LANG_DOMAIN ), $total_users ) . '</h3>';
+    if ( $total_users > 500 ){
+        $html .= '<p>' . __( 'This could take a while, please be patient and do not close this window' ) . '</p>';
+    }
+
+    $html .= '<p id="update_step-1"><strong>' . __( 'Step 1:', INCSUB_SBE_LANG_DOMAIN ) . '</strong> ' . __( 'Updating users:', INCSUB_SBE_LANG_DOMAIN ) . ' <span id="subscriber-count">0</span> / ' . $total_users . '<span class="spinner step-1-spinner" style="float:none;"></span></p>';
+    $html .= '<p id="update_step-2"><strong>' . __( 'Step 2:', INCSUB_SBE_LANG_DOMAIN ) . '</strong> ' . __( 'Updating logs:', INCSUB_SBE_LANG_DOMAIN ) . '<span class="spinner step-2-spinner" style="float:none;"></span></p>';
+
     ?>
-        <div class="wrap">
-            <h3><?php printf( __( 'Total subscribers: %s', INCSUB_SBE_LANG_DOMAIN ), $total_users ); ?></h3>
-            <?php if ( $total_users > 500 ): ?>
-                <p><?php _e( 'This could take a while, please be patient and do not close this window' ); ?></p>
-            <?php endif; ?>
+        <script>
+            sbe_upgrades[ sbe_upgrades.length ] = '28RC1';
+            var append = '<div style="display:none" class="sbe-upgrade-step" id="sbe-upgrade-step-28RC1">' + '<?php echo $html; ?>' + '</div>';
+            jQuery( '#sbe-upgrades' ).append( append );
 
-            <p id="update_step-1"><strong><?php _e( 'Step 1:', INCSUB_SBE_LANG_DOMAIN ); ?> </strong><?php _e( 'Updating users:', INCSUB_SBE_LANG_DOMAIN ); ?> <span id="subscriber-count">0</span> % <span class="spinner step-1-spinner" style="float:none;"></span></p>
-            <p id="update_step-2"><strong><?php _e( 'Step 2:', INCSUB_SBE_LANG_DOMAIN ); ?> </strong><?php _e( 'Updating logs:', INCSUB_SBE_LANG_DOMAIN ); ?><span class="spinner step-2-spinner" style="float:none;"></span></p>
+            var subscribers_count = 0;
+            var percentaje = 0;
 
-            <h3 id="success-message" style="display:none"><?php _e( 'Subscribe By Email was successfully updated. Redirecting to subscribers page...', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
-
-
-            <script>
-                jQuery(document).ready(function($) {
-                    var subscribers_count = 0;
-                    var percentaje = 0;
-
-                    import_subscribers();
-
-                    function import_subscribers() {
-                        $('.step-1-spinner').css( 'display', 'inline-block' );
-                        $.ajax({
-                            url: ajaxurl,
-                            type: 'post',
-                            
-                            data: {
-                                'counter': subscribers_count,
-                                'nonce': "<?php echo wp_create_nonce( 'sbe_upgrade_database' ); ?>",
-                                'action': 'sbe_upgrade_database_28rc1_step1'
-                            },
-                        })
-                        .done(function( response ) {
-                            if ( response.data.done ) {
-                                $('.step-1-spinner').hide();
-                                update_logs();
-                                return true;
-                            }
-                            subscribers_count = subscribers_count + 50;
-                            percentaje = ( subscribers_count ) / <?php echo $total_users; ?>;
-
-                            if ( subscribers_count > 1 ) {
-                                percentaje = 100;
-                            }
-                            else {
-                                percentaje = percentaje.toFixed(2);
-                            }
-                            
-                            $( '#subscriber-count' ).text( percentaje );
-                            import_subscribers();
-                        });
+            function sbe_upgrade_28RC1() {
+                console.log(jQuery('.step-1-spinner'));
+                jQuery('.step-1-spinner').css( 'display', 'inline-block' );
+                jQuery.ajax({
+                    url: ajaxurl,
+                    type: 'post',
+                    
+                    data: {
+                        'counter': subscribers_count,
+                        'nonce': "<?php echo wp_create_nonce( 'sbe_upgrade_database' ); ?>",
+                        'action': 'sbe_upgrade_database_28rc1_step1'
+                    },
+                })
+                .done(function( response ) {
+                    if ( response.data.done ) {
+                        jQuery('.step-1-spinner').hide();
+                        update_logs();
+                        return true;
                     }
+                    subscribers_count = subscribers_count + 50;
+                    percentaje = ( subscribers_count ) / <?php echo $total_users; ?>;
 
-                    function update_logs() {
-                        $('.step-2-spinner').css( 'display', 'inline-block' );
-                        $.ajax({
-                            url: ajaxurl,
-                            type: 'post',
-                            data: {
-                                'counter': subscribers_count,
-                                'nonce': "<?php echo wp_create_nonce( 'sbe_upgrade_database' ); ?>",
-                                'action': 'sbe_upgrade_database_28rc1_step2'
-                            },
-                        })
-                        .done(function( response ) {
-                            if ( response.data.done ) {
-                                $('#success-message').show();
-                                $('.step-2-spinner').hide();
-                                location.href="<?php echo $redirect; ?>";
-                                return true;
-                            }
-                        });
+                    if ( subscribers_count > 1 ) {
+                        percentaje = 100;
+                    }
+                    else {
+                        percentaje = percentaje.toFixed(2);
                     }
                     
-                    
+                    jQuery( '#subscriber-count' ).text( percentaje );
+                    sbe_upgrade_28RC1();
                 });
-            </script>
-        </div>
+            }
+
+            function update_logs() {
+                jQuery('.step-2-spinner').css( 'display', 'inline-block' );
+                jQuery.ajax({
+                    url: ajaxurl,
+                    type: 'post',
+                    data: {
+                        'counter': subscribers_count,
+                        'nonce': "<?php echo wp_create_nonce( 'sbe_upgrade_database' ); ?>",
+                        'action': 'sbe_upgrade_database_28rc1_step2'
+                    },
+                })
+                .done(function( response ) {
+                    if ( response.data.done ) {
+                        jQuery('#success-message').show();
+                        jQuery('.step-2-spinner').hide();
+                        return true;
+                    }
+                });
+            }
+        </script>
     <?php
 }
 
+function incsub_sbe_render_upgrade_database_init() {
+    ?>
+        <script>
+            jQuery(document).ready(function($) {
+                for ( var i = 0; i < sbe_upgrades.length; i++ ) {
+                    window.settings = {
+                        function_name: 'sbe_upgrade_' + sbe_upgrades[i]
+                    }
 
+                    var fn = window[settings.function_name]; 
+                    if( typeof fn === 'function' ) {
+                        jQuery( '#sbe-upgrade-step-' + sbe_upgrades[i] ).show();
+                        fn( fn );
+                    }
+                }    
+            });
+            
+        </script>
+    <?php
+}

@@ -171,7 +171,7 @@ class Incsub_Subscribe_By_Email_Model {
 
     }
 
-    public function add_new_mail_log( $subject ) {
+    public function add_new_mail_log( $subject = '' ) {
         global $wpdb;
 
         $max_id = $wpdb->get_var( "SELECT MAX(ID) max_id FROM $wpdb->posts WHERE post_type = 'subscriber'" );

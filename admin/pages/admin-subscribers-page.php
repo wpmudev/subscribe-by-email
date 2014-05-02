@@ -34,13 +34,25 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 
 	public function render_page() {
+		global $subscribe_by_email_plugin;
 
 		if ( isset( $_GET['upgrade_db'] ) ) {
-			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
-			$version = get_option( 'incsub_sbe_version' );
-			$function = 'incsub_sbe_render_upgrade_database_screen_' . str_replace( '.', '', $version );
-			if ( function_exists( $function ) )
-				call_user_func_array( $function, array() );
+			$upgrades = $subscribe_by_email_plugin->db_needs_upgrades();
+			if ( ! empty( $upgrades ) ) {
+				require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
+				
+				incsub_sbe_render_upgrade_database_screen_start();
+				foreach ( $upgrades as $version ) {
+					$function = 'incsub_sbe_render_upgrade_database_screen_' . str_replace( '.', '', $version );
+					if ( function_exists( $function ) )
+						call_user_func_array( $function, array() );
+
+					incsub_sbe_render_upgrade_database_init();
+				}
+			}
+			else {
+				wp_die( __( 'The database is already up to date', INCSUB_SBE_LANG_DOMAIN ) );
+			}
 			return;
 		}
 

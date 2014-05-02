@@ -297,6 +297,33 @@ class Incsub_Subscribe_By_Email_Template {
 		$this->content = apply_filters( 'sbe_mail_content', $content, $log_id );
 	}
 
+	public function enqueue_emails( $log_id ) {
+
+		if ( empty( $this->content ) )
+			return;
+
+		$model = incsub_sbe_get_model();
+		$model_n = incsub_sbe_get_model( 'network' );
+
+		$log = $model->get_single_log( $log_id );
+		if ( ! $log )
+			return;
+
+		$subscribers = incsub_sbe_get_subscribers( array( 'per_page' => -1, 'confirmed' => true ) );
+		$emails_list = wp_list_pluck( $subscribers->subscribers, 'subscription_email' );
+
+		$posts_ids = wp_list_pluck( $this->content, 'ID' );
+
+		$campaign_id = substr( md5( implode( '', $posts_ids ) ), 0, 20 );
+
+		$settings = array(
+			'post_ids' => $posts_ids
+		);
+
+		$model_n->insert_queue_items( $emails_list, $log_id, $campaign_id, $settings );
+		
+	}
+
 	/**
 	 * Send the mail based on the template
 	 * 
