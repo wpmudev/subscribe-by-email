@@ -1092,7 +1092,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 //			$settings = incsub_sbe_get_settings();
 //	    	$current_extra_fields = empty( $settings['extra_fields'] ) ? array() : $settings['extra_fields'];
 //
-//	    	var_dump($current_extra_fields);
 //	    	foreach ( $current_extra_fields as $extra_field_id => $extra_field ) {
 //	    		if ( empty( $input['extra_field_name-' . $extra_field_id] ) ) {
 //					add_settings_error( $this->settings_name, 'extra-field-name', __( 'Name cannot be empty', INCSUB_SBE_LANG_DOMAIN ) );

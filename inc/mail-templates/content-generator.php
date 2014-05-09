@@ -65,7 +65,10 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 
 
 		if ( ! $this->dummy ) {
-			$this->filter_sent_posts();
+			$filter_sent = apply_filters( 'sbe_filter_sent_posts', true );
+			if ( $filter_sent )
+				$this->filter_sent_posts();
+			
 			$this->filter_content_by_taxonomies();
 		}
 
@@ -185,6 +188,7 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 			$ids = $post_ids;
 
 		$this->post_ids = $ids;
+		
 	}
 
 	public function get_posts_ids() {
