@@ -51,7 +51,7 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 							<?php echo date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $log->mail_date ); ?>
 							<?php $this->render_row( __( 'Date', INCSUB_SBE_LANG_DOMAIN ), ob_get_clean() ); ?>
 
-							<?php $this->render_row( __( 'Status', INCSUB_SBE_LANG_DOMAIN ), empty( $log->mail_settings ) ? __( 'Finished', INCSUB_SBE_LANG_DOMAIN ) : __( 'Pending', INCSUB_SBE_LANG_DOMAIN ) ); ?>
+							<?php $this->render_row( __( 'Status', INCSUB_SBE_LANG_DOMAIN ), empty( $pending ) ? __( 'Finished', INCSUB_SBE_LANG_DOMAIN ) : __( 'Pending', INCSUB_SBE_LANG_DOMAIN ) ); ?>
 
 							<?php $this->render_row( __( 'Subscribers processed', INCSUB_SBE_LANG_DOMAIN ), $users_processed ); ?>
 

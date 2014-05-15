@@ -20,9 +20,6 @@ class Incsub_Subscribe_By_Email {
 	// Max mail subject length
 	static $max_subject_length = 120;
 
-	// Time between batches
-	static $time_between_batches = 1200;
-
 	// Max time in seconds during which the user can activate his subscription
 	static $max_confirmation_time = 604800;
 
@@ -132,6 +129,7 @@ class Incsub_Subscribe_By_Email {
 	public function init_plugin() {
 		// Do we have to remove old subscriptions?
 		$this->maybe_upgrade();
+		$this->maybe_upgrade_network();
 
 		$this->register_taxonomies();
 
@@ -476,6 +474,22 @@ class Incsub_Subscribe_By_Email {
 			update_option( 'sbe_upgrade_database_28RC1', true );
 		}
 
+		
+		do_action( 'sbe_upgrade', $current_version, INCSUB_SBE_VERSION );
+
+		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+
+		
+	}
+
+	function maybe_upgrade_network() {
+		$current_version = get_site_option( 'incsub_sbe_network_version' );
+
+		if ( $current_version === false ) {
+			$this->activate();
+			update_site_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
+		}
+
 		if ( version_compare( $current_version, '2.8RC2', '<' ) ) {
 			$model_n = incsub_sbe_get_model( 'network' );
 			$model_n->create_squema();
@@ -486,10 +500,9 @@ class Incsub_Subscribe_By_Email {
 			$model_n->create_squema();
 		}
 
-		do_action( 'sbe_upgrade', $current_version, INCSUB_SBE_VERSION );
+		do_action( 'sbe_upgrade_network', $current_version, INCSUB_SBE_VERSION );
 
-		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
-		
+		update_site_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
 	}
 
 
@@ -650,7 +663,7 @@ class Incsub_Subscribe_By_Email {
 		if ( get_transient( 'sbe_sending' ) )
 			return;
 
-		set_transient( 'sbe_sending', 'next', self::$time_between_batches );
+		set_transient( 'sbe_sending', 'next', apply_filters( 'sbe_time_between_batches', 1200 ) );
 		$model = incsub_sbe_get_model( 'network' );
 
 		$settings = incsub_sbe_get_settings();
@@ -732,7 +745,6 @@ class Incsub_Subscribe_By_Email {
 			return;
 
 		if ( in_array( $post->post_type, $settings['post_types'] ) && $new_status != $old_status && 'publish' == $new_status && $settings['frequency'] == 'inmediately' ) {
-
 			$this->enqueue_mails( array( $post->ID ) );	
 		}
 	}

@@ -105,6 +105,7 @@ function incsub_sbe_upgrade_27() {
     incsub_sbe_update_settings( $settings );
 }
 
+
 function incsub_sbe_render_upgrade_database_screen_start() {
     $redirect = Incsub_Subscribe_By_Email::$admin_subscribers_page->get_permalink();
 

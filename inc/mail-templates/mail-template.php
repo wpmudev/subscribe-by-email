@@ -310,11 +310,13 @@ class Incsub_Subscribe_By_Email_Template {
 			return;
 
 		$subscribers = incsub_sbe_get_subscribers( array( 'per_page' => -1, 'confirmed' => true ) );
+
 		$emails_list = wp_list_pluck( $subscribers->subscribers, 'subscription_email' );
 
 		$posts_ids = wp_list_pluck( $this->content, 'ID' );
+		$blog_id = get_current_blog_id();
 		sort( $posts_ids );
-		$campaign_id = substr( md5( implode( '', $posts_ids ) ), 0, 20 );
+		$campaign_id = substr( md5( implode( '', $posts_ids ) . '-' . $blog_id ), 0, 20 );
 
 		$settings = array(
 			'post_ids' => $posts_ids
@@ -383,9 +385,12 @@ class Incsub_Subscribe_By_Email_Template {
 			if ( ! $jump_user ) {
 				// Sending the email
 				$unsubscribe_url = $this->get_unsubscribe_url( $key );
+				$reply_to_mail = $this->settings['replyto_email'];
+
+
 				$headers = array(
 					"X-Mailer:PHP/".phpversion(),
-					"Reply-To: <$mail>",
+					"Reply-To: <$reply_to_mail>",
 					"List-Unsubscribe: <$unsubscribe_url>"
 				);
 

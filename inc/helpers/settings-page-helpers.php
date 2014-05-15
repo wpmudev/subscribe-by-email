@@ -18,7 +18,7 @@ function incsub_sbe_render_from_email_field() {
 function incsub_sbe_render_mail_batches_field() {
 	$settings_name = incsub_sbe_get_settings_slug();
 	$settings = incsub_sbe_get_settings();
-	$minutes = Incsub_Subscribe_By_Email::$time_between_batches / 60;
+	$minutes = apply_filters( 'sbe_time_between_batches', 1200 ) / 60;
 	?>
 		<label for="mail_batches"><?php printf( __( 'Send %s mails every %d minutes (maximum).', INCSUB_SBE_LANG_DOMAIN ), '<input id="mail_batches" type="number" name="' . $settings_name . '[mail_batches]" class="small-text" value="' . esc_attr( $settings['mails_batch_size'] ) . '">', $minutes ); ?></label><br/>
 		<span class="description"><?php printf( __( 'If you are experiencing problems when sending mails, your server may be limiting the email volume. Try reducing this number. Mails will be sent every %d minutes in groups of X mails.', INCSUB_SBE_LANG_DOMAIN ), $minutes ); ?></span>

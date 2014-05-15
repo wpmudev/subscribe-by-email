@@ -32,9 +32,17 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
     }
 
     function column_status( $item ) {
-        if ( absint( $item['mail_recipients'] ) == 0 && empty( $item['mail_settings'] ) )
-            return '<span style="color:#DF2929; font-weight:bold;">' . __( 'Failed', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
-        if ( empty( $item['mail_settings'] ) && absint( $item['mail_recipients'] ) != 0 )
+
+        $users_processed = $item['mail_recipients'];
+        $max_email_id = $item['max_email_ID'];
+
+        $model = incsub_sbe_get_model();
+        $total = incsub_sbe_get_subscribers_count( $max_email_id );
+
+        $pending = absint( $total - $users_processed );
+
+
+        if ( absint( $pending ) == 0 )
             return __( 'Finished', INCSUB_SBE_LANG_DOMAIN );
         else
             return '<span style="color:#DF2929; font-weight:bold;">' . __( 'Pending', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
