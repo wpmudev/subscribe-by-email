@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: WPMU DEV
-Version: 2.8RC3
+Version: 2.8
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -61,32 +61,10 @@ class Incsub_Subscribe_By_Email {
 
 		add_action( 'wpmu_drop_tables', array( &$this, 'uninstall' ) );
 
-		add_action( 'admin_notices', array( &$this, 'upgrade_database_notice' ) );
-
 		add_action( 'admin_head', array( &$this, 'render_icon_styles' ) );
 
 	}
 
-	public function upgrade_database_notice() {
-		$upgrades = $this->db_needs_upgrades();
-		$upgrade_db = ! empty( $upgrades ) && ! isset( $_GET['upgrade_db'] );
-		if ( $upgrade_db  ) {
-			?>
-				<div class="error"><p><?php printf( __( 'Subscribe By Email needs to be upgraded manually. <a href="%s">Click here to start with the update</a>', INCSUB_SBE_LANG_DOMAIN ), add_query_arg( 'upgrade_db', 'true', self::$admin_subscribers_page->get_permalink() ) ); ?></p></div>
-			<?php
-		}
-	}
-
-	public function db_needs_upgrades() {
-		$upgrades = array();
-
-		$upgrade_28RC1 = get_option( 'sbe_upgrade_database_28RC1' );
-		if ( $upgrade_28RC1 )
-			$upgrades[] = '28RC1';
-
-		return $upgrades;
-
-	}
 
 	public function render_icon_styles() {
 		?>
@@ -126,7 +104,7 @@ class Incsub_Subscribe_By_Email {
 		<?php
 	}
 
-	public function init_plugin() {
+	public function init_plugin() {		
 		// Do we have to remove old subscriptions?
 		$this->maybe_upgrade();
 		$this->maybe_upgrade_network();
@@ -354,6 +332,7 @@ class Incsub_Subscribe_By_Email {
 		if ( $current_version == INCSUB_SBE_VERSION )
 			return;
 
+
 		if ( version_compare( $current_version, '1.0', '<=' ) ) {
 			$new_settings = array();
 
@@ -439,7 +418,6 @@ class Incsub_Subscribe_By_Email {
 			$settings['taxonomies'] = $new_taxonomies;
 			incsub_sbe_update_settings( $settings );
 
-
 		}
 
 		if ( version_compare( $current_version, '2.4.7RC2', '<' ) ) {
@@ -449,14 +427,11 @@ class Incsub_Subscribe_By_Email {
 
 		if ( version_compare( $current_version, '2.4.9', '<' ) ) {
 
-			set_transient( 'incsub_sbe_updating', true, 1800 );
 			$model = incsub_sbe_get_model();
 			$model->create_squema();
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
 			incsub_sbe_upgrade_249();
 
-
-			delete_transient( 'incsub_sbe_updating' );
 
 		}
 
@@ -468,16 +443,21 @@ class Incsub_Subscribe_By_Email {
 		if ( version_compare( $current_version, '2.7', '<' ) ) {
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
 			incsub_sbe_upgrade_27();
+			
 		}
 
 		if ( version_compare( $current_version, '2.8RC1', '<' ) ) {
-			update_option( 'sbe_upgrade_database_28RC1', true );
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
+			if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
+				return;
+			incsub_sbe_upgrade_28RC1();
+			// We need to make this upgrade first
+			return;
 		}
 
-		
-		do_action( 'sbe_upgrade', $current_version, INCSUB_SBE_VERSION );
-
 		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+
+		do_action( 'sbe_upgrade', $current_version, INCSUB_SBE_VERSION );
 
 		
 	}
@@ -490,10 +470,6 @@ class Incsub_Subscribe_By_Email {
 			update_site_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
 		}
 
-		if ( version_compare( $current_version, '2.8RC2', '<' ) ) {
-			$model_n = incsub_sbe_get_model( 'network' );
-			$model_n->create_squema();
-		}
 
 		if ( version_compare( $current_version, '2.8RC3', '<' ) ) {
 			$model_n = incsub_sbe_get_model( 'network' );
@@ -660,17 +636,22 @@ class Incsub_Subscribe_By_Email {
 	 */
 	public function process_queue() {
 
+		$settings = incsub_sbe_get_settings();
+		$model = incsub_sbe_get_model( 'network' );
+		$items_count = $model->count_queue_items();
+		
+		if ( empty( $items_count ) )
+			return;
+
 		if ( get_transient( 'sbe_sending' ) )
 			return;
 
-		set_transient( 'sbe_sending', 'next', apply_filters( 'sbe_time_between_batches', 1200 ) );
-		$model = incsub_sbe_get_model( 'network' );
-
-		$settings = incsub_sbe_get_settings();
 		$items = $model->get_queue_items( $settings['mails_batch_size'] );
 
 		if ( empty( $items ) )
 			return;
+
+		set_transient( 'sbe_sending', 'next', apply_filters( 'sbe_time_between_batches', 1200 ) );
 
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
 		foreach ( $items as $item ) {
@@ -741,9 +722,6 @@ class Incsub_Subscribe_By_Email {
 	public function process_instant_subscriptions( $new_status, $old_status, $post ) {
 		$settings = incsub_sbe_get_settings();
 
-		if ( get_transient( 'incsub_sbe_updating' ) )
-			return;
-
 		if ( in_array( $post->post_type, $settings['post_types'] ) && $new_status != $old_status && 'publish' == $new_status && $settings['frequency'] == 'inmediately' ) {
 			$this->enqueue_mails( array( $post->ID ) );	
 		}
@@ -751,9 +729,6 @@ class Incsub_Subscribe_By_Email {
 
 	public function process_scheduled_subscriptions() {
 		$settings = incsub_sbe_get_settings();
-
-		if ( get_transient( 'incsub_sbe_updating' ) )
-			return;
 
 		if ( 'weekly' == $settings['frequency'] && $next_time = get_option( self::$freq_weekly_transient_slug ) ) {
 
@@ -843,8 +818,6 @@ class Incsub_Subscribe_By_Email {
 	}
 
 	public function maybe_delete_logs() {
-		if ( get_transient( 'incsub_sbe_updating' ) )
-			return;
 
 		if ( ! get_transient( 'incsub_sbe_check_logs' ) ) {
 			$settings = incsub_sbe_get_settings();

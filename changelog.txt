@@ -1,11 +1,25 @@
 Plugin Name: Subscribe by Email
 Author: WPMUDEV
-Requires at least: 3.6
-Tested up to: 3.9
+Requires at least: 3.8
+Tested up to: 3.9.1
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+2.8
+----------------------------------------------------------------------
+- New: Subscriptions/subscriptions meta are not used anymore (though old tables are still available).
+- New: Subscribers moved to Posts table.
+- New: Improved subscribers list styles.
+- New: Network queue table for emails. Emails are not sent immediately any more but they are enqueued to avoid duplicated sendings.
+- New: Added more filters
+- Improve: Plugin loads now much faster.
+- Improve: Logo uploader comatible with 3.8 media uploader.
+- Improve: Lot of code removed/refactored.
+- Other minor improvements/fixes
+
+
 
 2.7.5 - 2014/04/17
 ----------------------------------------------------------------------
