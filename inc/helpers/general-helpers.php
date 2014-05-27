@@ -8,7 +8,7 @@ function incsub_sbe_get_model( $type = '' ) {
 			$classname = $_classname;
 	}
 
-	return $classname::get_instance();
+	return call_user_func( array( $classname, 'get_instance' ) );
 }
 
 /**
