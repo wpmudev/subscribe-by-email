@@ -322,8 +322,6 @@ class Incsub_Subscribe_By_Email_Model {
         $query = "DELETE FROM $this->subscriptions_log_table $where";
         $wpdb->query( $query );
 
-        $query = "DELETE FROM $this->subscriptions_meta_table $where_digest";
-        $wpdb->query( $query );
     }
 
 

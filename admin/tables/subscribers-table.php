@@ -58,7 +58,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         return $item->subscription_created;
     }
 
-    function column_note( $item ) {
+    function column_status( $item ) {
         if ( $item->is_confirmed() )
             return '<span class="sbe_icon sbe_status sbe_status_confirmed"> ' . __( 'Email confirmed', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
         else
@@ -100,7 +100,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
             'cb'                    => '<input type="checkbox" />', //Render a checkbox instead of text
             'email'                 => __( 'Email', INCSUB_SBE_LANG_DOMAIN ),
             'created'               => __( 'Created', INCSUB_SBE_LANG_DOMAIN ),
-            'note'                  => __( 'Status', INCSUB_SBE_LANG_DOMAIN ),
+            'status'                  => __( 'Status', INCSUB_SBE_LANG_DOMAIN ),
             'subscription_type'     => __( 'Subscription Type', INCSUB_SBE_LANG_DOMAIN ),
             'subscribed_to'  	    => __( 'Subscribed to', INCSUB_SBE_LANG_DOMAIN )
         );
@@ -118,7 +118,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
 
         if ( 'top' == $which )
             wp_nonce_field( 'bulk-' . $this->_args['plural'] );
-        
+
         ?>
             <div class="tablenav <?php echo esc_attr( $which ); ?>">
 
@@ -131,6 +131,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
                         <?php submit_button( __( 'Download CSV', INCSUB_SBE_LANG_DOMAIN ), 'secondary', 'sbe-download-csv', false ); ?>
                     </div>
                 <?php endif; ?>
+
                 <?php $this->pagination( $which ); ?>
 
                 <br class="clear" />
@@ -189,9 +190,8 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
 
     function get_sortable_columns() {
     	$sortable_columns = array(
-            'email'     => array( 'subscription_email', isset( $_GET['orderby'] ) && isset( $_GET['order'] ) && 'subscription_email' == $_GET['orderby'] ? $_GET['order'] : false ),
-            'created'   => array( 'subscription_created', isset( $_GET['orderby'] ) && isset( $_GET['order'] ) && 'subscription_created' == $_GET['orderby'] ? $_GET['order'] : false ),
-            'subscription_type'   => array( 'subscription_note', isset( $_GET['orderby'] ) && isset( $_GET['order'] ) && 'subscription_note' == $_GET['orderby'] ? $_GET['order'] : false ),
+            'email'     => array( 'email', true, 'title' ),
+            'created'   => array( 'created', false, 'post_date' )
         );
         return $sortable_columns;
     }
@@ -224,21 +224,22 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
 
         $args = array(
             'per_page' => $per_page,
-            'current_page' => $current_page,
-            'sort' => $sortable,
-            'sort_type' => 'ASC',
+            'current_page' => $current_page
         );
 
-        foreach ( $sortable as $value ) {
-            if ( $value[1] ) {
-                $args['sort'] = $value[0];
-                $args['sort_type'] = $value[1];
-                break;
-            }
-        }
+        $order = ! empty( $_GET['order'] ) ? strtolower( $_GET['order'] ) : 'asc';
+        if ( in_array( $order, array( 'asc', 'desc' ) ) )
+            $args['order'] = $order;
+
+        $orderby = ! empty( $_GET['orderby'] ) ? strtolower( $_GET['orderby'] ) : '';
+        if ( in_array( $orderby, array_keys( $sortable ) ) )
+            $args['orderby'] = $sortable[ $orderby ][2];
 
         if ( isset( $_POST['s'] ) )
             $args['s'] = stripslashes_deep( $_POST['s'] );
+
+        if ( ! empty( $_GET['filter_status'] ) )
+            $args['status'] = $_GET['filter_status'];
 
         $results = incsub_sbe_get_subscribers( $args );
 

@@ -168,6 +168,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 
 	public function validate_form() {
+
 		if ( isset( $_POST['submit_edit_subscriber'] ) ) {
 			check_admin_referer( 'edit_subscriber' );
 

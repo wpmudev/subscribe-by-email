@@ -277,7 +277,7 @@ function incsub_sbe_upgrade_28RC1_display_continue_screen( $redirect, $sid = fal
     ob_start();
     ?>
         <p><?php printf( __( '%s subscribers processed.', INCSUB_SBE_LANG_DOMAIN ), $subscribers_processed ); ?></p>
-        <p><?php printf( __( 'This screen should be reloaded in 5 seconds. If it doesn\'t, please <a href="%s">click here</a>', INCSUB_SBE_LANG_DOMAIN ), $redirect ); ?></p>
+        <p><?php printf( __( 'This screen should be reloaded in a few seconds (you must have Javascript activated). If it doesn\'t, please <a href="%s">click here</a>', INCSUB_SBE_LANG_DOMAIN ), $redirect ); ?></p>
         <script>
             jQuery(document).ready(function($) {
                 location.href = '<?php echo $redirect; ?>';
@@ -313,20 +313,4 @@ function incsub_sbe_render_upgrade_screen( $content ) {
 function incsub_sbe_restore_previous_version() {
     update_option( 'incsub_sbe_version', '2.7' );
 }
-
-
-function incsub_sbe_render_upgrade_database_screen_start() {
-    $redirect = Incsub_Subscribe_By_Email::$admin_subscribers_page->get_permalink();
-
-    ?>
-        <div class="wrap">
-            <div id="sbe-upgrades"></div>
-            <h3 id="success-message" style="display:none"><?php printf( __( 'Subscribe By Email was successfully updated. <a href="%s">Click here</a> to return to subscribers page', INCSUB_SBE_LANG_DOMAIN ), $redirect ); ?></h3>
-        </div>
-        <script>
-            var sbe_upgrades = [];
-        </script>
-    <?php
-}
-
 

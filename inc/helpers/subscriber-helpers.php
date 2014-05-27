@@ -5,10 +5,10 @@ function incsub_sbe_get_subscribers( $args = array() ) {
 		'per_page' => 10,
 		's' => '',
 		'current_page' => 1,
-		'sort' => 'subscription_ID',
-		'sort_type' => 'ASC',
+		'orderby' => 'title',
+		'order' => 'ASC',
 		'subscription_created_from' => 0,
-		'confirmed' => false,
+		'status' => 'all',
 		'include' => array()
 	);
 
@@ -17,18 +17,15 @@ function incsub_sbe_get_subscribers( $args = array() ) {
 	$r = array(
 		'posts_per_page' => $args['per_page'],
 		'offset' => ( $args['current_page'] - 1 ) * $args['per_page'],
-		'orderby' => 'title',
-		'order' => 'ASC',
+		'orderby' => $args['orderby'],
+		'order' => $args['order'],
 		'post_type' => 'subscriber',
-		'post_status' => 'any',
+		'post_status' => $args['status'],
 		's' => $args['s']
 	);
 
 	if ( ! empty( $args['include'] ) )
 		$r['post__in'] = $args['include'];
-
-	if ( $args['confirmed'] )
-		$r['post_status'] = 'publish';
 
 	$query = new WP_Query( $r );
 	$posts = $query->posts;
@@ -111,7 +108,6 @@ function incsub_sbe_insert_subscriber( $email, $autopt = false, $args = array(),
 	);
 
 	$subscriber_id = wp_insert_post( $postarr, true );
-
 	if ( $subscriber_id ) {
 
 		if ( ! empty( $args['meta'] ) && is_array( $args['meta'] ) ) {
@@ -119,8 +115,6 @@ function incsub_sbe_insert_subscriber( $email, $autopt = false, $args = array(),
 				add_post_meta( $subscriber_id, $meta_key, $meta_value );
 			}
 		}
-		//var_dump("CREATING USER: " . $subscriber_id);
-		//var_dump(get_post_meta($subscriber_id, 'post_types', true));
 
 		if ( ! empty( $args['type'] ) )
 			add_post_meta( $subscriber_id, 'type', $args['type'] );

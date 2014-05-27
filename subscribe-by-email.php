@@ -172,7 +172,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.8RC3' );
+		define( 'INCSUB_SBE_VERSION', '2.8' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'INCSUB_SBE_LOGS_DIR', WP_CONTENT_DIR . '/subscribe-by-email-logs' );
@@ -249,6 +249,7 @@ class Incsub_Subscribe_By_Email {
 		$this->register_taxonomies();
 		flush_rewrite_rules();
 		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+		update_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
 
 		$model_n = incsub_sbe_get_model( 'network' );
 		$model_n->create_squema();
@@ -467,7 +468,7 @@ class Incsub_Subscribe_By_Email {
 
 		if ( $current_version === false ) {
 			$this->activate();
-			update_site_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
+			return;
 		}
 
 
@@ -499,6 +500,7 @@ class Incsub_Subscribe_By_Email {
 			'type' => $type,
 			'meta' => $meta
 		);
+
 		$sid = incsub_sbe_insert_subscriber( $user_email, $autopt, $args );
 		
 		return $sid;		
@@ -521,6 +523,7 @@ class Incsub_Subscribe_By_Email {
 
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/confirmation-mail-template.php' );
 		$confirmation_mail = new Incsub_Subscribe_By_Email_Confirmation_Template( $settings, $subscriber->subscription_email );
+
 		$confirmation_mail->send_mail();
 	}
 
