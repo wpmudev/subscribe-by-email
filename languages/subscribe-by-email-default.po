@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Subscribe By Email\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-26 13:27+0100\n"
-"PO-Revision-Date: 2014-05-26 13:27+0100\n"
+"POT-Creation-Date: 2014-05-27 12:46+0100\n"
+"PO-Revision-Date: 2014-05-27 12:46+0100\n"
 "Last-Translator: Ignacio <igmoweb@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -14,71 +14,71 @@ msgstr ""
 "X-Generator: Poedit 1.5.4\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../subscribe-by-email.php:271 ../subscribe-by-email.php:294
+#: ../subscribe-by-email.php:272 ../subscribe-by-email.php:295
 #: ../admin/pages/admin-page.php:67 ../admin/pages/admin-page.php:68
 #: ../admin/pages/admin-subscribers-page.php:122
 msgid "Subscribers"
 msgstr ""
 
-#: ../subscribe-by-email.php:272
+#: ../subscribe-by-email.php:273
 msgid "Parent Subscriber:"
 msgstr ""
 
-#: ../subscribe-by-email.php:273
+#: ../subscribe-by-email.php:274
 msgid "All Subscribers"
 msgstr ""
 
-#: ../subscribe-by-email.php:274
+#: ../subscribe-by-email.php:275
 msgid "View Subscriber"
 msgstr ""
 
-#: ../subscribe-by-email.php:275
+#: ../subscribe-by-email.php:276
 msgid "Add New Subscriber"
 msgstr ""
 
-#: ../subscribe-by-email.php:276
+#: ../subscribe-by-email.php:277
 #: ../admin/pages/admin-add-subscribers-page.php:14
 #: ../admin/pages/admin-subscribers-page.php:65
 msgid "Add New"
 msgstr ""
 
-#: ../subscribe-by-email.php:277
+#: ../subscribe-by-email.php:278
 msgid "Edit Subscriber"
 msgstr ""
 
-#: ../subscribe-by-email.php:278
+#: ../subscribe-by-email.php:279
 msgid "Update Subscriber"
 msgstr ""
 
-#: ../subscribe-by-email.php:279
+#: ../subscribe-by-email.php:280
 msgid "Search Subscriber"
 msgstr ""
 
-#: ../subscribe-by-email.php:280
+#: ../subscribe-by-email.php:281
 msgid "Not found"
 msgstr ""
 
-#: ../subscribe-by-email.php:281
+#: ../subscribe-by-email.php:282
 msgid "Not found in Trash"
 msgstr ""
 
-#: ../subscribe-by-email.php:293
+#: ../subscribe-by-email.php:294
 msgid "Subscriber"
 msgstr ""
 
-#: ../subscribe-by-email.php:535
+#: ../subscribe-by-email.php:537
 msgid "Sorry, your subscription no longer exists, please subscribe again."
 msgstr ""
 
-#: ../subscribe-by-email.php:541
+#: ../subscribe-by-email.php:543
 msgid "Thank you, your subscription has been confirmed."
 msgstr ""
 
-#: ../subscribe-by-email.php:564
+#: ../subscribe-by-email.php:566
 msgid "Your email subscription has been successfully cancelled."
 msgstr ""
 
-#: ../subscribe-by-email.php:578
+#: ../subscribe-by-email.php:580
 msgid "Go to site"
 msgstr ""
 
@@ -115,19 +115,12 @@ msgstr ""
 #: ../inc/upgrades.php:280
 #, php-format
 msgid ""
-"This screen should be reloaded in 5 seconds. If it doesn't, please <a href="
-"\"%s\">click here</a>"
+"This screen should be reloaded in a few seconds (you must have Javascript "
+"activated). If it doesn't, please <a href=\"%s\">click here</a>"
 msgstr ""
 
 #: ../inc/upgrades.php:301
 msgid "Subscribe By Email &rsaquo; Update"
-msgstr ""
-
-#: ../inc/upgrades.php:324
-#, php-format
-msgid ""
-"Subscribe By Email was successfully updated. <a href=\"%s\">Click here</a> "
-"to return to subscribers page"
 msgstr ""
 
 #: ../inc/settings.php:52
@@ -914,11 +907,11 @@ msgstr ""
 msgid "Search by email"
 msgstr ""
 
-#: ../admin/pages/admin-subscribers-page.php:183
+#: ../admin/pages/admin-subscribers-page.php:184
 msgid "Please, insert a valid email"
 msgstr ""
 
-#: ../admin/pages/admin-subscribers-page.php:198
+#: ../admin/pages/admin-subscribers-page.php:199
 #, php-format
 msgid "%s is a required field"
 msgstr ""
@@ -975,15 +968,15 @@ msgstr ""
 msgid "Download CSV"
 msgstr ""
 
-#: ../admin/tables/subscribers-table.php:162
+#: ../admin/tables/subscribers-table.php:163
 msgid "Subscription(s) deleted"
 msgstr ""
 
-#: ../admin/tables/subscribers-table.php:171
+#: ../admin/tables/subscribers-table.php:172
 msgid "Confirmation mail sent"
 msgstr ""
 
-#: ../admin/tables/subscribers-table.php:181
+#: ../admin/tables/subscribers-table.php:182
 msgid "Subscription confirmed"
 msgstr ""
 

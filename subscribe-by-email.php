@@ -471,7 +471,6 @@ class Incsub_Subscribe_By_Email {
 			return;
 		}
 
-
 		if ( version_compare( $current_version, '2.8RC3', '<' ) ) {
 			$model_n = incsub_sbe_get_model( 'network' );
 			$model_n->create_squema();
