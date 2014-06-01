@@ -1,16 +1,8 @@
 <?php
 
-function incsub_sbe_get_model( $type = '' ) {
-	$classname = 'Incsub_Subscribe_By_Email_Model';
-	if ( ! empty( $type ) ) {
-		$_classname = $classname . '_' . ucfirst( $type );
-		if ( class_exists( $_classname ) )
-			$classname = $_classname;
-	}
-
-	return call_user_func( array( $classname, 'get_instance' ) );
+function incsub_sbe_get_model() {
+	return Incsub_Subscribe_By_Email_Model::get_instance();
 }
-
 /**
  * Get the plugin settings
  * 
@@ -208,20 +200,17 @@ function incsub_sbe_download_csv( $sep, $sample = false ) {
     	$subscriptions = array();
     	$_subscription = new stdClass();
     	$_subscription->subscription_email = 'sample_email_1@email.com';
-    	$_subscription->ID = 0;
-    	$subscriptions[0] = new SBE_Subscriber( $_subscription );
+    	$subscriptions[0] = new Subscribe_By_Email_Subscriber( $_subscription );
 
     	$_subscription->subscription_email = 'sample_email_2@email.com';
-    	$_subscription->ID = 0;
-    	$subscriptions[1] = new SBE_Subscriber( $_subscription );
+    	$subscriptions[1] = new Subscribe_By_Email_Subscriber( $_subscription );
     }
     else {
     	$subscriptions = incsub_sbe_get_subscribers( $args );
-    	$subscriptions = $subscriptions->subscribers;
     }
 
     foreach ( $subscriptions as $subscription ) {
-        echo $subscription->subscription_email . "\n";
+        echo $subscription->get_subscription_email() . "\n";
     }
     
     exit();     

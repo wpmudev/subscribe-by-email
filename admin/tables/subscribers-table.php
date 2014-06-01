@@ -6,7 +6,7 @@ if(!class_exists('WP_List_Table')){
 
 class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
 
-	function __construct(){
+    function __construct(){
         global $status, $page;
                 
         parent::__construct( array(
@@ -20,22 +20,22 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
     function column_cb($item){
         return sprintf(
             '<input type="checkbox" name="%1$s[]" value="%2$s" />',
-            	'subscriptor',  
-            	$item->ID
+                'subscriptor',  
+                $item->ID
         );
     }
 
     function column_email( $item ) {
 
         $edit_link = add_query_arg( array( 'action' => 'edit', 'sid' => absint( $item->ID ) ) );
-    	$actions = array(
+        $actions = array(
             'edit'    => sprintf( __( '<a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), 
                 esc_url( $edit_link ),
                 __( 'Edit', INCSUB_SBE_LANG_DOMAIN )
             ),
             'cancel'    => sprintf( __( '<span class="trash"><a class="trash" href="%s">%s</a></span>', INCSUB_SBE_LANG_DOMAIN ), 
-            	esc_url( add_query_arg( array( 'action' => 'cancel', 'sid' => absint( $item->ID ) ) ) ),
-            	__( 'Cancel subscription', INCSUB_SBE_LANG_DOMAIN )
+                esc_url( add_query_arg( array( 'action' => 'cancel', 'sid' => absint( $item->ID ) ) ) ),
+                __( 'Cancel subscription', INCSUB_SBE_LANG_DOMAIN )
             ),
             
         );
@@ -74,10 +74,12 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
 
         if ( $item->is_confirmed() ) {
             $post_types = $item->subscription_post_types;
+
             if ( $post_types === false ) {
                 $settings = incsub_sbe_get_settings();
                 $post_types = $settings['post_types'];
             }
+
             
             if( is_array( $post_types ) ) {
                 foreach ( $post_types as $post_type_slug ) {
@@ -102,7 +104,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
             'created'               => __( 'Created', INCSUB_SBE_LANG_DOMAIN ),
             'status'                  => __( 'Status', INCSUB_SBE_LANG_DOMAIN ),
             'subscription_type'     => __( 'Subscription Type', INCSUB_SBE_LANG_DOMAIN ),
-            'subscribed_to'  	    => __( 'Subscribed to', INCSUB_SBE_LANG_DOMAIN )
+            'subscribed_to'         => __( 'Subscribed to', INCSUB_SBE_LANG_DOMAIN )
         );
         return $columns;
     }
@@ -148,21 +150,21 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         if( 'cancel' === $this->current_action() ) {
 
             $model = Incsub_Subscribe_By_Email_Model::get_instance();
-        	if ( ! isset( $_POST['subscriptor'] ) && isset( $_GET['sid'] ) )
+            if ( ! isset( $_POST['subscriptor'] ) && isset( $_GET['sid'] ) )
                 incsub_sbe_cancel_subscription( absint( $_GET['sid'] ) );
-        	else {
-        		$subscriptions = $_POST['subscriptor'];
-        		if ( ! empty( $subscriptions ) ) {
-        			foreach ( $subscriptions as $subscription )
+            else {
+                $subscriptions = $_POST['subscriptor'];
+                if ( ! empty( $subscriptions ) ) {
+                    foreach ( $subscriptions as $subscription )
                         incsub_sbe_cancel_subscription( absint( $subscription ) );
-        		}
-        	}
+                }
+            }
 
-        	?>
-				<div class="updated">
-					<p><?php _e( 'Subscription(s) deleted', INCSUB_SBE_LANG_DOMAIN ); ?></p>
-				</div>
-        	<?php
+            ?>
+                <div class="updated">
+                    <p><?php _e( 'Subscription(s) deleted', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+                </div>
+            <?php
         }
 
         if ( 'send_confirmation' == $this->current_action() && isset( $_GET['sid'] ) ) {
@@ -189,7 +191,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
     }
 
     function get_sortable_columns() {
-    	$sortable_columns = array(
+        $sortable_columns = array(
             'email'     => array( 'email', true, 'title' ),
             'created'   => array( 'created', false, 'post_date' )
         );

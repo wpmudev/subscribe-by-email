@@ -80,16 +80,14 @@ function incsub_sbe_upgrade_27() {
         $tmp_settings = get_blog_option( $main_blog_id, incsub_sbe_get_settings_slug() );
         $settings = array();
 
-        if ( $main_blog_id == get_current_blog_id() ) {
-            if ( isset( $tmp_settings['from_email'] ) )
-                $settings['from_email'] = $tmp_settings['from_email'];
+        if ( isset( $tmp_settings['from_email'] ) )
+            $settings['from_email'] = $tmp_settings['from_email'];
 
-            if ( isset( $tmp_settings['keep_logs_for'] ) )
-                $settings['keep_logs_for'] = $tmp_settings['keep_logs_for'];
+        if ( isset( $tmp_settings['keep_logs_for'] ) )
+            $settings['keep_logs_for'] = $tmp_settings['keep_logs_for'];
 
-            if ( isset( $tmp_settings['mails_batch_size'] ) )
-                $settings['mails_batch_size'] = $tmp_settings['mails_batch_size'];
-        }
+        if ( isset( $tmp_settings['mails_batch_size'] ) )
+            $settings['mails_batch_size'] = $tmp_settings['mails_batch_size'];
 
         $tmp_settings = get_option( incsub_sbe_get_settings_slug() );
 
@@ -105,29 +103,44 @@ function incsub_sbe_upgrade_27() {
     incsub_sbe_update_settings( $settings );
 }
 
-function incsub_sbe_upgrade_28RC1() {
-    if ( current_user_can( 'manage_options') ) {
-        set_transient( 'sbe_sending', 'next', apply_filters( 'sbe_time_between_batches', 1200 ) );
+function incsub_sbe_upgrade_281() {
+    global $wpdb;
+    
+    // Due to an upgrade bug in 2.8 we need to compare if all subscribers have been already moved to posts table
+    $subscribers_table = $wpdb->prefix . 'subscriptions';
+    $post_subscribers = $wpdb->get_var( "SELECT COUNT(ID) FROM $wpdb->posts WHERE post_type = 'subscriber'" );
+    $old_subscribers = $wpdb->get_var( "SELECT COUNT(subscription_id) FROM $subscribers_table" );
 
-        if ( isset( $_REQUEST['sbe-upgrade'] ) ) {
-            check_admin_referer( 'sbe-upgrade-28RC1' );
-            incsub_sbe_upgrade_28RC1_upgrade_subscribers_batch();
-        }
-        elseif ( isset( $_REQUEST['sbe-upgrade-end'] ) ) {
-            incsub_sbe_display_upgrade_db_28RC1_finish();
+    if ( $old_subscribers > $post_subscribers ) {
+        // We need to copy subscribers again
+        if ( current_user_can( 'manage_options') ) {
+            set_transient( 'sbe_sending', 'next', apply_filters( 'sbe_time_between_batches', 1200 ) );
+
+            if ( isset( $_REQUEST['sbe-upgrade'] ) ) {
+                check_admin_referer( 'sbe-upgrade-281' );
+                incsub_sbe_upgrade_281_upgrade_subscribers_batch();
+            }
+            elseif ( isset( $_REQUEST['sbe-upgrade-end'] ) ) {
+                incsub_sbe_display_upgrade_db_281_finish();
+            }
+            else {
+                incsub_sbe_display_upgrade_db_281();
+            }
+            
+            die;
         }
         else {
-            incsub_sbe_display_upgrade_db_28RC1();
+            add_action( 'sbe_upgrade', 'incsub_sbe_restore_previous_version' );
         }
-        
-        die;
     }
     else {
-        add_action( 'sbe_upgrade', 'incsub_sbe_restore_previous_version' );
+        flush_rewrite_rules();
+        incsub_sbe_upgrade_281_update_log_table();
+        update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
     }
 }
 
-function incsub_sbe_upgrade_28RC1_upgrade_subscribers_batch() {
+function incsub_sbe_upgrade_281_upgrade_subscribers_batch() {
     $batch_size = 100;
 
     $sid = 1;
@@ -141,26 +154,27 @@ function incsub_sbe_upgrade_28RC1_upgrade_subscribers_batch() {
     if ( empty( $results ) ){
         // We have finished
         $redirect = add_query_arg( 'sbe-upgrade-end', 'true', admin_url() );
-        incsub_sbe_upgrade_28RC1_update_log_table();
-        incsub_sbe_upgrade_28RC1_display_continue_screen( $redirect );
+        incsub_sbe_upgrade_281_update_log_table();
+
+        
     }
     else{
-        incsub_sbe_upgrade_28RC1_insert_subscribers( $results );
+        incsub_sbe_upgrade_281_insert_subscribers( $results );
         $last_id = $results[ count( $results ) - 1 ]->subscription_ID + 1;
         $redirect = add_query_arg(
             array(
                 'sbe-upgrade' => 'true',
-                '_wpnonce' => wp_create_nonce( 'sbe-upgrade-28RC1' ),
+                '_wpnonce' => wp_create_nonce( 'sbe-upgrade-281' ),
                 'sid' => $last_id
             ),
             site_url()
         );
-        incsub_sbe_upgrade_28RC1_display_continue_screen( $redirect, $last_id );
+        incsub_sbe_upgrade_281_display_continue_screen( $redirect, $last_id );
     }    
     exit;
 }
 
-function incsub_sbe_upgrade_28RC1_insert_subscribers( $users ) {
+function incsub_sbe_upgrade_281_insert_subscribers( $users ) {
     global $wpdb;
     $table = $wpdb->prefix . 'subscriptions';
     $table_meta = $wpdb->prefix . 'subscriptions_meta';
@@ -178,7 +192,11 @@ function incsub_sbe_upgrade_28RC1_insert_subscribers( $users ) {
         $settings = maybe_unserialize( $user->subscription_settings );
         $settings = is_array( $settings ) ? $settings : array();
         foreach ( $settings as $key => $value ) {
-            $new_meta[ $key ] = $value;
+            if ( $key == 'post_types' )
+                $_key = 'subscription_post_types';
+            else
+                $_key = $key;
+            $new_meta[ $_key ] = $value;
         }
 
         add_filter( 'sbe_send_confirmation_email', '__return_false' );
@@ -215,31 +233,11 @@ function incsub_sbe_upgrade_28RC1_insert_subscribers( $users ) {
         }
 
     }
+
+    flush_rewrite_rules();
 }
 
-function incsub_sbe_upgrade_28RC1_update_log_table() {
-    global $wpdb;
-
-    $subscriptions_log_table = $wpdb->prefix . 'subscriptions_log_table';
-    $max_ID = $wpdb->get_var( "SELECT MAX(ID) FROM $wpdb->posts WHERE post_type = 'subscriber'" );
-    if ( ! $max_ID )
-        $max_ID = 0;
-
-    $wpdb->query( "UPDATE $subscriptions_log_table SET max_email_ID = $max_ID" );
-}
-
-function incsub_sbe_display_upgrade_db_28RC1_finish() {
-    ob_start();
-    ?>
-            <h2><?php _e( 'Subscribe By Email has been upgraded.', INCSUB_SBE_LANG_DOMAIN ); ?></h2>
-            <a class="button" href="<?php echo esc_url( admin_url() ); ?>" title="<?php _e( 'Return to dahboard', INCSUB_SBE_LANG_DOMAIN ); ?>"><?php _e( 'Return to dahboard', INCSUB_SBE_LANG_DOMAIN ); ?></a>
-    <?php
-    $content = ob_get_clean();
-    incsub_sbe_render_upgrade_screen( $content );
-    update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
-}
-
-function incsub_sbe_display_upgrade_db_28RC1() {
+function incsub_sbe_display_upgrade_db_281() {
     global $wpdb;
 
     $subscribers_table = $wpdb->prefix . 'subscriptions';
@@ -252,8 +250,8 @@ function incsub_sbe_display_upgrade_db_28RC1() {
             <?php if ( $subscribers_no > 100 ): ?>
                 <p><?php printf( __( 'There are %s subscribers. This may take a while.', INCSUB_SBE_LANG_DOMAIN ), $subscribers_no ); ?></p>
             <?php endif; ?>
-            <?php wp_nonce_field( 'sbe-upgrade-28RC1' ); ?>
-            <input type="hidden" name="action" value="sbe_upgrade_28RC1" />
+            <?php wp_nonce_field( 'sbe-upgrade-281' ); ?>
+            <input type="hidden" name="action" value="sbe_upgrade_281" />
             <p class="submit">
                 <input type="submit" name="sbe-upgrade" class="button button-large" value="<?php _e( 'Start upgrade', INCSUB_SBE_LANG_DOMAIN ); ?>" />
             </p>
@@ -265,7 +263,24 @@ function incsub_sbe_display_upgrade_db_28RC1() {
     
 }
 
-function incsub_sbe_upgrade_28RC1_display_continue_screen( $redirect, $sid = false ) {
+function incsub_sbe_display_upgrade_db_281_finish() {
+    ob_start();
+    ?>
+            <h2><?php _e( 'Subscribe By Email has been upgraded.', INCSUB_SBE_LANG_DOMAIN ); ?></h2>
+            <a class="button" href="<?php echo esc_url( admin_url() ); ?>" title="<?php _e( 'Return to dahboard', INCSUB_SBE_LANG_DOMAIN ); ?>"><?php _e( 'Return to dahboard', INCSUB_SBE_LANG_DOMAIN ); ?></a>
+    <?php
+    $content = ob_get_clean();
+    incsub_sbe_render_upgrade_screen( $content );
+    update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+
+    global $wpdb;
+    $wpdb->query( "UPDATE $wpdb->postmeta SET meta_key = 'subscription_post_types' WHERE meta_key = 'post_types' AND post_id IN
+    (SELECT ID FROM $wpdb->posts WHERE post_type = 'subscriber' )" );
+
+        incsub_sbe_upgrade_281_display_continue_screen( $redirect );
+}
+
+function incsub_sbe_upgrade_281_display_continue_screen( $redirect, $sid = false ) {
     global $wpdb;
 
     $subscribers_processed = _x( 'All', 'All subscribers processed', INCSUB_SBE_LANG_DOMAIN );
@@ -286,6 +301,17 @@ function incsub_sbe_upgrade_28RC1_display_continue_screen( $redirect, $sid = fal
     <?php
     $content = ob_get_clean();
     incsub_sbe_render_upgrade_screen( $content );
+}
+
+function incsub_sbe_upgrade_281_update_log_table() {
+    global $wpdb;
+
+    $subscriptions_log_table = $wpdb->prefix . 'subscriptions_log_table';
+    $max_ID = $wpdb->get_var( "SELECT MAX(ID) FROM $wpdb->posts WHERE post_type = 'subscriber'" );
+    if ( ! $max_ID )
+        $max_ID = 0;
+
+    $wpdb->query( "UPDATE $subscriptions_log_table SET max_email_ID = $max_ID" );
 }
 
 function incsub_sbe_render_upgrade_screen( $content ) {
@@ -310,7 +336,7 @@ function incsub_sbe_render_upgrade_screen( $content ) {
         </body>
     <?php
 }
-function incsub_sbe_restore_previous_version() {
-    update_option( 'incsub_sbe_version', '2.7' );
-}
 
+function incsub_sbe_restore_previous_version() {
+    update_option( 'incsub_sbe_version', '2.7.5' );
+}

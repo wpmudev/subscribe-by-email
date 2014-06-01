@@ -49,8 +49,12 @@ class SBE_Subscriber {
 		}
 
 		if ( $name === 'subscription_post_types' ) {
-			$post_types = $this->get_meta( 'post_types', false );
-			return apply_filters( 'sbe_get_subscriber_post_types', $post_types, $this->ID );
+			$post_types = get_post_meta( $this->ID, 'subscription_post_types', true );
+
+			if ( is_array( $post_types ) )
+				return $post_types;
+			else
+				return false;
 		}
 
 		if ( $name === 'subscription_key' ) {

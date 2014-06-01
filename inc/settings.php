@@ -63,8 +63,8 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 		$this->day_of_week = $wp_locale->weekday;
 
 		$this->confirmation_flag = array(
-			0 => __( 'Awaiting confirmation', INCSUB_SBE_LANG_DOMAIN ),
-			1 => __( 'Email confirmed', INCSUB_SBE_LANG_DOMAIN )
+			0 => __( 'Awaiting confirmation'),
+			1 => __( 'Email confirmed')
 		);
 
 		$current_settings = $this->get_blog_settings();
@@ -225,7 +225,6 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 			'auto-subscribe' => false,
 			'subscribe_new_users' => false,
 			'from_sender' => get_bloginfo( 'name' ),
-			'replyto_email' => get_option( 'admin_email' ),
 			'subject' => get_bloginfo( 'name' ) . __( ': New post' ),
 			'frequency' => 'inmediately',
 			'time' => 0,

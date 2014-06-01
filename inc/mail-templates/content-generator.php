@@ -65,10 +65,7 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 
 
 		if ( ! $this->dummy ) {
-			$filter_sent = apply_filters( 'sbe_filter_sent_posts', true );
-			if ( $filter_sent )
-				$this->filter_sent_posts();
-			
+			$this->filter_sent_posts();
 			$this->filter_content_by_taxonomies();
 		}
 
@@ -155,9 +152,7 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 	}
 
 
-	public function filter_user_content( $key ) {
-
-		$subscriber = incsub_sbe_get_subscriber_by_key( $key );
+	public function filter_user_content( $subscriber ) {
 
 		// These are the post types that the user wants to get
 		$user_post_types = $subscriber->subscription_post_types;
@@ -174,7 +169,6 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 		}
 
 		$user_content = apply_filters( 'sbe_get_subscriber_email_contents', $user_content, $subscriber->ID );
-
 		return $user_content;
 		
 	}
@@ -188,7 +182,6 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 			$ids = $post_ids;
 
 		$this->post_ids = $ids;
-		
 	}
 
 	public function get_posts_ids() {

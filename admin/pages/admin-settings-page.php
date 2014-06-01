@@ -74,12 +74,11 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . 'js/settings-content.js', array( 'jquery' ), '20130721' );
 			}
 			elseif ( 'template' == $this->get_current_tab() ) {
-				add_filter( 'media_view_settings', array( $this, 'set_media_uploader_settings' ) );
-				add_filter( 'media_view_strings', array( $this, 'set_media_uploader_strings' ) );
-				wp_enqueue_media();
+				wp_enqueue_script( 'thickbox' );
+			    wp_enqueue_script( 'media-upload' );
 			    wp_enqueue_script( 'farbtastic' );
 			    wp_enqueue_script( 'jquery-ui-slider' );
-				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . 'js/settings-template.js', array(), '20130721' );
+				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . 'js/settings-template.js', array( 'thickbox', 'media-upload' ), '20130721' );
 			}
 			elseif ( 'extra-fields' == $this->get_current_tab() ) {
 				wp_enqueue_script( 'jquery-ui-sortable' );
@@ -93,20 +92,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			wp_localize_script( 'sbe-settings-scripts', 'sbe_captions', $l10n );
 
 		}
-	}
-
-	public function set_media_uploader_settings( $settings ) {
-		unset( $settings['mimeTypes']['video'] );
-		unset( $settings['mimeTypes']['audio'] );
-		return $settings;
-	}
-
-
-	function set_media_uploader_strings( $strings ) {
-		unset( $strings['insertFromUrlTitle'] );
-		$strings['insertIntoPost'] = __( 'Choose image as logo', INCSUB_SBE_LANG_DOMAIN );
-		$strings['insertMediaTitle'] = __( 'Choose a logo', INCSUB_SBE_LANG_DOMAIN );
-	    return $strings;
 	}
 
 
@@ -167,7 +152,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			add_settings_section( 'general-settings', __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'from-sender', __( 'Notification From Sender', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_from_sender_field' ), $this->get_menu_slug(), 'general-settings' ); 
-			add_settings_field( 'replyto-email', __( 'Reply-to Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_reply_to_email_field' ), $this->get_menu_slug(), 'general-settings' ); 
 
 			if ( ! is_multisite() )
 				add_settings_field( 'from-email', __( 'Notification From Email', INCSUB_SBE_LANG_DOMAIN ), 'incsub_sbe_render_from_email_field', $this->get_menu_slug(), 'general-settings' ); 
@@ -339,15 +323,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	public function render_from_sender_field() {
 		?>
 			<input type="text" name="<?php echo $this->settings_name; ?>[from_sender]" class="regular-text" value="<?php echo esc_attr( $this->settings['from_sender'] ); ?>">
-		<?php
-	}
-
-	/**
-	 * Reply-to email field
-	 */
-	public function render_reply_to_email_field() {
-		?>
-			<input type="text" name="<?php echo $this->settings_name; ?>[replyto_email]" class="regular-text" value="<?php echo esc_attr( $this->settings['replyto_email'] ); ?>">
 		<?php
 	}
 
@@ -567,14 +542,12 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 */
 	public function render_logo_field() {
 		?>
-			<div class="logo-uploader">
-				<input type="hidden" name="<?php echo $this->settings_name; ?>[logo]" id="upload-logo-value" value="<?php echo esc_url( $this->settings['logo'] ); ?>"/>
-				<input type="button" class="button-secondary" id="upload-logo" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
-				<?php submit_button( __( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[remove-logo]', false, array( 'id' => 'remove-logo-button' ) ); ?>
-			</div>
-
+			
+			<input type="hidden" name="<?php echo $this->settings_name; ?>[logo]" id="upload-logo-value" value="<?php echo esc_url( $this->settings['logo'] ); ?>">
+			<input type="button" class="button-secondary" id="upload-logo" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
 			<div class="sbe-logo-preview">
 				<img style="max-width:300px;border:1px solid #DDD;padding:3px;background:#EFEFEF;margin-top:20px;" id="sbe-logo-img" src="<?php echo esc_url( $this->settings['logo'] ); ?>"></img>
+				<?php submit_button( __( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[remove-logo]', true, array( 'id' => 'remove-logo-button' ) ); ?>
 			</div>
 		<?php
 	}
@@ -861,12 +834,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			else
 				add_settings_error( $this->settings_name, 'invalid-from-sender', __( 'Notification From Sender cannot be empty', INCSUB_SBE_LANG_DOMAIN ) );
 
-			$replyto_email = sanitize_email( $input['replyto_email'] );
-			if ( is_email( $replyto_email ) )
-				$new_settings['replyto_email'] = $replyto_email;
-			else
-				add_settings_error( $this->settings_name, 'invalid-reply-to', __( 'Reply-to email must ve a valid email', INCSUB_SBE_LANG_DOMAIN ) );
-
 			// Mail subject
 			$subject = sanitize_text_field( $input['subject'] );
 			if ( ! empty( $subject ) )
@@ -1092,6 +1059,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 //			$settings = incsub_sbe_get_settings();
 //	    	$current_extra_fields = empty( $settings['extra_fields'] ) ? array() : $settings['extra_fields'];
 //
+//	    	var_dump($current_extra_fields);
 //	    	foreach ( $current_extra_fields as $extra_field_id => $extra_field ) {
 //	    		if ( empty( $input['extra_field_name-' . $extra_field_id] ) ) {
 //					add_settings_error( $this->settings_name, 'extra-field-name', __( 'Name cannot be empty', INCSUB_SBE_LANG_DOMAIN ) );

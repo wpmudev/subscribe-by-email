@@ -12,7 +12,7 @@ class Incsub_Subscribe_By_Email_Confirmation_Template {
 		$this->settings = $settings;
 		$this->to = $email;
 
-		$subscriber = incsub_sbe_get_subscriber( $this->to );
+		$subscriber = incsub_sbe_get_subscriber( $email );
 		$this->user_key = $subscriber->subscription_key;
 	}
 

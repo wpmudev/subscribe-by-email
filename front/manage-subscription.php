@@ -36,27 +36,31 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 			}
 
 			$key = $_REQUEST['sub_key'];
-
-			if ( ! $model->is_subscriber( $key ) )
+			$subscriber = incsub_sbe_get_subscriber_by_key ( $key );
+			if ( ! $subscriber )
 				return $new_content;
 
 			$updated = false;
+
+			$user_post_types = get_post_meta( $subscriber->ID, 'subscription_post_types', true );
+
 			if ( ! empty( $_POST['sub_submit'] ) ) {
-				$user_settings = $model->get_subscriber_settings( $key );
+				$user_post_types = $subscriber->subscription_post_types;
+				if ( $user_post_types === false )
+					$user_post_types = array();
 
-				if ( isset( $_POST['sub_post_types'] ) && is_array( $_POST['sub_post_types'] ) ) {
-					$user_settings['post_types'] = $_POST['sub_post_types'];
-				}
-				else {
-					$user_settings['post_types'] = array();
-				}
-
-				$model->update_subscriber_settings( $key, $user_settings );
+				$submitted = empty( $_POST['sub_post_types'] ) ? array() : $_POST['sub_post_types'];
+				update_post_meta( $subscriber->ID, 'subscription_post_types', $submitted );
 				$updated = true;
+				$user_post_types = $submitted;
 			}
 
 			$post_types = self::get_sbe_post_types();
-			$user_post_types = self::get_user_post_types( $key );
+			if ( $user_post_types === false ) {
+				foreach ( $post_types as $post_type ) {
+					$user_post_types[] = $post_type['slug'];
+				}
+			}
 			
 
 			//TEST
@@ -114,18 +118,7 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 		return $result;
 	}
 
-	public static function get_user_post_types( $key ) {
-		$model = Incsub_Subscribe_By_Email_Model::get_instance();
-		$settings = incsub_sbe_get_settings();
-		$user_settings = $model->get_subscriber_settings( $key );
 
-		// If the user has not selected any post type we'll return every of them
-		if ( ! $user_settings )
-			return $settings['post_types'];
-		else
-			return $user_settings['post_types'];
-
-	}
 
 }
 

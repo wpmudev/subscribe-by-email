@@ -297,44 +297,29 @@ class Incsub_Subscribe_By_Email_Template {
 		$this->content = apply_filters( 'sbe_mail_content', $content, $log_id );
 	}
 
-	public function enqueue_emails( $log_id ) {
-
-		if ( empty( $this->content ) )
-			return;
-
-		$model = incsub_sbe_get_model();
-		$model_n = incsub_sbe_get_model( 'network' );
-
-		$log = $model->get_single_log( $log_id );
-		if ( ! $log )
-			return;
-
-		$subscribers = incsub_sbe_get_subscribers( array( 'per_page' => -1, 'confirmed' => true ) );
-
-		$emails_list = wp_list_pluck( $subscribers->subscribers, 'subscription_email' );
-
-		$posts_ids = wp_list_pluck( $this->content, 'ID' );
-		$blog_id = get_current_blog_id();
-		sort( $posts_ids );
-		$campaign_id = substr( md5( implode( '', $posts_ids ) . '-' . $blog_id ), 0, 20 );
-
-		$settings = array(
-			'post_ids' => $posts_ids
-		);
-
-		$model_n->insert_queue_items( $emails_list, $log_id, $campaign_id, $settings );
-		
-	}
-
 	/**
 	 * Send the mail based on the template
 	 * 
 	 * @param Integer $log_id log ID
 	 */
-	public function send_mail( $mail, $log_id = false ) {
+	public function send_mail( $log_id ) {
 
-		$model = incsub_sbe_get_model();
-		$subscriber = incsub_sbe_get_subscriber( $mail );
+		$mail_log_id = false;
+		if ( is_integer( $log_id ) )
+			$mail_log_id = absint( $log_id );
+		elseif ( is_string( $log_id ) && $this->dummy )
+			$emails_list = array( $log_id );
+		else
+			return false;
+
+		$model = Incsub_Subscribe_By_Email_Model::get_instance();
+
+		if ( $mail_log_id ) {
+			$emails_list = $model->get_log_emails_list( $mail_log_id, absint( $this->settings['mails_batch_size'] ) );
+			if ( $emails_list === false )
+				return false;
+		}
+
 
 		add_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		add_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
@@ -342,80 +327,124 @@ class Incsub_Subscribe_By_Email_Template {
 		add_filter( 'wp_mail_content_type', array( &$this, 'set_content_type' ), 99 );
 		add_action( 'phpmailer_init', array( &$this, 'set_phpmailer_atts' )  );
 
+
 		do_action( 'sbe_pre_send_emails' );
 		
-		$jump_user = false;
-		$status = true;
+		$mails_sent = 0;
 
-		$key = $subscriber->subscription_key;
-		
-		// If key is empty, let's jump the user
-		if ( empty( $key ) && ! $this->dummy ) {
-			$status = 2;
-			$jump_user = true;
-			$key = false;
-		}
-		elseif ( $this->dummy ) {
-			$key = '';
-		}
-			
-		// Filtering user content
-		if ( ! $this->dummy && $key ) {
-			// The user may not want to get some types of posts
-			$user_content = $this->content_generator->filter_user_content( $key );
+		// We are going to try to send the mail to all subscribers
+		$sent_to_all_subscribers = true;
+		$emails_list = array_unique( $emails_list );
+		foreach ( $emails_list as $mail ) {
 
-			if ( empty( $user_content ) ) {
-				// User content empty
-				$status = 3;
+			$subscriber = incsub_sbe_get_subscriber( $mail );
+			if ( ! $subscriber )
+				continue;
+
+			$jump_user = false;
+			$status = true;
+
+			$key = $subscriber->subscription_key;
+			if ( empty( $key ) && ! $this->dummy ) {
+				$status = 2;
 				$jump_user = true;
+				$key = false;
 			}
+			elseif ( $this->dummy ) {
+				$key = '';
+			}
+
+			if ( ! $this->dummy && $key ) {
+				// The user may not want to get some types of posts
+				$user_content = $this->content_generator->filter_user_content( $subscriber );
+
+				if ( empty( $user_content ) ) {
+					$status = 3;
+					$jump_user = true;
+				}
+					
+			}
+			else {
+				$user_content = array();
+			}
+
+			if ( $key !== false ) {
+				$content = $this->render_mail_contents( $user_content, false, $key );
+			}
+			
+			if ( ! $this->dummy ) {
+
+				if ( ! $jump_user ) {
+
+					$unsubscribe_url = $this->get_unsubscribe_url( $key );
+					$headers = array(
+						"X-Mailer:PHP/".phpversion(),
+						"Reply-To: <$mail>",
+						"List-Unsubscribe: <$unsubscribe_url>"
+					);
+
+					$subscriber_id = $subscriber->ID;
+					$is_digest_sent = $model->is_digest_sent( $subscriber_id, $mail_log_id );
+					if ( ! $is_digest_sent ) {
+						wp_mail( $mail, $this->subject, $content, $headers );
+						$model->set_digest_sent( $subscriber_id, $mail_log_id );
+					}
+				}
 				
-		}
-		else {
-			// Dummy email
-			$user_content = array();
-		}
+				if ( $status === true )
+					$status = 1;
 
-		// Getting the email content
-		if ( $key !== false )
-			$content = $this->render_mail_contents( $user_content, false, $key );
-		
-		if ( ! $this->dummy ) {
+				// Creating a new log or incrementing an existing one
+				if ( $mails_sent == 0 ) {
+					$model->update_mail_log_subject( $mail_log_id, $this->subject );
+				}
 
-			if ( ! $jump_user ) {
-				// Sending the email
-				$unsubscribe_url = $this->get_unsubscribe_url( $key );
-				$reply_to_mail = $this->settings['replyto_email'];
+				if ( $this->logger == null )
+					$this->logger = new Subscribe_By_Email_Logger( $mail_log_id );
 
+				$model->increment_mail_log( $mail_log_id );
+				$this->logger->write( $mail, $status );
+				
+				$mails_sent++;
 
-				$headers = array(
-					"X-Mailer:PHP/".phpversion(),
-					"Reply-To: <$reply_to_mail>",
-					"List-Unsubscribe: <$unsubscribe_url>"
-				);
+				if ( $mails_sent == absint( $this->settings['mails_batch_size'] ) ) {
 
-				wp_mail( $mail, $this->subject, $content, $headers );
+					// We could not send the mail to all subscribers
+					$sent_to_all_subscribers = false;
+
+					// Now saving the data to send the rest of the mails later
+					$mail_settings = array(
+						'posts_ids' => $this->content_generator->get_posts_ids()
+					);
+
+					$mail_settings = maybe_serialize( $mail_settings );
+
+					$model->set_mail_log_settings( $mail_log_id, $mail_settings );
+
+					set_transient( Incsub_Subscribe_By_Email::$pending_mails_transient_slug, 'next', Incsub_Subscribe_By_Email::$time_between_batches );
+
+					// We'll finish with this later
+					break;
+				}
 			}
-			
-			if ( $status === true )
-				$status = 1;
-
-			// Updating the email log subject
-			$model->update_mail_log_subject( $log_id, $this->subject );
-
-			// We need to update the log file
-			$this->logger = new Subscribe_By_Email_Logger( $log_id );
-
-			$model->increment_mail_log( $log_id );
-			$this->logger->write( $mail, $status );
-			
+			else {
+				wp_mail( $mail, $this->subject, $content );
+			}
 		}
-		else {
-			wp_mail( $mail, $this->subject, $content );
+
+		// If we have sent the mail to all subscribers we won't need the settings in that log for the future
+		if ( $sent_to_all_subscribers && ! $this->dummy ) {
+			$model->clear_mail_log_settings( $mail_log_id );
+			$posts_ids = $this->content_generator->get_posts_ids();
+			if ( ! empty( $posts_ids ) && is_array( $posts_ids ) ) {
+				foreach ( $posts_ids as $post_id ) {
+					$result_meta = update_post_meta( $post_id, 'sbe_sent', true );
+				}
+			}
 		}
 
 
-		do_action( 'sbe_after_send_emails', $log_id );
+		do_action( 'sbe_after_send_emails' );
 
 		remove_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		remove_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );

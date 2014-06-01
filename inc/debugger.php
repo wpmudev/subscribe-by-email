@@ -17,14 +17,6 @@ class Subscribe_By_Email_Debugger {
 
 	public function debug( $message ) {
 
-		if ( ! defined( 'INCSUB_SBE_DEBUG' ) )
-			return false;
-
-		if ( is_multisite() ) {
-			if ( defined( 'INCSUB_SBE_DEBUG_BLOG_ID' ) && INCSUB_SBE_DEBUG_BLOG_ID != get_current_blog_id() )
-				return false;
-		}
-
 		$bTrace = debug_backtrace(); // assoc array
 
 	    /* Build the string containing the complete log line. */
