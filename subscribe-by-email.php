@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: WPMU DEV
-Version: 2.7.5
+Version: 2.8.1
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -22,7 +22,7 @@ class Incsub_Subscribe_By_Email {
 	static $max_subject_length = 120;
 
 	// Time between batches
-	static $time_between_batches = 1200;
+	static $time_between_batches;
 
 	// Max time in seconds during which the user can activate his subscription
 	static $max_confirmation_time = 604800;
@@ -40,7 +40,8 @@ class Incsub_Subscribe_By_Email {
 
 
 	public function __construct() {
-		
+		self::$time_between_batches = apply_filters( 'sbe_time_between_batches', 1200 );
+
 		$this->set_globals();
 		$this->includes();
 
@@ -610,6 +611,7 @@ class Incsub_Subscribe_By_Email {
 	 * 
 	 */
 	public function maybe_send_pending_emails() {
+
 		if ( ! get_transient( self::$pending_mails_transient_slug ) ) {
 
 			set_transient( self::$pending_mails_transient_slug, 'next', self::$time_between_batches );
