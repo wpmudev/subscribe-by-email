@@ -5,6 +5,25 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+
+2.8.1 - 2014/06/11
+----------------------------------------------------------------------
+Fixed: Upgrade system in 2.8 was failing in some cases.
+Some of the 2.7.5 have been restored. They will be added again in next releases.
+
+2.8 - 2014/05/27
+----------------------------------------------------------------------
+New: Subscriptions/subscriptions_meta are not used anymore (though old tables are still available).
+New: Subscribers moved to Posts table.
+New: Improved subscribers list styles.
+New: Network queue table for emails. Emails are not sent immediately any more but they are enqueued to avoid duplicated sendings.
+New: Added more filters
+Improve: Plugin loads now much faster.
+Improve: Logo uploader comatible with 3.8 media uploader.
+Improve: Lot of code removed/refactored.
+Added: uninstall functionality
+Other minor improvements/fixes
+
 2.7.5 - 2014/04/17
 ----------------------------------------------------------------------
 - Updated for WordPress 3.9
