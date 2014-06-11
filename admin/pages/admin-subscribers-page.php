@@ -78,7 +78,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 					<form id="form-subscriptions-edit" action="" method="post">
 						<?php wp_nonce_field( 'edit_subscriber' ); ?>
-						<input type="hidden" name="sid" value="<?php echo $subscriber->get_subscription_ID(); ?>">
+						<input type="hidden" name="sid" value="<?php echo $subscriber->ID; ?>">
 						<table class="form-table">
 							<?php $this->render_row( __( 'Email', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_row' ), $subscriber ); ?>
 							<?php 
@@ -127,7 +127,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 	public function render_email_row( $subscriber ) {
 		?>
-			<input type="text" class="regular-text" name="subscribe-email" value="<?php echo esc_attr( $subscriber->get_subscription_email() ); ?>" />
+			<input type="text" class="regular-text" name="subscribe-email" value="<?php echo esc_attr( $subscriber->subscription_email ); ?>" />
 		<?php
 	}
 
