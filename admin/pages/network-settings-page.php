@@ -48,7 +48,7 @@ class Incsub_Subscribe_By_Email_Network_Settings_Page extends Incsub_Subscribe_B
 
 				<?php wp_nonce_field( 'submit_sbe_network_settings' ); ?>
 
-				<?php submit_button( __( 'Save changes', MULTISTE_CC_LANG_DOMAIN ), 'primary', 'submit_sbe_network_settings' ); ?>
+				<?php submit_button( __( 'Save changes', INCSUB_SBE_LANG_DOMAIN ), 'primary', 'submit_sbe_network_settings' ); ?>
 			</form>
  		<?php
  		
