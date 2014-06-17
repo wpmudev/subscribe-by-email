@@ -120,9 +120,6 @@ function incsub_sbe_upgrade_281() {
                 check_admin_referer( 'sbe-upgrade-281' );
                 incsub_sbe_upgrade_281_upgrade_subscribers_batch();
             }
-            elseif ( isset( $_REQUEST['sbe-upgrade-end'] ) ) {
-                incsub_sbe_display_upgrade_db_281_finish();
-            }
             else {
                 incsub_sbe_display_upgrade_db_281();
             }
@@ -137,11 +134,25 @@ function incsub_sbe_upgrade_281() {
         flush_rewrite_rules();
         incsub_sbe_upgrade_281_update_log_table();
         update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+        delete_option( 'sbe_upgrade_281' );
+
+        global $wpdb;
+        $wpdb->query( "UPDATE $wpdb->postmeta SET meta_key = 'subscription_post_types' WHERE meta_key = 'post_types' AND post_id IN
+        (SELECT ID FROM $wpdb->posts WHERE post_type = 'subscriber' )" );
+
+        wp_redirect( add_query_arg(
+            array(
+                'page' => 'sbe-subscribers',
+                'upgraded' => 'true'
+            ),
+            admin_url( 'admin.php' ) 
+        ) );
+        exit;
     }
 }
 
 function incsub_sbe_upgrade_281_upgrade_subscribers_batch() {
-    $batch_size = 100;
+    $batch_size = 20;
 
     $sid = 1;
     if ( isset( $_GET['sid'] ) )
@@ -155,7 +166,6 @@ function incsub_sbe_upgrade_281_upgrade_subscribers_batch() {
         // We have finished
         $redirect = add_query_arg( 'sbe-upgrade-end', 'true', admin_url() );
         incsub_sbe_upgrade_281_update_log_table();
-
         
     }
     else{
@@ -250,6 +260,7 @@ function incsub_sbe_display_upgrade_db_281() {
             <?php if ( $subscribers_no > 100 ): ?>
                 <p><?php printf( __( 'There are %s subscribers. This may take a while.', INCSUB_SBE_LANG_DOMAIN ), $subscribers_no ); ?></p>
             <?php endif; ?>
+
             <?php wp_nonce_field( 'sbe-upgrade-281' ); ?>
             <input type="hidden" name="action" value="sbe_upgrade_281" />
             <p class="submit">
@@ -263,22 +274,6 @@ function incsub_sbe_display_upgrade_db_281() {
     
 }
 
-function incsub_sbe_display_upgrade_db_281_finish() {
-    ob_start();
-    ?>
-            <h2><?php _e( 'Subscribe By Email has been upgraded.', INCSUB_SBE_LANG_DOMAIN ); ?></h2>
-            <a class="button" href="<?php echo esc_url( admin_url() ); ?>" title="<?php _e( 'Return to dahboard', INCSUB_SBE_LANG_DOMAIN ); ?>"><?php _e( 'Return to dahboard', INCSUB_SBE_LANG_DOMAIN ); ?></a>
-    <?php
-    $content = ob_get_clean();
-    incsub_sbe_render_upgrade_screen( $content );
-    update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
-
-    global $wpdb;
-    $wpdb->query( "UPDATE $wpdb->postmeta SET meta_key = 'subscription_post_types' WHERE meta_key = 'post_types' AND post_id IN
-    (SELECT ID FROM $wpdb->posts WHERE post_type = 'subscriber' )" );
-
-        incsub_sbe_upgrade_281_display_continue_screen( $redirect );
-}
 
 function incsub_sbe_upgrade_281_display_continue_screen( $redirect, $sid = false ) {
     global $wpdb;
@@ -300,6 +295,7 @@ function incsub_sbe_upgrade_281_display_continue_screen( $redirect, $sid = false
         </script>
     <?php
     $content = ob_get_clean();
+
     incsub_sbe_render_upgrade_screen( $content );
 }
 
@@ -339,4 +335,11 @@ function incsub_sbe_render_upgrade_screen( $content ) {
 
 function incsub_sbe_restore_previous_version() {
     update_option( 'incsub_sbe_version', '2.7.5' );
+}
+
+function incsub_sbe_display_upgrade_281_notice() {
+    $link = add_query_arg( 'sbe_upgrade_281', 'true', admin_url() );
+    ?>
+    <div class="error"><p><?php printf( __( 'Subscribe By Email needs to be upgraded manually. Please <a href="%s">click here</a> to start with the upgrade.', INCSUB_SBE_LANG_DOMAIN ), $link ); ?></p></div>
+    <?php
 }

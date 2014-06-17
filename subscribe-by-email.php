@@ -448,10 +448,22 @@ class Incsub_Subscribe_By_Email {
 		}
 
 		if ( version_compare( $current_version, '2.8.1', '<' ) ) {
+
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
 				return;
-			incsub_sbe_upgrade_281();
+
+			if ( isset( $_GET['sbe_upgrade_281'] ) )
+				update_option( 'sbe_upgrade_281', true );
+
+			if ( get_option( 'sbe_upgrade_281' ) ) {
+				incsub_sbe_upgrade_281();
+			}
+			else {
+				add_action( 'admin_notices', 'incsub_sbe_display_upgrade_281_notice' );
+			}
+
+			
 			// We need to make this upgrade first
 			return;
 		}

@@ -50,6 +50,10 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 				
 				<?php screen_icon( 'sbe' ); ?>
 				
+				<?php if ( isset( $_GET['upgraded'] ) ): ?>
+					<div class="updated"><p><?php _e( 'Subscribe By Email has been updated', INCSUB_SBE_LANG_DOMAIN ); ?></p></div>
+				<?php endif; ?>
+				
 				<?php if ( isset( $_GET['action'] ) && $_GET['action'] == 'edit' && isset( $_GET['sid'] ) ): ?>
 					<?php 
 
