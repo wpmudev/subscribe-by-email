@@ -471,7 +471,7 @@ class Incsub_Subscribe_By_Email_Template {
 	/*************************/
 	
 	function set_mail_from( $content_type ) {
-	  return $this->settings['from_email'];
+	  return apply_filters( 'incsub_sbe_from_email', $this->settings['from_email'] );
 	}
 
 	function set_phpmailer_atts( $phpmailer ) {
