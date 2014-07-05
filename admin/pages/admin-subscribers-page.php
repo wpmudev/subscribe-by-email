@@ -131,7 +131,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 	public function render_email_row( $subscriber ) {
 		?>
-			<input type="text" class="regular-text" name="subscribe-email" value="<?php echo esc_attr( $subscriber->subscription_email ); ?>" />
+			<input type="text" class="regular-text" disabled="true" name="subscribe-email" value="<?php echo esc_attr( $subscriber->subscription_email ); ?>" />
 		<?php
 	}
 

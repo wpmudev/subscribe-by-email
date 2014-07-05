@@ -140,13 +140,21 @@ function incsub_sbe_upgrade_281() {
         $wpdb->query( "UPDATE $wpdb->postmeta SET meta_key = 'subscription_post_types' WHERE meta_key = 'post_types' AND post_id IN
         (SELECT ID FROM $wpdb->posts WHERE post_type = 'subscriber' )" );
 
-        wp_redirect( add_query_arg(
+        $redirect = add_query_arg(
             array(
                 'page' => 'sbe-subscribers',
                 'upgraded' => 'true'
             ),
             admin_url( 'admin.php' ) 
-        ) );
+        );
+
+        delete_transient( 'incsub_sbe_updating' );
+
+        ?>
+        <script type="text/javascript">
+            location.href='<?php echo $redirect; ?>';
+        </script>
+        <?php
         exit;
     }
 }
@@ -261,6 +269,9 @@ function incsub_sbe_display_upgrade_db_281() {
                 <p><?php printf( __( 'There are %s subscribers. This may take a while.', INCSUB_SBE_LANG_DOMAIN ), $subscribers_no ); ?></p>
             <?php endif; ?>
 
+            <?php if ( error_reporting() != 0 || ini_get( 'display_errors' ) ): ?>
+                <p style="color:red"><?php _e( 'It\'s recommended that WP_DEBUG is set to false in order to avoid errors during the upgrade', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+            <?php endif; ?>
             <?php wp_nonce_field( 'sbe-upgrade-281' ); ?>
             <input type="hidden" name="action" value="sbe_upgrade_281" />
             <p class="submit">
@@ -338,8 +349,11 @@ function incsub_sbe_restore_previous_version() {
 }
 
 function incsub_sbe_display_upgrade_281_notice() {
+    if ( ! current_user_can( 'manage_options' ) )
+        return;
+    
     $link = add_query_arg( 'sbe_upgrade_281', 'true', admin_url() );
     ?>
-    <div class="error"><p><?php printf( __( 'Subscribe By Email needs to be upgraded manually. Please <a href="%s">click here</a> to start with the upgrade.', INCSUB_SBE_LANG_DOMAIN ), $link ); ?></p></div>
+        <div class="error"><p><?php printf( __( 'Subscribe By Email needs to be upgraded manually. Please <a href="%s">click here</a> to start with the upgrade.', INCSUB_SBE_LANG_DOMAIN ), $link ); ?></p></div>
     <?php
 }

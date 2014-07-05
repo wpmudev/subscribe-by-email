@@ -6,10 +6,10 @@ Change Log:
 ----------------------------------------------------------------------
 
 
-2.8.1 - 2014/06/11
+2.8.1 - 2014/07/05
 ----------------------------------------------------------------------
-Fixed: Upgrade system in 2.8 was failing in some cases.
-Some of the 2.7.5 have been restored. They will be added again in next releases.
+- Fixed: Upgrade system in 2.8 was failing in some cases.
+- Disable email edition to avoid sendings incoherences
 
 2.8 - 2014/05/27
 ----------------------------------------------------------------------

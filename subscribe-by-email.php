@@ -112,7 +112,6 @@ class Incsub_Subscribe_By_Email {
 	}
 
 	public function init_plugin() {
-
 		$this->register_taxonomies();
 
 		$this->maybe_upgrade();
@@ -448,6 +447,9 @@ class Incsub_Subscribe_By_Email {
 		}
 
 		if ( version_compare( $current_version, '2.8.1', '<' ) ) {
+			
+			// This transient will stop sendings
+			set_transient( 'incsub_sbe_updating', true, 1800 );
 
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
