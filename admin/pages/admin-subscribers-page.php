@@ -146,6 +146,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 		$atts = array(
 			'name' => 'subscribe-meta[' . $extra_field['slug'] . ']'
 		);
+
 		incsub_sbe_render_extra_field(  $extra_field['type'], $extra_field['slug'], '', $meta_value, $atts );
 		echo $extra_field['required'] ? '(*)' : '';
 
@@ -163,14 +164,6 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 			$error = false;
 
 			$subscriber = incsub_sbe_get_subscriber( $sid );
-
-			if ( ! is_email ( $email ) ) {
-				add_settings_error( 'subscribe', 'wrong-email', __( 'Please, insert a valid email', INCSUB_SBE_LANG_DOMAIN ) );
-				$error = true;
-			}
-			else {
-				$model->update_subscriber_email( $sid, $email );
-			}
 
 			$settings = incsub_sbe_get_settings();
 			$extra_fields = $settings['extra_fields'];
