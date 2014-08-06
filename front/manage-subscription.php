@@ -42,7 +42,7 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 
 			$updated = false;
 
-			$user_post_types = get_post_meta( $subscriber->ID, 'subscription_post_types', true );
+			$user_post_types = $subscriber->subscription_post_types;
 
 			if ( ! empty( $_POST['sub_submit'] ) ) {
 				$user_post_types = $subscriber->subscription_post_types;
@@ -57,6 +57,7 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 
 			$post_types = self::get_sbe_post_types();
 			if ( $user_post_types === false ) {
+				$user_post_types = array();
 				foreach ( $post_types as $post_type ) {
 					$user_post_types[] = $post_type['slug'];
 				}

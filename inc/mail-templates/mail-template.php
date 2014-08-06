@@ -266,7 +266,7 @@ class Incsub_Subscribe_By_Email_Template {
 													<td <?php echo $footer_style; ?>>
 														<p>
 															<?php printf( __( 'You are subscribed to email updates from <a href="%s">%s</a>', INCSUB_SBE_LANG_DOMAIN ), get_home_url(), get_bloginfo( 'name' ) ); ?>  <br/>
-															<?php if ( $this->settings['manage_subs_page'] ): ?>
+															<?php if ( absint( $this->settings['manage_subs_page'] ) ): ?>
 																<?php printf( __( 'To manage your subscriptions, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( add_query_arg( 'sub_key', $key, get_permalink( $this->settings['manage_subs_page'] ) ) ) ); ?> <br/>	
 															<?php endif; ?>
 															<?php printf( __( 'To stop receiving these emails, <a href="%s">click here</a>.', INCSUB_SBE_LANG_DOMAIN ), esc_url( $this->get_unsubscribe_url( $key ) ) ); ?> 

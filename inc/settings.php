@@ -83,6 +83,7 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 		); 
 		$this->post_types = get_post_types( $args, 'object' );
 		unset( $this->post_types['attachment'] );
+		$this->post_types = apply_filters( 'sbe_get_post_types', $this->post_types );
 
 		// Get those taxonomies that are hierachical
 		$this->taxonomies = array();
