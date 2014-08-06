@@ -36,10 +36,6 @@ class Incsub_Subscribe_By_Email_Network_Settings_Page extends Incsub_Subscribe_B
 
  		?>
 			<form action="" method="post">
-				<h3><?php _e( 'New Blog Templates Integration', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
-				<p>
-					<?php _e('Checking this option allows the selecting of a New Blog Template Group as a destination for copied content.'); ?>
-				</p>
 				<table class="form-table">
 					<?php $this->render_row( __( 'Notification From Email', INCSUB_SBE_LANG_DOMAIN ), 'incsub_sbe_render_from_email_field' ); ?>
 					<?php $this->render_row( __( 'Mail batches', INCSUB_SBE_LANG_DOMAIN ), 'incsub_sbe_render_mail_batches_field' ); ?>
