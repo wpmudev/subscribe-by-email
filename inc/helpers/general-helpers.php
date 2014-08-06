@@ -207,10 +207,14 @@ function incsub_sbe_download_csv( $sep, $sample = false ) {
     }
     else {
     	$subscriptions = incsub_sbe_get_subscribers( $args );
+
     }
 
-    foreach ( $subscriptions as $subscription ) {
-        echo $subscription->get_subscription_email() . "\n";
+	if ( empty( $subscriptions->subscribers ) )
+		exit();
+
+    foreach ( $subscriptions->subscribers as $subscription ) {
+        echo $subscription->subscription_email . "\n";
     }
     
     exit();     
