@@ -376,7 +376,7 @@ class Incsub_Subscribe_By_Email_Template {
 
 				if ( ! $jump_user ) {
 
-					$unsubscribe_url = trailingslashit( $this->get_unsubscribe_url( $key ) );
+					$unsubscribe_url = $this->get_unsubscribe_url( $key );
 					$headers = array(
 						'x-mailer-php' => "X-Mailer:PHP/".phpversion(),
 						'reply-to' => "Reply-To: <$mail>",
@@ -466,7 +466,7 @@ class Incsub_Subscribe_By_Email_Template {
 
 
 	private function get_unsubscribe_url( $key ) {
-		return add_query_arg( 'sbe_unsubscribe', $key, get_home_url() );
+		return add_query_arg( 'sbe_unsubscribe', $key, trailingslashit( get_home_url() ) );
 	}
 
 	
