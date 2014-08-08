@@ -74,8 +74,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . 'js/settings-content.js', array( 'jquery' ), '20130721' );
 			}
 			elseif ( 'template' == $this->get_current_tab() ) {
-				wp_enqueue_script( 'thickbox' );
-			    wp_enqueue_script( 'media-upload' );
+				wp_enqueue_media();
 			    wp_enqueue_script( 'farbtastic' );
 			    wp_enqueue_script( 'jquery-ui-slider' );
 				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . 'js/settings-template.js', array( 'thickbox', 'media-upload' ), '20130721' );
@@ -541,12 +540,14 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 * Logo field
 	 */
 	public function render_logo_field() {
+		$display_preview = empty( $this->settings['logo'] ) ? 'display:none' : '';
+
 		?>
 			
 			<input type="hidden" name="<?php echo $this->settings_name; ?>[logo]" id="upload-logo-value" value="<?php echo esc_url( $this->settings['logo'] ); ?>">
-			<input type="button" class="button-secondary" id="upload-logo" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
+			<input type="button" class="button-secondary" id="upload-logo" data-frame-title="<?php echo esc_attr( 'Select a template logo', INCSUB_SBE_LANG_DOMAIN ); ?>" data-frame-update="<?php echo esc_attr( 'Select this logo', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
 			<div class="sbe-logo-preview">
-				<img style="max-width:300px;border:1px solid #DDD;padding:3px;background:#EFEFEF;margin-top:20px;" id="sbe-logo-img" src="<?php echo esc_url( $this->settings['logo'] ); ?>"></img>
+				<img style="max-width:300px;border:1px solid #DDD;padding:3px;background:#EFEFEF;margin-top:20px;<?php echo $display_preview; ?>" id="sbe-logo-img" src="<?php echo esc_url( $this->settings['logo'] ); ?>"></img>
 				<?php submit_button( __( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[remove-logo]', true, array( 'id' => 'remove-logo-button' ) ); ?>
 			</div>
 		<?php
