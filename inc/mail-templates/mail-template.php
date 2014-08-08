@@ -376,18 +376,24 @@ class Incsub_Subscribe_By_Email_Template {
 
 				if ( ! $jump_user ) {
 
-					$unsubscribe_url = $this->get_unsubscribe_url( $key );
+					$unsubscribe_url = trailingslashit( $this->get_unsubscribe_url( $key ) );
 					$headers = array(
-						"X-Mailer:PHP/".phpversion(),
-						"Reply-To: <$mail>",
-						"List-Unsubscribe: <$unsubscribe_url>"
+						'x-mailer-php' => "X-Mailer:PHP/".phpversion(),
+						'reply-to' => "Reply-To: <$mail>",
+						'list-unsubscribe' => "List-Unsubscribe: <$unsubscribe_url>"
 					);
+
+					$headers = apply_filters( 'sbe_template_mail_headers', $headers, $mail, $subscriber_id, $mail_log_id );
+
+					$headers = array_values( $headers );
 
 					$subscriber_id = $subscriber->ID;
 					$is_digest_sent = $model->is_digest_sent( $subscriber_id, $mail_log_id );
 					if ( ! $is_digest_sent ) {
+						do_action( 'sbe_before_send_single_email', $user_content, $mail );
 						wp_mail( $mail, $this->subject, $content, $headers );
 						$model->set_digest_sent( $subscriber_id, $mail_log_id );
+						do_action( 'sbe_after_send_single_email', $user_content, $mail );
 					}
 				}
 				

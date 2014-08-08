@@ -1,9 +1,18 @@
 Plugin Name: Subscribe by Email
 Author: WPMU DEV
+Requires at least: 3.5
+Tested up to: 3.9.2
+Stable tag: 2.8.2
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+2.8.2 - 2014/08/08
+----------------------------------------------------------------------
+Fixed: Added trailing slash to Unsubscribe-List header
+Enhanced: Logo uploader updated to WP 3.5+ Media Uploader
+Enhanced: Added more hooks
 
 2.8.1.2 - 2014/08/06
 ----------------------------------------------------------------------
