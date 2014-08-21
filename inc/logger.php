@@ -68,6 +68,6 @@ class Subscribe_By_Email_Logger {
 
 	public static function delete_log( $log_id ) {
 		$filename = self::get_filename( $log_id );
-		unlink( $filename );
+		@unlink( $filename );
 	}
 }

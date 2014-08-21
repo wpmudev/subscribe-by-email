@@ -383,11 +383,13 @@ class Incsub_Subscribe_By_Email_Template {
 						'list-unsubscribe' => "List-Unsubscribe: <$unsubscribe_url>"
 					);
 
+					$subscriber_id = $subscriber->ID;
+					
 					$headers = apply_filters( 'sbe_template_mail_headers', $headers, $mail, $subscriber_id, $mail_log_id );
 
 					$headers = array_values( $headers );
 
-					$subscriber_id = $subscriber->ID;
+					
 					$is_digest_sent = $model->is_digest_sent( $subscriber_id, $mail_log_id );
 					if ( ! $is_digest_sent ) {
 						do_action( 'sbe_before_send_single_email', $user_content, $mail );
