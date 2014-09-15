@@ -337,9 +337,15 @@ class Incsub_Subscribe_By_Email_Template {
 		$emails_list = array_unique( $emails_list );
 		foreach ( $emails_list as $mail ) {
 
-			$subscriber = incsub_sbe_get_subscriber( $mail );
-			if ( ! $subscriber )
-				continue;
+			if ( $this->dummy ) {
+				$subscriber = new stdClass();
+				$subscriber->subscription_key = 'test-key';
+			}
+			else {
+				$subscriber = incsub_sbe_get_subscriber( $mail );
+				if ( ! $subscriber )
+					continue;
+			}
 
 			$jump_user = false;
 			$status = true;
@@ -367,6 +373,8 @@ class Incsub_Subscribe_By_Email_Template {
 			else {
 				$user_content = array();
 			}
+
+
 
 			if ( $key !== false ) {
 				$content = $this->render_mail_contents( $user_content, false, $key );
