@@ -999,7 +999,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			$new_settings['header_text'] = $input['header_text'];
 			$new_settings['footer_text'] = $input['footer_text'];
 			$new_settings['subscribe_email_content'] = $input['subscribe_email_content'];
-			
+
 			if ( isset( $input['submit_test_email'] ) ) {
 				
 				$mail = sanitize_email( $input['test_mail'] );

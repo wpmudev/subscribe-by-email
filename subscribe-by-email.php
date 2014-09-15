@@ -827,4 +827,3 @@ class Incsub_Subscribe_By_Email {
 
 global $subscribe_by_email_plugin;
 $subscribe_by_email_plugin = new Incsub_Subscribe_By_Email();
-
