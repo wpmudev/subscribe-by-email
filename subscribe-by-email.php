@@ -115,6 +115,7 @@ class Incsub_Subscribe_By_Email {
 		$this->register_taxonomies();
 
 		$this->maybe_upgrade();
+		$this->maybe_upgrade_network();
 
 		if ( ! get_transient( 'incsub_sbe_updating' ) )
 			$this->maybe_send_pending_emails();
@@ -180,7 +181,7 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.8.3' );
+		define( 'INCSUB_SBE_VERSION', '2.8.4' );
 		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'INCSUB_SBE_LOGS_DIR', WP_CONTENT_DIR . '/subscribe-by-email-logs' );
@@ -346,7 +347,6 @@ class Incsub_Subscribe_By_Email {
 
 			$model = Incsub_Subscribe_By_Email_Model::get_instance();
 			$model->create_squema();
-			$model->upgrade_schema();				
 
 			incsub_sbe_update_settings( $new_settings );
 
@@ -431,9 +431,6 @@ class Incsub_Subscribe_By_Email {
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/upgrades.php' );
 			incsub_sbe_upgrade_249();
 
-
-			delete_transient( 'incsub_sbe_updating' );
-
 		}
 
 		if ( version_compare( $current_version, '2.5', '<' ) ) {
@@ -470,10 +467,79 @@ class Incsub_Subscribe_By_Email {
 			return;
 		}
 
+		if ( version_compare( $current_version, '2.8.4', '<' ) ) {
+			
+			// This transient will stop sendings
+			set_transient( 'incsub_sbe_updating', true, 1800 );
+
+			global $wpdb;
+			$subscriptions_log_table = $wpdb->prefix . 'subscriptions_log_table';
+			$query = "SELECT * FROM $subscriptions_log_table WHERE mail_settings != ''";
+        	$results = $wpdb->get_results( $query, ARRAY_A );
+
+        	foreach ( $results as $log ) {
+
+        		$offset = absint( $log['mail_recipients'] );
+        		$max_email_id = $log['max_email_ID'];
+        		$mail_settings = maybe_unserialize( $log['mail_settings'] );
+
+        		$subscribers = $wpdb->get_results( 
+		            $wpdb->prepare( 
+		                "SELECT ID, post_title FROM $wpdb->posts 
+		                WHERE post_status = 'publish' 
+		                AND post_type = 'subscriber'
+		                AND ID <= %d",
+		                $max_email_id
+		            )
+		        );
+
+        		$i = -1;
+        		$insert_subscribers = array();
+        		foreach ( $subscribers as $subscriber ) {
+        			$i++;
+
+        			if ( $i < $offset )
+        				continue;
+
+        			if ( $subscriber->ID > $max_email_id )
+        				continue;
+
+        			$insert_subscribers[] = $subscriber->post_title;
+
+        		}
+
+        		$model = incsub_sbe_get_model();
+        		$model->insert_queue_items( $insert_subscribers, $log['id'], $mail_settings );
+        		
+        		
+        		
+        	}
+			
+			delete_transient( 'incsub_sbe_updating' );
+
+		}
+
 		do_action( 'sbe_upgrade', $current_version, INCSUB_SBE_VERSION );
 
+
 		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
+
+		delete_transient( 'incsub_sbe_updating' );
 		
+	}
+
+	private function maybe_upgrade_network() {
+		$current_network_version = get_site_option( 'incsub_sbe_network_version', '2.8.3' );
+
+		if ( $current_network_version == INCSUB_SBE_VERSION )
+			return;
+
+		if ( version_compare( $current_version, '2.8.4', '<' ) ) {
+			$model = incsub_sbe_get_model();
+			$model->create_squema();
+		}
+
+		update_site_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
 	}
 
 
@@ -629,9 +695,8 @@ class Incsub_Subscribe_By_Email {
 		if ( ! get_transient( self::$pending_mails_transient_slug ) ) {
 
 			set_transient( self::$pending_mails_transient_slug, 'next', self::$time_between_batches );
-			$model = incsub_sbe_get_model();
 			
-			$model = Incsub_Subscribe_By_Email_Model::get_instance();
+			$model = incsub_sbe_get_model();
 			$mail_log = $model->get_remaining_batch_mail();
 
 			if ( ! empty( $mail_log ) ) {
@@ -681,6 +746,28 @@ class Incsub_Subscribe_By_Email {
 		return $log_id;
 	}
 
+	public function enqueue_emails( $posts_ids = array(), $log_id = false ) {
+		$model = incsub_sbe_get_model();
+
+		$args = array();
+		if ( ! empty( $posts_ids ) )
+			$args['post_ids'] = $posts_ids;
+		else
+			$args['post_ids'] = array();
+
+
+		if ( ! $log_id ) {
+			$log_id = $model->add_new_mail_log( '' );
+		}
+
+		$emails_list = $model->get_log_emails_list( $log_id );
+
+		if ( ! empty( $emails_list ) ) 
+			$model->insert_queue_items( $emails_list, $log_id, $args );
+
+		return $log_id;
+	}
+
 	/**
 	 * Executed each time a post changes its status. If the user
 	 * wants to send a newsletter everytime a post is published
@@ -695,11 +782,7 @@ class Incsub_Subscribe_By_Email {
 		$settings = incsub_sbe_get_settings();
 
 		if ( in_array( $post->post_type, $settings['post_types'] ) && $new_status != $old_status && 'publish' == $new_status && $settings['frequency'] == 'inmediately' ) {
-			// Are we currently sending? Stop please
-			if ( get_transient( 'sbe_sending' ) )
-				return;
-
-			$this->send_mails( array( $post->ID ) );	
+			$this->enqueue_emails( array( $post->ID ) );	
 		}
 	}
 
@@ -713,7 +796,7 @@ class Incsub_Subscribe_By_Email {
 
 			if ( current_time( 'timestamp' ) > $next_time ) {
 				self::set_next_week_schedule_time( $settings['day_of_week'], $settings['time'] );
-				$this->send_mails();
+				$this->enqueue_emails();
 			}
 		}
 		elseif ( 'daily' == $settings['frequency'] && $next_time = get_option( self::$freq_daily_transient_slug ) ) {	
@@ -725,7 +808,7 @@ class Incsub_Subscribe_By_Email {
 			if ( current_time( 'timestamp' ) > $next_time ) {
 
 				self::set_next_day_schedule_time( $settings['time'] );
-				$this->send_mails();
+				$this->enqueue_emails();
 
 			}
 		}

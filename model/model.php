@@ -4,8 +4,8 @@
 class Incsub_Subscribe_By_Email_Model {
 
 	public static $instance;
-    private $subscriptions_table;
     private $subscriptions_log_table;
+    private $subscriptions_queue_table;
 
 	/**
 	 * Singleton Pattern
@@ -21,90 +21,24 @@ class Incsub_Subscribe_By_Email_Model {
 	public function __construct() {
         global $wpdb;
         
-        $this->subscriptions_table = $wpdb->prefix . 'subscriptions';
-        $this->subscriptions_meta_table = $wpdb->prefix . 'subscriptions_meta';
         $this->subscriptions_log_table = $wpdb->prefix . 'subscriptions_log_table';
-
-        $this->create_squema();
+        $this->subscriptions_queue_table = $wpdb->base_prefix . 'subscriptions_queue';
 
     }
 
     public function create_squema() {
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-        $this->create_subscriptions_table();
         $this->create_subscriptions_log_table();
-        $this->create_subscriptions_meta_table();
+        $this->create_subscriptions_queue_table();
     }
 
     public function get_tables_list() {
         return array(
-            $this->subscriptions_table,
-            $this->subscriptions_meta_table,
-            $this->subscriptions_log_table
+            $this->subscriptions_log_table,
+            $this->subscriptions_queue_table
         );
     }
 
-    /**
-     * Creates/upgrade FAQ table
-     * 
-     * @since 1.8
-     */
-    private function create_subscriptions_table() {
-
-        global $wpdb;
-
-         // Get the correct character collate
-        $db_charset_collate = '';
-        if ( ! empty($wpdb->charset) )
-          $db_charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
-        if ( ! empty($wpdb->collate) )
-          $db_charset_collate .= " COLLATE $wpdb->collate";
-
-        $sql = "CREATE TABLE $this->subscriptions_table (
-              subscription_ID bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-              subscription_email varchar(100) NOT NULL,
-              subscription_type varchar(200) NOT NULL,
-              subscription_created bigint(20) NOT NULL,
-              subscription_note varchar(200) NOT NULL,
-              confirmation_flag tinyint(1) DEFAULT 0,
-              user_key varchar(50) NOT NULL,
-              subscription_settings text,
-              PRIMARY KEY  (subscription_ID),
-              UNIQUE KEY subscription_email (subscription_email)
-            )  ENGINE=MyISAM $db_charset_collate;";
-       
-        dbDelta($sql);
-
-        $alter = "ALTER TABLE $this->subscriptions_table MODIFY COLUMN subscription_settings text";
-        $wpdb->query( $alter );
-
-    }
-
-    private function create_subscriptions_meta_table() {
-
-        global $wpdb;
-
-         // Get the correct character collate
-        $db_charset_collate = '';
-        if ( ! empty($wpdb->charset) )
-          $db_charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
-        if ( ! empty($wpdb->collate) )
-          $db_charset_collate .= " COLLATE $wpdb->collate";
-
-        $sql = "CREATE TABLE $this->subscriptions_meta_table (
-              id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-              subscription_id bigint(20) NOT NULL,
-              meta_key varchar(64) NOT NULL,
-              meta_value longtext NOT NULL,
-              PRIMARY KEY  (id),
-              UNIQUE KEY id (id),
-              KEY subscription_id (subscription_id),
-              KEY meta_key (meta_key)
-            )  ENGINE=MyISAM $db_charset_collate;";
-       
-        dbDelta($sql);
-
-    }
 
     /**
      * Creates/upgrade FAQ table
@@ -143,28 +77,33 @@ class Incsub_Subscribe_By_Email_Model {
 
     }
 
-    public function upgrade_schema() {
-        global $wpdb;
-        
-        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-        $this->create_subscriptions_table();
-        $this->create_subscriptions_log_table();
-        
-        $wpdb->query( "UPDATE $this->subscriptions_table SET confirmation_flag = 1");
+    private function create_subscriptions_queue_table() {
 
-        $result = $this->get_all_subscribers();
-        foreach ($result as $row ) {
-            $key = $this->generate_user_key( $row['subscription_email'] );
-            $wpdb->query( 
-                $wpdb->prepare(
-                    "UPDATE $this->subscriptions_table SET user_key = %s WHERE subscription_email = %s",
-                    $key,
-                    $row['subscription_email']
-                )
-            );
-        }
-        
+        global $wpdb;
+
+        // Get the correct character collate
+        $db_charset_collate = '';
+        if ( ! empty($wpdb->charset) )
+          $db_charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+        if ( ! empty($wpdb->collate) )
+          $db_charset_collate .= " COLLATE $wpdb->collate";
+
+        $sql = "CREATE TABLE $this->subscriptions_queue_table (
+              id bigint(20) NOT NULL AUTO_INCREMENT,
+              blog_id bigint(20) NOT NULL,
+              subscriber_email varchar(100) NOT NULL,
+              campaign_id bigint(20) NOT NULL,
+              campaign_settings text,
+              sent int(12) DEFAULT 0,
+              PRIMARY KEY  (id),
+              UNIQUE KEY campaign (blog_id,campaign_id,subscriber_email)
+            )  ENGINE=MyISAM $db_charset_collate;";
+       
+        dbDelta($sql);
+
     }
+
+
 
     public function upgrade_247b() {
         global $wpdb;
@@ -197,20 +136,6 @@ class Incsub_Subscribe_By_Email_Model {
     }
 
 
-    public function get_all_subscribers( $count = false ) {
-        global $wpdb;
-
-        if ( ! $count ) {
-            $query = "SELECT * FROM $this->subscriptions_table ORDER BY subscription_ID";
-            $subscriptions = $wpdb->get_results( $query, ARRAY_A );
-        }
-        else {
-            $query = "SELECT COUNT( subscription_ID ) subscriptions FROM $this->subscriptions_table ORDER BY subscription_ID";
-            $subscriptions = $wpdb->get_row( $query, ARRAY_A );
-            $subscriptions = absint( $subscriptions['subscriptions'] );
-        }
-        return $subscriptions;
-    }
 
     function get_active_subscribers_count() {
         global $wpdb;
@@ -221,22 +146,6 @@ class Incsub_Subscribe_By_Email_Model {
     }
 
 
-    public function get_email_list() {
-        global $wpdb;
-
-        $query = "SELECT subscription_ID, subscription_email FROM $this->subscriptions_table WHERE confirmation_flag = 1 ORDER BY subscription_ID";
-        $subscriptions = $wpdb->get_results( $query, ARRAY_A );
-
-        $emails = array();
-        foreach ( $subscriptions as $subscription ) {
-            $emails[] = array(
-                'id' => $subscription['subscription_ID'],
-                'email' => $subscription['subscription_email']
-            );
-        }
-
-        return $emails;
-    }
 
 
 
@@ -322,7 +231,7 @@ class Incsub_Subscribe_By_Email_Model {
     }
 
 
-    public function get_log_emails_list( $log_id, $batch_size ) {
+    public function get_log_emails_list( $log_id, $batch_size = false ) {
         global $wpdb;
 
         $log = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_log_table WHERE id = %d", $log_id ) );
@@ -333,18 +242,19 @@ class Incsub_Subscribe_By_Email_Model {
         $continue_from = $log->mail_recipients;
         $end_on = $log->max_email_ID;
 
-        $subscribers = $wpdb->get_col( 
-            $wpdb->prepare( 
-                "SELECT post_title FROM $wpdb->posts 
-                WHERE post_status = 'publish' 
-                AND post_type = 'subscriber'
-                AND ID <= %d
-                LIMIT %d, %d",
-                $end_on,
-                $continue_from,
-                $batch_size 
-            )
+        $query = $wpdb->prepare( 
+            "SELECT post_title FROM $wpdb->posts 
+            WHERE post_status = 'publish' 
+            AND post_type = 'subscriber'
+            AND ID <= %d",
+            $end_on
         );
+
+        if ( $batch_size !== false ) {
+            $query .= $wpdb->prepare( " LIMIT %d, %d", $continue_from, $batch_size );
+        }
+
+        $subscribers = $wpdb->get_col( $query );
 
 
         return $subscribers;
@@ -424,77 +334,13 @@ class Incsub_Subscribe_By_Email_Model {
     }
 
 
-    public function get_subscriber_settings( $user_key ) {
-        global $wpdb;
-
-        $results = $wpdb->get_var( 
-            $wpdb->prepare(
-                "SELECT subscription_settings FROM $this->subscriptions_table WHERE user_key = %s",
-                $user_key
-            )
-        );
-
-        if ( empty( $results ) )
-            return false;
-        else
-            return maybe_unserialize( $results );
-
-    }
-
-    public function update_subscriber_settings( $key, $settings ) {
-        global $wpdb;
-
-        $ser_settings = maybe_serialize( $settings );
-
-        $wpdb->update(
-            $this->subscriptions_table,
-            array( 'subscription_settings' => $ser_settings ),
-            array( 'user_key' => $key ),
-            array( '%s' ),
-            array( '%s' )
-        );
-    }
-
-    public function update_subscriber_email( $sid, $email ) {
-        global $wpdb;
-
-        $wpdb->update(
-            $this->posts,
-            array( 'post_title' => $email ),
-            array( 'ID' => $sid ),
-            array( '%s' ),
-            array( '%d' )
-        );
-    }
 
     public function drop_schema() {
         global $wpdb;
-        $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_table" );
         $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_log_table" );
-        $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_meta_table" );
+        $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_queue_table" );
     }
 
-    public function add_subscriber_meta( $subscription_id, $meta_key, $meta_value ) {
-        global $wpdb;
-
-        update_post_meta( $subscription_id, $meta_key, $meta_value );
-        
-    }
-
-
-    public function update_subscriber_meta( $subscription_id, $meta_key, $meta_value ) {
-        global $wpdb;
-
-        update_post_meta( $subscription_id, $meta_key, $meta_value );
-
-        return true;
-    }
-
-    public function delete_subscriber_meta( $subscription_id, $meta_key ) {
-        global $wpdb;
-
-        delete_post_meta( $subscription_id, $meta_key );
-    }
 
     public function is_digest_sent( $sid, $mail_log_id ) {
         global $wpdb;
@@ -516,43 +362,6 @@ class Incsub_Subscribe_By_Email_Model {
         update_post_meta( $sid, $meta_key, 1 );
     }
 
-
-    public function delete_subscriber_all_meta( $sid ) {
-        global $wpdb;
-
-        $q = "DELETE FROM $this->subscriptions_meta_table";
-
-        if ( is_array( $sid ) ) {
-            $where = array();
-            foreach ( $sid as $value )
-                $where[] = $wpdb->prepare( "%d", $value );
-
-            $where = implode( ', ', $where );
-            $where = "subscription_id IN ($where)";
-            $q .= " WHERE $where";
-        }
-        else {
-            $q = $wpdb->prepare(
-                "DELETE FROM $this->subscriptions_meta_table
-                WHERE subscription_id = %d",
-                $sid
-            );
-        }
-
-        return $wpdb->query( $q );
-    }
-
-    public function delete_subscribers_all_meta( $meta_key ) {
-        global $wpdb;
-
-        return $wpdb->query(
-            $wpdb->prepare(
-                "DELETE FROM $this->subscriptions_meta_table
-                WHERE meta_key = %s",
-                $meta_key
-            )
-        );  
-    }
 
     public function get_posts_ids( $args ) {
         global $wpdb;
@@ -610,6 +419,119 @@ class Incsub_Subscribe_By_Email_Model {
         return $wpdb->get_col( $query );
 
         
+    }
+
+    public function insert_queue_items( $emails, $campaign_id, $settings ) {
+        global $wpdb;
+
+        $blog_id = get_current_blog_id();
+
+        if ( empty( $emails ) )
+            return;
+
+        $settings = maybe_serialize( $settings );
+
+        $query = "INSERT IGNORE INTO $this->subscriptions_queue_table ( blog_id, subscriber_email, campaign_id, campaign_settings ) VALUES ";
+        $values = array();
+        foreach ( $emails as $email ) {
+            $values[] = $wpdb->prepare( "( %d, %s, %s, %s )", $blog_id, $email, $campaign_id, $settings );
+        }
+
+        $query .= implode( ' , ', $values );
+
+        $wpdb->query( $query );
+        
+    }
+
+    public function get_queue_items( $limit ) {
+        global $wpdb;
+
+        $blog_id = get_current_blog_id();
+
+        // Get the first campaign we see
+        $campaign_id = $wpdb->get_var( 
+            $wpdb->prepare( 
+                "SELECT campaign_id FROM $this->subscriptions_queue_table 
+                WHERE blog_id = %d
+                AND sent = 0
+                LIMIT 1",
+                $blog_id 
+            )
+        );
+
+        // Now we get results based on that log ID
+        $results = $wpdb->get_results( 
+            $wpdb->prepare( 
+                "SELECT * FROM $this->subscriptions_queue_table 
+                WHERE blog_id = %d
+                AND campaign_id = %s
+                AND sent = 0
+                ORDER BY id LIMIT %d",
+                $blog_id, 
+                $campaign_id,
+                $limit 
+            ) 
+        );
+
+        if ( ! empty( $results ) ) {
+            $return = array();
+            foreach ( $results as $result ) {
+                $result->campaign_settings = maybe_unserialize( $result->campaign_settings );
+                $return[] = $result;
+            }
+            return $return;
+            
+        }
+
+        return false;
+    }
+
+    public function set_queue_item_sent( $id ) {
+        global $wpdb;
+
+        $result = $wpdb->update(
+            $this->subscriptions_queue_table,
+            array( 'sent' => current_time( 'timestamp' ) ),
+            array( 'id' => $id ),
+            array( '%d' ),
+            array( '%d' )
+        );
+    }
+
+    public function delete_queue_item( $id ) {
+        global $wpdb;
+
+        $wpdb->query( $wpdb->prepare( "DELETE FROM $this->subscriptions_queue_table WHERE id = %d", $id ) );
+    }
+
+    public function delete_queue_items_before( $timestamp ) {
+        global $wpdb;
+
+        $timestamp = absint( $timestamp );
+        if ( ! $timestamp )
+            return;
+
+        $wpdb->query( $wpdb->prepare( "DELETE FROM $this->subscriptions_queue_table WHERE sent <= %d AND sent != 0", $timestamp ) );
+    }
+
+    public function is_queue_empty_for_campaign( $campaign_id ) {
+        global $wpdb;
+        $blog_id = get_current_blog_id();
+        $results = $wpdb->get_var( 
+            $wpdb->prepare( 
+                "SELECT COUNT(id) FROM $this->subscriptions_queue_table 
+                WHERE blog_id = %d
+                AND campaign_id = %s
+                AND sent = 0",
+                $blog_id, 
+                $campaign_id
+            ) 
+        );
+
+        if ( empty( $results ) )
+            return true;
+        else
+            return false;
     }
 
 }
