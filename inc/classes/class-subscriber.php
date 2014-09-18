@@ -58,10 +58,10 @@ class SBE_Subscriber {
 		}
 
 		if ( $name === 'subscription_key' ) {
-			$key = $this->get_meta( 'key', true );
+			$key = $this->get_meta( 'subscription_key', '' );
 			if ( empty( $key ) ) {
 				$key = substr( md5( time() . rand() . $this->subscription_email ), 0, 16 );
-				update_post_meta( $this->ID, 'key', $key );
+				update_post_meta( $this->ID, 'subscription_key', $key );
 			}
 			return $key;
 		}

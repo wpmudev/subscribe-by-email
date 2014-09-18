@@ -33,29 +33,8 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 			}
 
 		}
-		elseif ( empty( $this->post_ids ) && ! $this->dummy) {
-
-			$days = 1;
-			if ( 'daily' == $this->digest_type )
-				$days = self::get_last_x_days_sending_time( 1 );
-
-			if ( 'weekly' == $this->digest_type )
-				$days = self::get_last_x_days_sending_time( 7 );
-
-			$today_sending_time = self::get_today_sending_time();
-
-			$model = incsub_sbe_get_model();
-			$args = array(
-				'post_type' => $this->post_types,
-				'after_date' => date( 'Y-m-d H:i:s', $days )
-			);
-			$this->post_ids = $model->get_posts_ids( $args );
-
+		elseif( empty( $this->posts_ids ) && ! $this->dummy ) {
 			$content = array();
-			foreach ( $this->post_ids as $post_id ) {
-				$content[] = get_post( $post_id );
-			}
-
 		}
 		else {
 			$content = $this->get_dummy_content();
@@ -65,7 +44,6 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 
 
 		if ( ! $this->dummy ) {
-			$this->filter_sent_posts();
 			$this->filter_content_by_taxonomies();
 		}
 
@@ -76,17 +54,6 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 		return $this->content;
 	}
 
-	private function filter_sent_posts() {
-		if ( ! empty( $this->content ) ) {
-			$content = $this->content;
-			foreach( $content as $post_key => $the_post ) {
-				$post_id = $the_post->ID;
-				$sbe_sent = get_post_meta( $post_id, 'sbe_sent', true );
-				if ( $sbe_sent )
-					unset( $this->content[ $post_key ] );
-			}
-		}
-	}
 
 	private function filter_content_by_taxonomies() {
 

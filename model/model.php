@@ -95,6 +95,7 @@ class Incsub_Subscribe_By_Email_Model {
               campaign_id bigint(20) NOT NULL,
               campaign_settings text,
               sent int(12) DEFAULT 0,
+              sent_status TINYINT(1),
               PRIMARY KEY  (id),
               UNIQUE KEY campaign (blog_id,campaign_id,subscriber_email)
             )  ENGINE=MyISAM $db_charset_collate;";
@@ -149,7 +150,7 @@ class Incsub_Subscribe_By_Email_Model {
 
 
 
-    public function add_new_mail_log( $subject ) {
+    public function add_new_mail_log( $subject, $args = array() ) {
         global $wpdb;
 
         $max_id = $wpdb->get_var( "SELECT MAX(ID) max_id FROM $wpdb->posts WHERE post_type = 'subscriber'" );
@@ -160,7 +161,7 @@ class Incsub_Subscribe_By_Email_Model {
                 'mail_subject' => $subject,
                 'mail_recipients' => 0,
                 'mail_date' => current_time( 'timestamp' ),
-                'mail_settings' => '',
+                'mail_settings' => maybe_serialize( $args ),
                 'mails_list' => '',
                 'max_email_ID' => $max_id
             ),
@@ -193,8 +194,15 @@ class Incsub_Subscribe_By_Email_Model {
     public function get_remaining_batch_mail() {
         global $wpdb;
 
-        $query = "SELECT id, mail_recipients, mail_date, mail_settings FROM $this->subscriptions_log_table WHERE mail_settings != ''";
-        return $wpdb->get_row( $query, ARRAY_A );
+        $query = "SELECT id, mail_settings FROM $this->subscriptions_log_table WHERE mail_settings != '' ORDER BY mail_date ASC LIMIT 1";
+        $results = $wpdb->get_row( $query );
+
+        if ( ! empty( $results ) ) {
+            $results->mail_settings = maybe_unserialize( $results->mail_settings );
+            return $results;
+        }
+
+        return false;
     }
 
     public function set_mail_log_settings( $id, $settings ) {
@@ -331,6 +339,14 @@ class Incsub_Subscribe_By_Email_Model {
         $wpdb->query( $query );
 
         $wpdb->query( "DELETE FROM $wpdb->postmeta $where_digest" );
+
+        $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM $wpdb->subscriptions_queue_table
+                WHERE campaign_id = %d",
+                $log_id
+            )
+        );
     }
 
 
@@ -353,13 +369,6 @@ class Incsub_Subscribe_By_Email_Model {
 
         return true;
 
-    }
-    public function set_digest_sent( $sid, $mail_log_id ) {
-        global $wpdb;
-
-        $meta_key = 'digest_sent_' . $mail_log_id;
-
-        update_post_meta( $sid, $meta_key, 1 );
     }
 
 
@@ -443,55 +452,46 @@ class Incsub_Subscribe_By_Email_Model {
         
     }
 
-    public function get_queue_items( $limit ) {
+    public function get_queue_items( $log_id, $limit, $page = false ) {
         global $wpdb;
 
         $blog_id = get_current_blog_id();
 
-        // Get the first campaign we see
-        $campaign_id = $wpdb->get_var( 
-            $wpdb->prepare( 
-                "SELECT campaign_id FROM $this->subscriptions_queue_table 
-                WHERE blog_id = %d
-                AND sent = 0
-                LIMIT 1",
-                $blog_id 
-            )
-        );
-
         // Now we get results based on that log ID
-        $results = $wpdb->get_results( 
-            $wpdb->prepare( 
-                "SELECT * FROM $this->subscriptions_queue_table 
-                WHERE blog_id = %d
-                AND campaign_id = %s
-                AND sent = 0
-                ORDER BY id LIMIT %d",
-                $blog_id, 
-                $campaign_id,
-                $limit 
-            ) 
+        $query = $wpdb->prepare( 
+            "SELECT id,subscriber_email FROM $this->subscriptions_queue_table 
+            WHERE blog_id = %d
+            AND campaign_id = %s
+            AND sent = 0
+            ORDER BY id ASC",
+            $blog_id, 
+            $log_id,
         );
 
-        if ( ! empty( $results ) ) {
-            $return = array();
-            foreach ( $results as $result ) {
-                $result->campaign_settings = maybe_unserialize( $result->campaign_settings );
-                $return[] = $result;
-            }
-            return $return;
-            
+        if ( ! $page ) {
+            $query .= $wpdb->prepare( " LIMIT %d", $limit );
         }
+        else {
+            $query .= $wpdb->prepare( " LIMIT %d, %d", intval( ( $page - 1 ) * $limit) . ", " . intval( $limit ) );
+        }
+
+        $results = $wpdb->get_results( $query );
+
+        if ( ! empty( $results ) )
+            return $results;
 
         return false;
     }
 
-    public function set_queue_item_sent( $id ) {
+    public function set_queue_item_sent( $id, $status ) {
         global $wpdb;
 
         $result = $wpdb->update(
             $this->subscriptions_queue_table,
-            array( 'sent' => current_time( 'timestamp' ) ),
+            array( 
+                'sent' => current_time( 'timestamp' ),
+                'sent_status' => $status
+            ),
             array( 'id' => $id ),
             array( '%d' ),
             array( '%d' )

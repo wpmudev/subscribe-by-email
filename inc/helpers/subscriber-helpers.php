@@ -164,7 +164,7 @@ function incsub_sbe_get_subscriber_by_key( $key ) {
             'posts_per_page' => 1,
             'meta_query' => array(
             	array(
-	                'key'     => 'key',
+	                'key'     => 'subscription_key',
 	                'value'   => $key,
 	                'compare' => '='
 	               )

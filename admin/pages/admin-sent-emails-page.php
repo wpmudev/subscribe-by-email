@@ -8,13 +8,25 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 
 		$args = array(
 			'slug' => 'sbe-sent-mails',
-			'page_title' => __( 'Sent Emails', INCSUB_SBE_LANG_DOMAIN ),
-			'menu_title' => __( 'Sent Emails', INCSUB_SBE_LANG_DOMAIN ),
+			'page_title' => __( 'Emails Log', INCSUB_SBE_LANG_DOMAIN ),
+			'menu_title' => __( 'Emails Log', INCSUB_SBE_LANG_DOMAIN ),
 			'capability' => 'manage_options',
 			'parent' => $subscribers_page->get_menu_slug()
 		);
 		parent::__construct( $args );
 
+		$this->tabs = array(
+			'sent-emails' => __( 'Sent Emails', INCSUB_SBE_LANG_DOMAIN ),
+			'pending-queue' => __( 'Emails in queue', INCSUB_SBE_LANG_DOMAIN )
+		);
+
+	}
+
+	private function get_current_tab() {
+		if ( isset( $_GET['tab'] ) && array_key_exists( $_GET['tab'], $this->tabs ) )
+			return $_GET['tab'];
+		else
+			return key( $this->tabs );
 	}
 
 
@@ -24,100 +36,45 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 	public function render_content() {
 		$settings = incsub_sbe_get_settings();
 
- 		?>
-			<form action="" method="post">
-				<?php if ( isset( $_GET['log_id'] ) ): ?>
-					<?php 
-						$model = Incsub_Subscribe_By_Email_Model::get_instance();
-						$log = $model->get_single_log( $_GET['log_id'] );
+		$current_tab = $this->get_current_tab();
 
-						$users_processed = $log->mail_recipients;
-						$max_email_id = $log->max_email_ID;
+		include_once( 'views/emails-log-tabs.php' );
 
-						$model = incsub_sbe_get_model();
-						$total = incsub_sbe_get_subscribers_count( $max_email_id );
-						$pending = absint( $total - $users_processed );
+		$view_file = 'views/emails-log-' . $current_tab . '.php';
+		if ( 'sent-emails' == $current_tab ) {
+			$log_id = isset( $_GET['log_id'] ) ? $_GET['log_id'] : false;
 
-						$file = Subscribe_By_Email_Logger::open_log( $_GET['log_id'] );
+			if ( $log_id ) {
+				$model = incsub_sbe_get_model();
+				$log = $model->get_single_log( $_GET['log_id'] );
 
-						?>
+				$users_processed = $log->mail_recipients;
+				$max_email_id = $log->max_email_ID;
 
- 						
-						<h3><?php _e( 'Digest details', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
-						
-						
-						<table class="form-table">
-							<?php ob_start(); ?>
-							<?php echo date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $log->mail_date ); ?>
-							<?php $this->render_row( __( 'Date', INCSUB_SBE_LANG_DOMAIN ), ob_get_clean() ); ?>
+				$total = incsub_sbe_get_subscribers_count( $max_email_id );
+				$pending = absint( $total - $users_processed );
 
-							<?php $this->render_row( __( 'Status', INCSUB_SBE_LANG_DOMAIN ), empty( $log->mail_settings ) ? __( 'Finished', INCSUB_SBE_LANG_DOMAIN ) : __( 'Pending', INCSUB_SBE_LANG_DOMAIN ) ); ?>
+				$file = Subscribe_By_Email_Logger::open_log( $_GET['log_id'] );
 
-							<?php $this->render_row( __( 'Subscribers processed', INCSUB_SBE_LANG_DOMAIN ), $users_processed ); ?>
+				$log_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $log->mail_date );
 
-							<?php $this->render_row( __( 'Still pending', INCSUB_SBE_LANG_DOMAIN ), $pending ); ?>
+			}
+			else {
+				require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/tables/log-table.php' );
+				$the_table = new Incsub_Subscribe_By_Email_Log_Table();
 
-							<?php $this->render_row( __( 'Errors', INCSUB_SBE_LANG_DOMAIN ), '<span id="sbe_log_errors">' . __( 'Calculating...', INCSUB_SBE_LANG_DOMAIN ) . '</span>' ); ?>
+				$the_table->prepare_items();
+			}
+		}
+		elseif ( 'pending-queue' == $current_tab ) {
+			require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/tables/pending-queue-table.php' );
+			$the_table = new Incsub_Subscribe_By_Email_Pending_Queue_Table();
 
-							<?php $this->render_row( __( 'Users without content to send', INCSUB_SBE_LANG_DOMAIN ), '<span id="sbe_user_content_empty">' . __( 'Calculating...', INCSUB_SBE_LANG_DOMAIN ) . '</span>' ); ?>
+			$the_table->prepare_items();
+		}
 
-							<?php $this->render_row( __( 'Total', INCSUB_SBE_LANG_DOMAIN ), $total ); ?>
-						</table>
-						
-						<h3><?php _e( 'Emails details', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
-						<table class="form-table">
-							<?php 
-								$errors = 0;
-								$user_content_empty = 0;
-								if ( is_resource( $file ) ) {
-									while ( $buffer = Subscribe_By_Email_Logger::read_line( $file ) ) {
-										$line = explode( '|', $buffer );
+		include_once( $view_file );
 
-										if ( absint( $line[2] ) !== 0 ) {
-											switch ( absint( $line[2] ) ) {
-												case 1: { $status = '<span style="color:green">' . __( 'Sent', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; break; }
-												case 2: { $status = '<span style="color:red">' . __( 'User key undefined', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $errors++; break; }
-												case 3: { $status = '<span style="color:red">' . __( 'User content empty', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $user_content_empty++; break; }
-												default: { $status = $line[2]; $errors++; break; }
-											}
-										}
-										else {
-											$status = $line[2];
-										}
-										$this->render_row( $line[0], $status );
-									}
-								}
-								else {
-									_e( 'No details found', INCSUB_SBE_LANG_DOMAIN );
-								}
-								?>
-
-								
-								
-						</table>
-						<script>
-							document.getElementById( 'sbe_log_errors' ).innerHTML = '<?php echo $errors; ?>';
-							document.getElementById( 'sbe_user_content_empty' ).innerHTML = '<?php echo $user_content_empty; ?>';
-						</script>
-
-				<?php else: ?>
-					<p>
-		 				<?php printf( __( 'In this screen latest logs are displayed. Click on "Details" to know more about that sending. Logs are saved in <span class="description">%s</span> folder.', INCSUB_SBE_LANG_DOMAIN ), INCSUB_SBE_LOGS_DIR ); ?>
-		 			</p>
-		 			<p>
-		 				<?php printf( __( 'Logs files are <strong>deleted every %d days</strong>. You can set a different interval in <a href="%s">Subscribe By Email settings page</a>', INCSUB_SBE_LANG_DOMAIN ), $settings['keep_logs_for'], esc_url( add_query_arg( 'tab', 'logs', Incsub_Subscribe_By_Email::$admin_settings_page->get_permalink() ) ) ); ?>
-		 			</p>
-					<?php 
-						require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/tables/log-table.php' );
-						$the_table = new Incsub_Subscribe_By_Email_Log_Table();
-
-						$the_table->prepare_items();
-						$the_table->display();
-					?>
-				<?php endif; ?>
-			</form>
-				
-		<?php
 	}
 
 	protected function render_row( $title, $content, $args = array() ) {

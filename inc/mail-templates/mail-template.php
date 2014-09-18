@@ -23,9 +23,9 @@ class Incsub_Subscribe_By_Email_Template {
 
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/content-generator.php' );
 		$this->content_generator = new Incsub_Subscribe_By_Email_Content_Generator( $this->settings['frequency'], $this->settings['post_types'], $this->dummy );
-		if ( ! empty( $settings['post_ids'] ) ) {
-			$this->content_generator->set_posts_ids( $settings['post_ids'] );
-		}
+
+		if ( ! empty( $settings['posts_ids'] ) )
+			$this->content_generator->set_posts_ids( $settings['posts_ids'] );
 
 		$this->set_content();
 	}
@@ -297,176 +297,106 @@ class Incsub_Subscribe_By_Email_Template {
 		$this->content = apply_filters( 'sbe_mail_content', $content, $log_id );
 	}
 
-	/**
-	 * Send the mail based on the template
-	 * 
-	 * @param Integer $log_id log ID
-	 */
-	public function send_mail( $log_id ) {
+	private function update_logs( $log_id, $status, $mail ) {
+		$logger = new Subscribe_By_Email_Logger( $log_id );
+		$logger->write( $mail, $status );
+	}
 
-		$mail_log_id = false;
-		if ( is_integer( $log_id ) )
-			$mail_log_id = absint( $log_id );
-		elseif ( is_string( $log_id ) && $this->dummy )
-			$emails_list = array( $log_id );
-		else
-			return false;
-
-		$model = Incsub_Subscribe_By_Email_Model::get_instance();
-
-		if ( $mail_log_id ) {
-			$emails_list = $model->get_log_emails_list( $mail_log_id, absint( $this->settings['mails_batch_size'] ) );
-			if ( $emails_list === false )
-				return false;
-		}
-
-
+	private function add_wp_mail_filters() {
 		add_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		add_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
 		add_filter( 'wp_mail_charset', array( &$this, 'set_mail_charset' ) );
 		add_filter( 'wp_mail_content_type', array( &$this, 'set_content_type' ), 99 );
 		add_action( 'phpmailer_init', array( &$this, 'set_phpmailer_atts' )  );
+	}
 
-
-		do_action( 'sbe_pre_send_emails' );
-		
-		$mails_sent = 0;
-
-		// We are going to try to send the mail to all subscribers
-		$sent_to_all_subscribers = true;
-		$emails_list = array_unique( $emails_list );
-		foreach ( $emails_list as $mail ) {
-
-			if ( $this->dummy ) {
-				$subscriber = new stdClass();
-				$subscriber->subscription_key = 'test-key';
-			}
-			else {
-				$subscriber = incsub_sbe_get_subscriber( $mail );
-				if ( ! $subscriber )
-					continue;
-			}
-
-			$jump_user = false;
-			$status = true;
-
-			$key = $subscriber->subscription_key;
-			if ( empty( $key ) && ! $this->dummy ) {
-				$status = 2;
-				$jump_user = true;
-				$key = false;
-			}
-			elseif ( $this->dummy ) {
-				$key = '';
-			}
-
-			if ( ! $this->dummy && $key ) {
-				// The user may not want to get some types of posts
-				$user_content = $this->content_generator->filter_user_content( $subscriber );
-
-				if ( empty( $user_content ) ) {
-					$status = 3;
-					$jump_user = true;
-				}
-					
-			}
-			else {
-				$user_content = array();
-			}
-
-
-
-			if ( $key !== false ) {
-				$content = $this->render_mail_contents( $user_content, false, $key );
-			}
-			
-			if ( ! $this->dummy ) {
-
-				if ( ! $jump_user ) {
-
-					$unsubscribe_url = $this->get_unsubscribe_url( $key );
-					$headers = array(
-						'x-mailer-php' => "X-Mailer:PHP/".phpversion(),
-						'reply-to' => "Reply-To: <$mail>",
-						'list-unsubscribe' => "List-Unsubscribe: <$unsubscribe_url>"
-					);
-
-					$subscriber_id = $subscriber->ID;
-					
-					$headers = apply_filters( 'sbe_template_mail_headers', $headers, $mail, $subscriber_id, $mail_log_id );
-
-					$headers = array_values( $headers );
-
-					
-					$is_digest_sent = $model->is_digest_sent( $subscriber_id, $mail_log_id );
-					if ( ! $is_digest_sent ) {
-						do_action( 'sbe_before_send_single_email', $user_content, $mail );
-						wp_mail( $mail, $this->subject, $content, $headers );
-						$model->set_digest_sent( $subscriber_id, $mail_log_id );
-						do_action( 'sbe_after_send_single_email', $user_content, $mail );
-					}
-				}
-				
-				if ( $status === true )
-					$status = 1;
-
-				// Creating a new log or incrementing an existing one
-				if ( $mails_sent == 0 ) {
-					$model->update_mail_log_subject( $mail_log_id, $this->subject );
-				}
-
-				if ( $this->logger == null )
-					$this->logger = new Subscribe_By_Email_Logger( $mail_log_id );
-
-				$model->increment_mail_log( $mail_log_id );
-				$this->logger->write( $mail, $status );
-				
-				$mails_sent++;
-
-				if ( $mails_sent == absint( $this->settings['mails_batch_size'] ) ) {
-
-					// We could not send the mail to all subscribers
-					$sent_to_all_subscribers = false;
-
-					// Now saving the data to send the rest of the mails later
-					$mail_settings = array(
-						'posts_ids' => $this->content_generator->get_posts_ids()
-					);
-
-					$mail_settings = maybe_serialize( $mail_settings );
-
-					$model->set_mail_log_settings( $mail_log_id, $mail_settings );
-
-					set_transient( Incsub_Subscribe_By_Email::$pending_mails_transient_slug, 'next', Incsub_Subscribe_By_Email::$time_between_batches );
-
-					// We'll finish with this later
-					break;
-				}
-			}
-			else {
-				wp_mail( $mail, $this->subject, $content );
-			}
-		}
-
-		// If we have sent the mail to all subscribers we won't need the settings in that log for the future
-		if ( $sent_to_all_subscribers && ! $this->dummy ) {
-			$model->clear_mail_log_settings( $mail_log_id );
-			$posts_ids = $this->content_generator->get_posts_ids();
-			if ( ! empty( $posts_ids ) && is_array( $posts_ids ) ) {
-				foreach ( $posts_ids as $post_id ) {
-					$result_meta = update_post_meta( $post_id, 'sbe_sent', true );
-				}
-			}
-		}
-
-
-		do_action( 'sbe_after_send_emails' );
-
+	private function remove_wp_mail_filters() {
 		remove_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		remove_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
 		remove_filter( 'wp_mail_charset', array( &$this, 'set_mail_charset' ) );
 		remove_filter( 'wp_mail_content_type', array( &$this, 'set_content_type' ), 99 );
 		remove_action( 'phpmailer_init', array( &$this, 'set_phpmailer_atts' )  );
+	}
+
+	/**
+	 * Send the mail based on the template
+	 * 
+	 * @param Integer $log_id log ID
+	 */
+	public function send_mail( $subscriber = false, $log_id = false ) {
+
+		$this->add_wp_mail_filters();
+		do_action( 'sbe_pre_send_emails' );
+
+
+		$model = incsub_sbe_get_model();
+		if ( $this->dummy ) {
+			// Test Email
+		}
+		elseif ( $subscriber && $log_id ) {
+			// Campaign email
+
+			$key = $subscriber->subscription_key;
+			$mail = $subscriber->subscription_email;
+			$subscriber_id = $subscriber->ID;
+
+			$model->increment_mail_log( $log_id );
+
+			if ( empty( $key ) ) {
+				$status = 2; // Empty key
+				$this->update_logs( $log_id, $status, $mail );
+				$this->remove_wp_mail_filters();
+				return $status;
+			}
+
+			$user_content = $this->content_generator->filter_user_content( $subscriber );
+
+			if ( empty( $user_content ) ) {
+				$status = 3; // Empty user content
+				$this->update_logs( $log_id, $status, $mail );
+				$this->remove_wp_mail_filters();
+				return $status;
+			}
+
+			$content = $this->render_mail_contents( $user_content, false, $key );
+
+			// Send!
+			$unsubscribe_url = $this->get_unsubscribe_url( $key );
+			$headers = array(
+				'x-mailer-php' => "X-Mailer:PHP/".phpversion(),
+				'reply-to' => "Reply-To: <$mail>",
+				'list-unsubscribe' => "List-Unsubscribe: <$unsubscribe_url>"
+			);
+
+			
+			$headers = apply_filters( 'sbe_template_mail_headers', $headers, $mail, $subscriber_id, $log_id );
+			$headers = array_values( $headers );
+
+			do_action( 'sbe_before_send_single_email', $user_content, $mail );
+			$result = wp_mail( $mail, $this->subject, $content, $headers );
+			do_action( 'sbe_after_send_single_email', $user_content, $mail );
+
+			if ( ! $result ) {
+				$status = 4; // Error
+				$this->update_logs( $log_id, $status, $mail );
+				$this->remove_wp_mail_filters();
+				return $status;
+			}
+
+
+			// Everything went fine
+			$status = 1;
+			$this->update_logs( $log_id, $status, $mail );
+		}
+		else {
+			// Nothing to do
+		}
+
+
+		do_action( 'sbe_after_send_emails' );
+		$this->remove_wp_mail_filters();
+
+		return 1; // Sent :D
 
 	}
 
