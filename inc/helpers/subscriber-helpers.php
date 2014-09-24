@@ -102,7 +102,6 @@ function incsub_sbe_insert_subscriber( $email, $autopt = false, $args = array(),
 
 	$autopt = apply_filters( 'sbe_autopt_subscription', $autopt, $email );
 
-
 	$postarr = array(
 		'post_title' => $email,
 		'post_status' => $autopt ? 'publish' : 'pending',

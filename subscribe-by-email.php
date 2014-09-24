@@ -555,7 +555,7 @@ class Incsub_Subscribe_By_Email {
 	 * @param Integer $subscription_id 
 	 */
 	public static function subscribe_user( $user_email, $note, $type, $autopt = false, $meta = array() ) {
-		
+
 		$subscribe_user = apply_filters( 'sbe_pre_subscribe_user', true, $user_email, $note, $type, $autopt, $meta );
 
 		if ( ! $subscribe_user )
