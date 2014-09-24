@@ -19,23 +19,44 @@ class Incsub_Subscribe_By_Email_Pending_Queue_Table extends WP_List_Table {
 
 
     function column_email( $item ) { 
-        return date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int)$item['mail_date'] );
+        return $item->subscriber_email;
     }
 
-    function column_posts( $item ) {
-        $log_file = Subscribe_By_Email_Logger::open_log( $item['id'] );
-        if ( absint( $item['mail_recipients'] ) != 0 && is_resource( $log_file ) ) {
-            $link = add_query_arg( 'log_id', $item['id'], Incsub_Subscribe_By_Email::$admin_sent_emails_page->get_permalink() );
-            return $item['mail_recipients'] . ' <a href="' . $link . '">' . __( 'Details &rarr;', INCSUB_SBE_LANG_DOMAIN ) . '</a>';
+    function column_posts_list( $item ) {
+
+        $subscriber = incsub_sbe_get_subscriber( $item->subscriber_email );
+
+        $args = array(
+            'posts_per_page' => -1,
+            'ignore_sticky_posts' => true,
+            'post__in' => $item->campaign_settings['posts_ids']
+        );
+        
+        if ( ! empty( $subscriber->subscription_post_types ) )
+            $args['post_type'] = $subscriber->subscription_post_types;
+
+        $posts = get_posts( $args );
+
+        if ( ! empty( $posts ) ) {
+            foreach ( $posts as $post ) {
+                $posts_titles[] = '<a href="' . get_edit_post_link( $post->ID ) . '">' . get_the_title( $post->ID ) . '</a>';
+                
+            }
+            $return = implode( ' , ', $posts_titles );
         }
-        return $item['mail_recipients'];
+        else {
+            $return = __( 'Nothing to send', INCSUB_SBE_LANG_DOMAIN );
+        }
+        
+        return $return;
+        
     }
 
 
     function get_columns(){
         $columns = array(
             'email'   => __( 'Email', INCSUB_SBE_LANG_DOMAIN ),
-            'posts'    => __( 'Posts', INCSUB_SBE_LANG_DOMAIN )
+            'posts_list'    => __( 'Posts', INCSUB_SBE_LANG_DOMAIN )
         );
         return $columns;
     }
@@ -44,7 +65,7 @@ class Incsub_Subscribe_By_Email_Pending_Queue_Table extends WP_List_Table {
     function prepare_items() {
         global $wpdb, $page;
 
-        $per_page = 15;
+        $per_page = 2;
       
         $columns = $this->get_columns();
         $hidden = array();
@@ -56,14 +77,14 @@ class Incsub_Subscribe_By_Email_Pending_Queue_Table extends WP_List_Table {
 
         $model = incsub_sbe_get_model();
 
-        $pending_queue = $model->get_queue_items( $current_page, $per_page, $sortable, $search );
+        $result = $pending_queue = $model->get_queue_items( array( 'count' => true, 'per_page' => $per_page ) );
 
-        $this->items = $logs['logs'];               
+        $this->items = $result['items'];
 
         $this->set_pagination_args( array(
-            'total_items' => $logs['total'],                 
+            'total_items' => $result['count'],                 
             'per_page'    => $per_page,              
-            'total_pages' => ceil( $logs['total'] / $per_page )  
+            'total_pages' => ceil( $result['count'] / $per_page )  
         ) );
     }
 }

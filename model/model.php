@@ -452,36 +452,66 @@ class Incsub_Subscribe_By_Email_Model {
         
     }
 
-    public function get_queue_items( $log_id, $limit, $page = false ) {
+    public function get_queue_items( $args = array() ) {
         global $wpdb;
 
-        $blog_id = get_current_blog_id();
-
-        // Now we get results based on that log ID
-        $query = $wpdb->prepare( 
-            "SELECT id,subscriber_email FROM $this->subscriptions_queue_table 
-            WHERE blog_id = %d
-            AND campaign_id = %s
-            AND sent = 0
-            ORDER BY id ASC",
-            $blog_id, 
-            $log_id,
+        $defaults = array(
+            'campaign_id' => false,
+            'page' => false,
+            'per_page' => 30,
+            'blog_id' => get_current_blog_id(),
+            'count' => false
         );
 
-        if ( ! $page ) {
-            $query .= $wpdb->prepare( " LIMIT %d", $limit );
+        $args = wp_parse_args( $args, $defaults );
+        extract( $args );
+
+        $query = $wpdb->prepare( 
+            "SELECT * FROM $this->subscriptions_queue_table 
+            WHERE blog_id = %d
+            AND sent = 0",
+            $blog_id 
+        );
+
+
+        if ( $campaign_id )
+            $query .= $wpdb->prepare( " AND campaign_id = %d", $campaign_id );
+
+        $query .= " ORDER BY id";
+
+        if ( $count ) {
+            $query_count = str_replace( '*', 'COUNT(id)', $query );
+            $items_count = $wpdb->get_var( $query_count );
         }
-        else {
-            $query .= $wpdb->prepare( " LIMIT %d, %d", intval( ( $page - 1 ) * $limit) . ", " . intval( $limit ) );
-        }
+
+        if ( $page )
+            $query .= $wpdb->prepare( " LIMIT %d, %d", intval( ( $page - 1 ) * $per_page ), intval( $per_page ) );
 
         $results = $wpdb->get_results( $query );
 
-        if ( ! empty( $results ) )
-            return $results;
+        if ( ! empty( $results ) ) {
+            $_return = array();
+            foreach ( $results as $result ) {
+                $result->campaign_settings = maybe_unserialize( $result->campaign_settings );
+                $_return[] = $result;
+            }
 
-        return false;
+            $return = array();
+            if ( $count ) {
+                $return['items'] = $_return;
+                $return['count'] = absint( $items_count );
+            }
+            else {
+                $return = $_return;
+            }
+
+            return $return;
+            
+        }
+
+        return array();
     }
+
 
     public function set_queue_item_sent( $id, $status ) {
         global $wpdb;

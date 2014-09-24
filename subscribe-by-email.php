@@ -697,7 +697,7 @@ class Incsub_Subscribe_By_Email {
 	 * 
 	 */
 	public function maybe_send_pending_emails() {
-
+return;
 		if ( ! get_transient( self::$pending_mails_transient_slug ) ) {
 
 			set_transient( self::$pending_mails_transient_slug, 'next', self::$time_between_batches );
@@ -713,7 +713,11 @@ class Incsub_Subscribe_By_Email {
 			$settings = incsub_sbe_get_settings();
 			$settings = $settings + $pending_log->mail_settings;
 
-			$queue_items = $model->get_queue_items( $pending_log_id, $settings['mails_batch_size'] );
+			$args = array( 
+				'campaign_id' => $pending_log_id, 
+				'per_page' => $settings['mails_batch_size'] 
+			);
+			$queue_items = $model->get_queue_items( $args );
 
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
 			$mail_template = new Incsub_Subscribe_By_Email_Template( $settings, false );
@@ -732,7 +736,11 @@ class Incsub_Subscribe_By_Email {
 			}
 
 			// Have we finished the campaign?
-			$pending_queue_items = $model->get_queue_items( $pending_log_id, $settings['mails_batch_size'] );
+			$args = array( 
+				'campaign_id' => $pending_log_id, 
+				'per_page' => $settings['mails_batch_size'] 
+			);
+			$pending_queue_items = $model->get_queue_items( $args );
 			if ( empty( $pending_queue_items ) ) {
 				$model->clear_mail_log_settings( $pending_log_id );
 			}
