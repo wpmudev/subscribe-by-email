@@ -323,7 +323,7 @@ class Incsub_Subscribe_By_Email_Template {
 	 * 
 	 * @param Integer $log_id log ID
 	 */
-	public function send_mail( $subscriber = false, $log_id = false ) {
+	public function send_mail( $subscriber = false, $queue_item ) {
 
 		$this->add_wp_mail_filters();
 		do_action( 'sbe_pre_send_emails' );
@@ -333,27 +333,27 @@ class Incsub_Subscribe_By_Email_Template {
 		if ( $this->dummy ) {
 			// Test Email
 		}
-		elseif ( $subscriber && $log_id ) {
+		elseif ( $subscriber && $queue_item->campaign_id ) {
 			// Campaign email
 
 			$key = $subscriber->subscription_key;
 			$mail = $subscriber->subscription_email;
 			$subscriber_id = $subscriber->ID;
 
-			$model->increment_mail_log( $log_id );
+			$model->increment_mail_log( $queue_item->campaign_id );
 
 			if ( empty( $key ) ) {
 				$status = 2; // Empty key
-				$this->update_logs( $log_id, $status, $mail );
+				$this->update_logs( $queue_item->campaign_id, $status, $mail );
 				$this->remove_wp_mail_filters();
 				return $status;
 			}
 
-			$user_content = $this->content_generator->filter_user_content( $subscriber );
+			$user_content = $queue_item->get_subscriber_posts();
 
 			if ( empty( $user_content ) ) {
 				$status = 3; // Empty user content
-				$this->update_logs( $log_id, $status, $mail );
+				$this->update_logs( $queue_item->campaign_id, $status, $mail );
 				$this->remove_wp_mail_filters();
 				return $status;
 			}
@@ -369,16 +369,19 @@ class Incsub_Subscribe_By_Email_Template {
 			);
 
 			
-			$headers = apply_filters( 'sbe_template_mail_headers', $headers, $mail, $subscriber_id, $log_id );
+			$headers = apply_filters( 'sbe_template_mail_headers', $headers, $mail, $subscriber_id, $queue_item->campaign_id );
 			$headers = array_values( $headers );
 
 			do_action( 'sbe_before_send_single_email', $user_content, $mail );
 			$result = wp_mail( $mail, $this->subject, $content, $headers );
+			var_dump($this->subject);
+			var_dump($mail);
+			var_dump($result);
 			do_action( 'sbe_after_send_single_email', $user_content, $mail );
 
 			if ( ! $result ) {
 				$status = 4; // Error
-				$this->update_logs( $log_id, $status, $mail );
+				$this->update_logs( $queue_item->campaign_id, $status, $mail );
 				$this->remove_wp_mail_filters();
 				return $status;
 			}
@@ -386,7 +389,7 @@ class Incsub_Subscribe_By_Email_Template {
 
 			// Everything went fine
 			$status = 1;
-			$this->update_logs( $log_id, $status, $mail );
+			$this->update_logs( $queue_item->campaign_id, $status, $mail );
 		}
 		else {
 			// Nothing to do

@@ -452,12 +452,23 @@ class Incsub_Subscribe_By_Email_Model {
         
     }
 
+    public function get_queue_item( $id ) {
+        global $wpdb;
+
+        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_queue_table WHERE id = %d" ), $id );
+        if ( $result ) {
+            $result->campaign_settings = maybe_unserialize( $result->campaign_settings );
+        }
+
+        return $result;
+    }
+
     public function get_queue_items( $args = array() ) {
         global $wpdb;
 
         $defaults = array(
             'campaign_id' => false,
-            'page' => false,
+            'page' => 1,
             'per_page' => 30,
             'blog_id' => get_current_blog_id(),
             'count' => false
@@ -478,13 +489,16 @@ class Incsub_Subscribe_By_Email_Model {
             $query .= $wpdb->prepare( " AND campaign_id = %d", $campaign_id );
 
         $query .= " ORDER BY id";
-
+        
         if ( $count ) {
             $query_count = str_replace( '*', 'COUNT(id)', $query );
             $items_count = $wpdb->get_var( $query_count );
         }
+        else {
+            $items_count = 0;
+        }
 
-        if ( $page )
+        if ( $per_page )
             $query .= $wpdb->prepare( " LIMIT %d, %d", intval( ( $page - 1 ) * $per_page ), intval( $per_page ) );
 
         $results = $wpdb->get_results( $query );
@@ -502,14 +516,14 @@ class Incsub_Subscribe_By_Email_Model {
                 $return['count'] = absint( $items_count );
             }
             else {
-                $return = $_return;
+                $return['items'] = $_return;
             }
 
             return $return;
             
         }
 
-        return array();
+        return array( 'items' => array(), 'count' => absint( $items_count ) );
     }
 
 

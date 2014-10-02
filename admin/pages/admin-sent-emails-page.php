@@ -20,6 +20,18 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 			'pending-queue' => __( 'Emails in queue', INCSUB_SBE_LANG_DOMAIN )
 		);
 
+		add_action( 'load-subscriptions_page_sbe-sent-mails', array( &$this, 'set_screen_options' ) );		
+		add_filter( 'set-screen-option', array( $this, 'save_screen_options' ), 10, 3 );
+
+	}
+
+	public function save_screen_options( $status, $option, $value ) {
+		if ( 'sbe_queue_items_per_page' == $option ) 
+			return $value;
+	}
+
+	public function set_screen_options() {
+		add_screen_option( 'per_page', array( 'label' => __( 'Queue items per page', INCSUB_SBE_LANG_DOMAIN ), 'default' => 20, 'option' => 'sbe_queue_items_per_page' ) );
 	}
 
 	private function get_current_tab() {
@@ -71,6 +83,11 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 			$the_table = new Incsub_Subscribe_By_Email_Pending_Queue_Table();
 
 			$the_table->prepare_items();
+
+			$next_scheduled = Incsub_Subscribe_By_Email::get_next_scheduled_date();
+
+			$model = incsub_sbe_get_model();
+			$remaining_batch = $model->get_remaining_batch_mail();
 		}
 
 		include_once( $view_file );

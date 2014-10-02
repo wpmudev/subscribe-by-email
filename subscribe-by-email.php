@@ -244,6 +244,7 @@ class Incsub_Subscribe_By_Email {
 
 		// Subscriber class
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/class-subscriber.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/class-queue-item.php' );
 
 
 	}
@@ -697,7 +698,7 @@ class Incsub_Subscribe_By_Email {
 	 * 
 	 */
 	public function maybe_send_pending_emails() {
-return;
+
 		if ( ! get_transient( self::$pending_mails_transient_slug ) ) {
 
 			set_transient( self::$pending_mails_transient_slug, 'next', self::$time_between_batches );
@@ -717,18 +718,18 @@ return;
 				'campaign_id' => $pending_log_id, 
 				'per_page' => $settings['mails_batch_size'] 
 			);
-			$queue_items = $model->get_queue_items( $args );
+			$queue_items = incsub_sbe_get_queue_items( $args );
 
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
 			$mail_template = new Incsub_Subscribe_By_Email_Template( $settings, false );
 
-			foreach ( $queue_items as $item ) {
+			foreach ( $queue_items['items'] as $item ) {
 				$subscriber = incsub_sbe_get_subscriber( $item->subscriber_email );
 
 				// In order to avoid duplicated emails we'll set temporary this email as sent
 				$model->set_queue_item_sent( $item->id, 1 );
 
-				$result = $mail_template->send_mail( $subscriber, $pending_log_id );
+				$result = $mail_template->send_mail( $subscriber, $item );
 
 				// Now we update the status
 				$model->set_queue_item_sent( $item->id, absint( $result ) );
@@ -740,7 +741,8 @@ return;
 				'campaign_id' => $pending_log_id, 
 				'per_page' => $settings['mails_batch_size'] 
 			);
-			$pending_queue_items = $model->get_queue_items( $args );
+
+			$pending_queue_items = incsub_sbe_get_queue_items( $args );
 			if ( empty( $pending_queue_items ) ) {
 				$model->clear_mail_log_settings( $pending_log_id );
 			}
