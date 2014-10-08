@@ -190,9 +190,17 @@ function incsub_sbe_get_subscribers_count( $max_id = false ) {
 }
 
 function incsub_sbe_cancel_subscription( $sid ) {
+	if ( is_email( $sid ) ) {
+		$subscriber = incsub_sbe_get_subscriber( $sid );
+
+		if ( ! $subscriber )
+			return false;
+		$sid = $subscriber->ID;
+	}
+
 	$subscriber = get_post( $sid );
 	if ( ! $subscriber )
-		return;
+		return false;
 
-	wp_delete_post( $sid, true );
+	return wp_delete_post( $sid, true );
 }
