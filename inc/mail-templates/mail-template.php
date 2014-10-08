@@ -328,10 +328,19 @@ class Incsub_Subscribe_By_Email_Template {
 		$this->add_wp_mail_filters();
 		do_action( 'sbe_pre_send_emails' );
 
-
 		$model = incsub_sbe_get_model();
-		if ( $this->dummy ) {
+		if ( $this->dummy && is_email( $subscriber ) ) {
 			// Test Email
+			
+			$key = '';
+			$mail = $subscriber;
+
+			$headers = array(
+				'x-mailer-php' => "X-Mailer:PHP/".phpversion(),
+				'reply-to' => "Reply-To: <$mail>",
+			);
+			$content = $this->render_mail_contents( $this->content, false, $key );
+			$result = wp_mail( $mail, $this->subject, $content, $headers );
 		}
 		elseif ( $subscriber && $queue_item->campaign_id ) {
 			// Campaign email
@@ -374,9 +383,6 @@ class Incsub_Subscribe_By_Email_Template {
 
 			do_action( 'sbe_before_send_single_email', $user_content, $mail );
 			$result = wp_mail( $mail, $this->subject, $content, $headers );
-			var_dump($this->subject);
-			var_dump($mail);
-			var_dump($result);
 			do_action( 'sbe_after_send_single_email', $user_content, $mail );
 
 			if ( ! $result ) {
@@ -392,7 +398,7 @@ class Incsub_Subscribe_By_Email_Template {
 			$this->update_logs( $queue_item->campaign_id, $status, $mail );
 		}
 		else {
-			// Nothing to do
+			return 5; // Subscriber does not exist
 		}
 
 

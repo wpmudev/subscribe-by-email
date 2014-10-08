@@ -194,11 +194,11 @@ class Incsub_Subscribe_By_Email_Model {
     public function get_remaining_batch_mail() {
         global $wpdb;
 
-        $query = "SELECT id, mail_settings FROM $this->subscriptions_log_table WHERE mail_settings != '' ORDER BY mail_date ASC LIMIT 1";
+        $query = "SELECT campaign_id, campaign_settings FROM $this->subscriptions_queue_table WHERE sent = 0 ORDER BY id ASC LIMIT 1";
         $results = $wpdb->get_row( $query );
 
         if ( ! empty( $results ) ) {
-            $results->mail_settings = maybe_unserialize( $results->mail_settings );
+            $results->campaign_settings = maybe_unserialize( $results->campaign_settings );
             return $results;
         }
 
@@ -498,7 +498,7 @@ class Incsub_Subscribe_By_Email_Model {
             $items_count = 0;
         }
 
-        if ( $per_page )
+        if ( $per_page > -1 )
             $query .= $wpdb->prepare( " LIMIT %d, %d", intval( ( $page - 1 ) * $per_page ), intval( $per_page ) );
 
         $results = $wpdb->get_results( $query );

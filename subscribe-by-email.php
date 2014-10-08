@@ -182,16 +182,23 @@ class Incsub_Subscribe_By_Email {
 	 * Set the globals variables/constants
 	 */
 	private function set_globals() {
-		define( 'INCSUB_SBE_VERSION', '2.8.5' );
-		define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-		define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-		define( 'INCSUB_SBE_LOGS_DIR', WP_CONTENT_DIR . '/subscribe-by-email-logs' );
+		if ( ! defined( 'INCSUB_SBE_VERSION' ) )
+			define( 'INCSUB_SBE_VERSION', '2.8.5' );
+		if ( ! defined( 'INCSUB_SBE_PLUGIN_URL' ) )
+			define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+		if ( ! defined( 'INCSUB_SBE_PLUGIN_DIR' ) )
+			define( 'INCSUB_SBE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+		if ( ! defined( 'INCSUB_SBE_LOGS_DIR' ) )
+			define( 'INCSUB_SBE_LOGS_DIR', WP_CONTENT_DIR . '/subscribe-by-email-logs' );
 
-		define( 'INCSUB_SBE_LANG_DOMAIN', 'subscribe-by-email' );
+		if ( ! defined( 'INCSUB_SBE_LANG_DOMAIN' ) )
+			define( 'INCSUB_SBE_LANG_DOMAIN', 'subscribe-by-email' );
 
-		define( 'INCSUB_SBE_ASSETS_URL', INCSUB_SBE_PLUGIN_URL . 'assets/' );
+		if ( ! defined( 'INCSUB_SBE_ASSETS_URL' ) )
+			define( 'INCSUB_SBE_ASSETS_URL', INCSUB_SBE_PLUGIN_URL . 'assets/' );
 
-		define( 'INCSUB_SBE_PLUGIN_FILE', plugin_basename( __FILE__ ) );
+		if ( ! defined( 'INCSUB_SBE_PLUGIN_FILE' ) )
+			define( 'INCSUB_SBE_PLUGIN_FILE', plugin_basename( __FILE__ ) );
 
 	}
 
@@ -707,12 +714,12 @@ class Incsub_Subscribe_By_Email {
 			$pending_log = $model->get_remaining_batch_mail();
 
 			if ( ! $pending_log )
-				return;
+				return false;
 				
-			$pending_log_id = absint( $pending_log->id );
+			$pending_log_id = absint( $pending_log->campaign_id );
 
 			$settings = incsub_sbe_get_settings();
-			$settings = $settings + $pending_log->mail_settings;
+			$settings = $settings + $pending_log->campaign_settings;
 
 			$args = array( 
 				'campaign_id' => $pending_log_id, 
@@ -723,6 +730,7 @@ class Incsub_Subscribe_By_Email {
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
 			$mail_template = new Incsub_Subscribe_By_Email_Template( $settings, false );
 
+			$return = array();
 			foreach ( $queue_items['items'] as $item ) {
 				$subscriber = incsub_sbe_get_subscriber( $item->subscriber_email );
 
@@ -734,19 +742,15 @@ class Incsub_Subscribe_By_Email {
 				// Now we update the status
 				$model->set_queue_item_sent( $item->id, absint( $result ) );
 
+				$return[ $subscriber->subscription_email ] = $result;
+
 			}
 
-			// Have we finished the campaign?
-			$args = array( 
-				'campaign_id' => $pending_log_id, 
-				'per_page' => $settings['mails_batch_size'] 
-			);
+			return $return;
 
-			$pending_queue_items = incsub_sbe_get_queue_items( $args );
-			if ( empty( $pending_queue_items ) ) {
-				$model->clear_mail_log_settings( $pending_log_id );
-			}
 		}
+
+		return false;
 		
 	}
 
@@ -757,11 +761,14 @@ class Incsub_Subscribe_By_Email {
 
 		$args = array( 'posts_ids' => array() );
 
+		$settings = incsub_sbe_get_settings();
 		foreach ( $posts_ids as $post_id ) {
 			$is_sent = get_post_meta( $post_id, 'sbe_sent', true );
 			if ( ! $is_sent )
 				$args['posts_ids'][] = $post_id;
 		}
+
+
 
 		if ( empty( $args['posts_ids'] ) )
 			return;
@@ -801,9 +808,6 @@ class Incsub_Subscribe_By_Email {
 		$settings = incsub_sbe_get_settings();
 
 		if ( 'weekly' == $settings['frequency'] && $next_time = get_option( self::$freq_weekly_transient_slug ) ) {
-			// Are we currently sending? Stop please
-			if ( get_transient( 'sbe_sending' ) )
-				return;
 
 			if ( current_time( 'timestamp' ) > $next_time ) {
 				$model = incsub_sbe_get_model();
@@ -821,10 +825,6 @@ class Incsub_Subscribe_By_Email {
 			}
 		}
 		elseif ( 'daily' == $settings['frequency'] && $next_time = get_option( self::$freq_daily_transient_slug ) ) {	
-
-			// Are we currently sending? Stop please
-			if ( get_transient( 'sbe_sending' ) )
-				return;
 			
 			if ( current_time( 'timestamp' ) > $next_time ) {
 				$model = incsub_sbe_get_model();

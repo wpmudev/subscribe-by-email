@@ -7,8 +7,10 @@ function incsub_sbe_get_queue_item( $queue_item ) {
 function incsub_sbe_get_queue_items( $args ) {
 	$model = incsub_sbe_get_model();
 	$results = $model->get_queue_items( $args );
-
+ 
 	$return = array();
+	$return['items'] = array();
+	$return['count'] = 0;
 	foreach ( $results['items'] as $item )
 		$return['items'][] = incsub_sbe_get_queue_item( $item );
 
@@ -64,8 +66,14 @@ class SBE_Queue_Item {
 		$this->posts = get_posts( array(
 			'posts_per_page' => -1,
 			'ignore_sticky_posts' => true,
-			'post__in' => $this->campaign_settings['posts_ids']
+			'post__in' => $this->campaign_settings['posts_ids'],
+			'post_type' => 'any'
 		) );
+
+	}
+
+	public function get_queue_item_posts() {
+		return $this->posts;
 	}
 
 	public function get_subscriber_posts() {
