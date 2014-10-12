@@ -99,7 +99,7 @@ class Incsub_Subscribe_By_Email_Model {
               PRIMARY KEY  (id),
               UNIQUE KEY campaign (blog_id,campaign_id,subscriber_email)
             )  ENGINE=MyISAM $db_charset_collate;";
-       
+       var_dump($sql);
         dbDelta($sql);
 
     }

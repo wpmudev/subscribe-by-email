@@ -221,52 +221,6 @@ if ( version_compare( $current_version, '2.8.1', '<' ) ) {
 	return;
 }
 
-if ( version_compare( $current_version, '2.8.4', '<' ) ) {
-
-	global $wpdb;
-	$subscriptions_log_table = $wpdb->prefix . 'subscriptions_log_table';
-	$query = "SELECT * FROM $subscriptions_log_table WHERE mail_settings != ''";
-	$results = $wpdb->get_results( $query, ARRAY_A );
-
-	foreach ( $results as $log ) {
-
-		$offset = absint( $log['mail_recipients'] );
-		$max_email_id = $log['max_email_ID'];
-		$mail_settings = maybe_unserialize( $log['mail_settings'] );
-
-		$subscribers = $wpdb->get_results( 
-            $wpdb->prepare( 
-                "SELECT ID, post_title FROM $wpdb->posts 
-                WHERE post_status = 'publish' 
-                AND post_type = 'subscriber'
-                AND ID <= %d",
-                $max_email_id
-            )
-        );
-
-		$i = -1;
-		$insert_subscribers = array();
-		foreach ( $subscribers as $subscriber ) {
-			$i++;
-
-			if ( $i < $offset )
-				continue;
-
-			if ( $subscriber->ID > $max_email_id )
-				continue;
-
-			$insert_subscribers[] = $subscriber->post_title;
-
-		}
-
-		$model = incsub_sbe_get_model();
-		$model->insert_queue_items( $insert_subscribers, $log['id'], $mail_settings );
-		
-		
-		
-	}
-	
-}
 
 if ( version_compare( $current_version, '2.9', '<' ) ) {
 	global $wpdb;
@@ -275,7 +229,7 @@ if ( version_compare( $current_version, '2.9', '<' ) ) {
     $queue_table = $wpdb->base_prefix . 'subscriptions_queue';
     $query = "SELECT * FROM $subscriptions_log_table";
     $results = $wpdb->get_results( $query, ARRAY_A );
-
+var_dump($results);
     foreach ( $results as $log ) {           
         $mail_settings = maybe_unserialize( $log['mail_settings'] );
         $max_email_id = $log['max_email_ID'];

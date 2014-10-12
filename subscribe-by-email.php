@@ -262,7 +262,7 @@ class Incsub_Subscribe_By_Email {
 		$this->register_taxonomies();
 		flush_rewrite_rules();
 		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
-		update_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
+		update_site_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
 	}
 
 	public function deactivate() {
@@ -344,7 +344,7 @@ class Incsub_Subscribe_By_Email {
 
 		do_action( 'sbe_upgrade', $current_version, INCSUB_SBE_VERSION );
 
-		include_once( 'upgrade.php' );
+		include_once( INCSUB_SBE_PLUGIN_DIR . 'upgrade.php' );
 
 		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 
@@ -353,7 +353,7 @@ class Incsub_Subscribe_By_Email {
 	}
 
 	private function maybe_upgrade_network() {
-		$current_network_version = get_site_option( 'incsub_sbe_network_version', '2.8.3' );
+		$current_network_version = get_site_option( 'incsub_sbe_network_version' );
 
 		if ( $current_network_version === false ) {
 			$this->activate();
