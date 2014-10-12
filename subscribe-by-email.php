@@ -586,8 +586,13 @@ class Incsub_Subscribe_By_Email {
 
 		$emails_list = $model->get_log_emails_list( $log_id );
 
-		if ( ! empty( $emails_list ) ) 
+		if ( ! empty( $emails_list ) ) {
 			$model->insert_queue_items( $emails_list, $log_id, $args );
+		}
+		else {
+			$model->delete_log( $log_id );
+			Subscribe_By_Email_Logger::delete_log( $log_id );
+		}
 
 		foreach ( $args['posts_ids'] as $post_id )
 			update_post_meta( $post_id, 'sbe_sent', true );

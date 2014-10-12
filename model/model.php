@@ -95,7 +95,7 @@ class Incsub_Subscribe_By_Email_Model {
               campaign_id bigint(20) NOT NULL,
               campaign_settings text,
               sent int(12) DEFAULT 0,
-              sent_status TINYINT(1),
+              sent_status TINYINT(1) DEFAULT 0,
               PRIMARY KEY  (id),
               UNIQUE KEY campaign (blog_id,campaign_id,subscriber_email)
             )  ENGINE=MyISAM $db_charset_collate;";
@@ -342,7 +342,7 @@ class Incsub_Subscribe_By_Email_Model {
 
         $wpdb->query(
             $wpdb->prepare(
-                "DELETE FROM $wpdb->subscriptions_queue_table
+                "DELETE FROM $this->subscriptions_queue_table
                 WHERE campaign_id = %d",
                 $log_id
             )
@@ -455,7 +455,7 @@ class Incsub_Subscribe_By_Email_Model {
     public function get_queue_item( $id ) {
         global $wpdb;
 
-        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_queue_table WHERE id = %d" ), $id );
+        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_queue_table WHERE id = %d", $id ) );
         if ( $result ) {
             $result->campaign_settings = maybe_unserialize( $result->campaign_settings );
         }

@@ -46,7 +46,7 @@ class SBE_Queue_Item {
 			return new self( $queue_item );
 
 		$id = absint( $queue_item );
-		if ( ! $sid )
+		if ( ! $id )
 			return false;
 
 		$model = incsub_sbe_get_model();
@@ -59,14 +59,14 @@ class SBE_Queue_Item {
 		
 	}
 
-	public function __construct( $subscriber ) {
-		foreach ( get_object_vars( $subscriber ) as $key => $value )
+	public function __construct( $queue ) {
+		foreach ( get_object_vars( $queue ) as $key => $value )
 			$this->$key = $value;
 
 		$this->posts = get_posts( array(
 			'posts_per_page' => -1,
 			'ignore_sticky_posts' => true,
-			'post__in' => $this->campaign_settings['posts_ids'],
+			'post__in' => isset( $this->campaign_settings['posts_ids'] ) ? $this->campaign_settings['posts_ids'] : array(),
 			'post_type' => 'any'
 		) );
 
