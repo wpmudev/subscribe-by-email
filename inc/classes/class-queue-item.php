@@ -63,12 +63,17 @@ class SBE_Queue_Item {
 		foreach ( get_object_vars( $queue ) as $key => $value )
 			$this->$key = $value;
 
-		$this->posts = get_posts( array(
-			'posts_per_page' => -1,
-			'ignore_sticky_posts' => true,
-			'post__in' => isset( $this->campaign_settings['posts_ids'] ) ? $this->campaign_settings['posts_ids'] : array(),
-			'post_type' => 'any'
-		) );
+		$posts_ids = isset( $this->campaign_settings['posts_ids'] ) ? $this->campaign_settings['posts_ids'] : array();
+
+		$this->posts = array();
+		if ( ! empty( $posts_ids ) ) {
+			$this->posts = get_posts( array(
+				'posts_per_page' => -1,
+				'ignore_sticky_posts' => true,
+				'post__in' => $posts_ids,
+				'post_type' => 'any'
+			) );
+		}
 
 	}
 

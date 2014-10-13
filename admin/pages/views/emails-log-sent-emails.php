@@ -25,27 +25,16 @@
 			<?php 
 				$errors = 0;
 				$user_content_empty = 0;
-				if ( is_resource( $file ) ) {
-					while ( $buffer = Subscribe_By_Email_Logger::read_line( $file ) ) {
-						$line = explode( '|', $buffer );
-
-						if ( absint( $line[2] ) !== 0 ) {
-							switch ( absint( $line[2] ) ) {
-								case 1: { $status = '<span style="color:green">' . __( 'Sent', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; break; }
-								case 2: { $status = '<span style="color:red">' . __( 'User key undefined', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $errors++; break; }
-								case 3: { $status = '<span style="color:red">' . __( 'User content empty', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $user_content_empty++; break; }
-								case 4: { $status = '<span style="color:red">' . __( 'Error', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $user_content_empty++; break; }
-								default: { $status = $line[2]; $errors++; break; }
-							}
-						}
-						else {
-							$status = $line[2];
-						}
-						$this->render_row( $line[0], $status );
+				foreach ( $log_items['items'] as $item ) {
+					switch ( absint( $item->sent_status ) ) {
+						case 1: { $status = '<span style="color:green">' . __( 'Sent', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; break; }
+						case 2: { $status = '<span style="color:red">' . __( 'User key undefined', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $errors++; break; }
+						case 3: { $status = '<span style="color:red">' . __( 'User content empty', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $user_content_empty++; break; }
+						case 4: { $status = '<span style="color:red">' . __( 'Error', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $errors++; break; }
+						case 5: { $status = '<span style="color:red">' . __( 'Subscriber does not exist', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $errors++; break; }
+						default: { $status = __( 'No details found', INCSUB_SBE_LANG_DOMAIN ); $errors++; break; }
 					}
-				}
-				else {
-					_e( 'No details found', INCSUB_SBE_LANG_DOMAIN );
+					$this->render_row( $item->subscriber_email, $status );
 				}
 				?>
 

@@ -740,6 +740,12 @@ class Incsub_Subscribe_By_Email {
 		
 	}
 
+	public static function get_next_scheduled_batch_date() {
+		$timeout = get_option( '_transient_timeout_' . self::$pending_mails_transient_slug );
+		$date = date_i18n( 'Y-m-d H:i:s', $timeout );
+		return get_date_from_gmt( $date, get_option('date_format', 'Y-m-d' ) . ' ' . get_option( 'time_format', 'H:i:s') );
+	}
+
 	public function maybe_delete_logs() {
 
 		if ( ! get_transient( 'incsub_sbe_check_logs' ) ) {

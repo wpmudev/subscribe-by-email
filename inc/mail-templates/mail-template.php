@@ -297,11 +297,6 @@ class Incsub_Subscribe_By_Email_Template {
 		$this->content = apply_filters( 'sbe_mail_content', $content, $log_id );
 	}
 
-	private function update_logs( $log_id, $status, $mail ) {
-		$logger = new Subscribe_By_Email_Logger( $log_id );
-		$logger->write( $mail, $status );
-	}
-
 	private function add_wp_mail_filters() {
 		add_filter( 'wp_mail_from', array( &$this, 'set_mail_from' ) );
 		add_filter( 'wp_mail_from_name', array( &$this, 'set_mail_from_name' ) );
@@ -353,7 +348,6 @@ class Incsub_Subscribe_By_Email_Template {
 
 			if ( empty( $key ) ) {
 				$status = 2; // Empty key
-				$this->update_logs( $queue_item->campaign_id, $status, $mail );
 				$this->remove_wp_mail_filters();
 				return $status;
 			}
@@ -362,7 +356,6 @@ class Incsub_Subscribe_By_Email_Template {
 
 			if ( empty( $user_content ) ) {
 				$status = 3; // Empty user content
-				$this->update_logs( $queue_item->campaign_id, $status, $mail );
 				$this->remove_wp_mail_filters();
 				return $status;
 			}
@@ -387,7 +380,6 @@ class Incsub_Subscribe_By_Email_Template {
 
 			if ( ! $result ) {
 				$status = 4; // Error
-				$this->update_logs( $queue_item->campaign_id, $status, $mail );
 				$this->remove_wp_mail_filters();
 				return $status;
 			}
@@ -395,7 +387,6 @@ class Incsub_Subscribe_By_Email_Template {
 
 			// Everything went fine
 			$status = 1;
-			$this->update_logs( $queue_item->campaign_id, $status, $mail );
 		}
 		else {
 			return 5; // Subscriber does not exist

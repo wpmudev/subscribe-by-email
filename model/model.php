@@ -471,7 +471,8 @@ class Incsub_Subscribe_By_Email_Model {
             'page' => 1,
             'per_page' => 30,
             'blog_id' => get_current_blog_id(),
-            'count' => false
+            'count' => false,
+            'status' => 0
         );
 
         $args = wp_parse_args( $args, $defaults );
@@ -479,10 +480,16 @@ class Incsub_Subscribe_By_Email_Model {
 
         $query = $wpdb->prepare( 
             "SELECT * FROM $this->subscriptions_queue_table 
-            WHERE blog_id = %d
-            AND sent = 0",
+            WHERE blog_id = %d",
             $blog_id 
         );
+
+        if ( $status === 'pending' ) {
+            $query .= " AND sent != 0";
+        }
+        else {
+            $query .= $wpdb->prepare( " AND sent_status = %d", $status );
+        }
 
 
         if ( $campaign_id )

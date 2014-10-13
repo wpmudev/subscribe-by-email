@@ -57,6 +57,14 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 			$log_id = isset( $_GET['log_id'] ) ? $_GET['log_id'] : false;
 
 			if ( $log_id ) {
+				$log_items = incsub_sbe_get_queue_items(
+					array(
+						'per_page' => -1,
+						'campaign_id' => $log_id,
+						'status' => 'pending'
+					)
+				);
+
 				$model = incsub_sbe_get_model();
 				$log = $model->get_single_log( $_GET['log_id'] );
 
@@ -65,8 +73,6 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 
 				$total = incsub_sbe_get_subscribers_count( $max_email_id );
 				$pending = absint( $total - $users_processed );
-
-				$file = Subscribe_By_Email_Logger::open_log( $_GET['log_id'] );
 
 				$log_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $log->mail_date );
 
@@ -84,8 +90,7 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 
 			$the_table->prepare_items();
 
-			$next_scheduled = Incsub_Subscribe_By_Email::get_next_scheduled_date();
-
+			$next_scheduled = Incsub_Subscribe_By_Email::get_next_scheduled_batch_date();
 			$model = incsub_sbe_get_model();
 			$remaining_batch = $model->get_remaining_batch_mail();
 		}
