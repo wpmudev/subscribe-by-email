@@ -96,7 +96,7 @@ class Incsub_Subscribe_By_Email_Network_Settings_Page extends Incsub_Subscribe_B
 			}
 			incsub_sbe_update_settings( $new_settings );
 
-			$errors = get_settings_errors( $this->settings_name, $sanitize );
+			$errors = get_settings_errors( $this->settings_name );
 
 			if ( empty( $errors ) ) {
 				$redirect_to = add_query_arg( 'updated', 'true', $this->get_permalink() );

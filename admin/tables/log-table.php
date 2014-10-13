@@ -19,32 +19,40 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
 
 
     function column_date( $item ) { 
-        return date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int)$item['mail_date'] );
+        return date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int)$item->mail_date );
     }
 
     function column_recipients( $item ) {
-        $log_file = Subscribe_By_Email_Logger::open_log( $item['id'] );
-        if ( absint( $item['mail_recipients'] ) != 0 && is_resource( $log_file ) ) {
-            $link = add_query_arg( 'log_id', $item['id'], Incsub_Subscribe_By_Email::$admin_sent_emails_page->get_permalink() );
-            return $item['mail_recipients'] . ' <a href="' . $link . '">' . __( 'Details &rarr;', INCSUB_SBE_LANG_DOMAIN ) . '</a>';
-        }
-        return $item['mail_recipients'];
+        $link = add_query_arg( 'log_id', $item->id, Incsub_Subscribe_By_Email::$admin_sent_emails_page->get_permalink() );
+        return $item->mail_recipients . ' <a href="' . $link . '">' . __( 'Details &rarr;', INCSUB_SBE_LANG_DOMAIN ) . '</a>';
     }
 
     function column_status( $item ) {
-        if ( absint( $item['mail_recipients'] ) == 0 && empty( $item['mail_settings'] ) )
-            return '<span style="color:#DF2929; font-weight:bold;">' . __( 'Failed', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
-        if ( empty( $item['mail_settings'] ) && absint( $item['mail_recipients'] ) != 0 )
-            return __( 'Finished', INCSUB_SBE_LANG_DOMAIN );
-        else
-            return '<span style="color:#DF2929; font-weight:bold;">' . __( 'Pending', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
+        $status = $item->get_status();
+        switch( $status ) {
+            case 'empty': {
+                $html = '<span style="color:#DF2929; font-weight:bold;">' . __( 'No subscribers in list', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
+                break;
+            }
+            case 'pending': {
+                return '<span style="color:#DF2929; font-weight:bold;">' . __( 'Pending', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
+                break;
+            }
+            case 'finished': {
+                return '<span style="color:#2DA62F; font-weight:bold;">' . __( 'Finished', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
+                break;
+            }
+        }
+
+        return $html;
+        
     }
 
     function column_subject( $item ) {
-        return stripslashes_deep( $item['mail_subject'] );
+        return stripslashes_deep( $item->mail_subject );
     }
 
-    function get_columns(){
+    function get_columns() {
         $columns = array(
             'date'   => __( 'Date', INCSUB_SBE_LANG_DOMAIN ),
             'recipients'    => __( 'Recipients no.', INCSUB_SBE_LANG_DOMAIN ),
@@ -81,14 +89,15 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
         if ( isset( $_POST['s'] ) )
             $search = $_POST['s'];
 
-        $logs = $model->get_log( $current_page, $per_page, $sortable, $search );
+        $args = compact( 'current_page', 'per_page', 'sortable', 'search' );
+        $campaigns = incsub_sbe_get_campaigns( $args );
 
-        $this->items = $logs['logs'];               
+        $this->items = $campaigns['items'];               
 
         $this->set_pagination_args( array(
-            'total_items' => $logs['total'],                 
+            'total_items' => $campaigns['count'],                 
             'per_page'    => $per_page,              
-            'total_pages' => ceil( $logs['total'] / $per_page )  
+            'total_pages' => ceil( $campaigns['count'] / $per_page )  
         ) );
     }
 }

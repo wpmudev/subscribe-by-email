@@ -251,6 +251,7 @@ class Incsub_Subscribe_By_Email {
 
 		// Subscriber class
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/class-subscriber.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/class-campaign.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/classes/class-queue-item.php' );
 
 
@@ -259,6 +260,7 @@ class Incsub_Subscribe_By_Email {
 	public function activate() {
 		$model = Incsub_Subscribe_By_Email_Model::get_instance();
 		$model->create_squema();
+		$model->create_network_squema();
 		$this->register_taxonomies();
 		flush_rewrite_rules();
 		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );

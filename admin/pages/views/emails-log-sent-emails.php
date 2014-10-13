@@ -7,7 +7,7 @@
 		<table class="form-table">
 			<?php $this->render_row( __( 'Date', INCSUB_SBE_LANG_DOMAIN ), $log_date ); ?>
 
-			<?php $this->render_row( __( 'Status', INCSUB_SBE_LANG_DOMAIN ), empty( $log->mail_settings ) ? __( 'Finished', INCSUB_SBE_LANG_DOMAIN ) : __( 'Pending', INCSUB_SBE_LANG_DOMAIN ) ); ?>
+			<?php $this->render_row( __( 'Status', INCSUB_SBE_LANG_DOMAIN ), $status ); ?>
 
 			<?php $this->render_row( __( 'Subscribers processed', INCSUB_SBE_LANG_DOMAIN ), $users_processed ); ?>
 
@@ -25,7 +25,7 @@
 			<?php 
 				$errors = 0;
 				$user_content_empty = 0;
-				foreach ( $log_items['items'] as $item ) {
+				foreach ( $sent_emails as $item ) {
 					switch ( absint( $item->sent_status ) ) {
 						case 1: { $status = '<span style="color:green">' . __( 'Sent', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; break; }
 						case 2: { $status = '<span style="color:red">' . __( 'User key undefined', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $errors++; break; }

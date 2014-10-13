@@ -29,6 +29,10 @@ class Incsub_Subscribe_By_Email_Model {
     public function create_squema() {
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
         $this->create_subscriptions_log_table();
+    }
+
+    public function create_network_squema() {
+        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
         $this->create_subscriptions_queue_table();
     }
 
@@ -62,7 +66,6 @@ class Incsub_Subscribe_By_Email_Model {
               mail_recipients int(8) NOT NULL,
               mail_date bigint(20) NOT NULL,
               mail_settings text,
-              mails_list text,
               max_email_ID bigint(20) NOT NULL,
               PRIMARY KEY  (id)
             )  ENGINE=MyISAM $db_charset_collate;";
@@ -70,9 +73,6 @@ class Incsub_Subscribe_By_Email_Model {
         dbDelta($sql);
 
         $alter = "ALTER TABLE $this->subscriptions_log_table MODIFY COLUMN mail_settings text";
-        $wpdb->query( $alter );
-        
-        $alter = "ALTER TABLE $this->subscriptions_log_table MODIFY COLUMN mails_list text";
         $wpdb->query( $alter );
 
     }
@@ -99,7 +99,7 @@ class Incsub_Subscribe_By_Email_Model {
               PRIMARY KEY  (id),
               UNIQUE KEY campaign (blog_id,campaign_id,subscriber_email)
             )  ENGINE=MyISAM $db_charset_collate;";
-       var_dump($sql);
+
         dbDelta($sql);
 
     }
@@ -162,7 +162,6 @@ class Incsub_Subscribe_By_Email_Model {
                 'mail_recipients' => 0,
                 'mail_date' => current_time( 'timestamp' ),
                 'mail_settings' => maybe_serialize( $args ),
-                'mails_list' => '',
                 'max_email_ID' => $max_id
             ),
             array(
@@ -268,6 +267,28 @@ class Incsub_Subscribe_By_Email_Model {
         return $subscribers;
     }
 
+    public function get_campaign_emails_list_count( $log_id ) {
+        global $wpdb;
+
+        $log = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_log_table WHERE id = %d", $log_id ) );
+
+        if ( empty( $log ) )
+            return 0;
+
+        $continue_from = $log->mail_recipients;
+        $end_on = $log->max_email_ID;
+
+        $query = $wpdb->prepare( 
+            "SELECT COUNT(ID) FROM $wpdb->posts 
+            WHERE post_status = 'publish' 
+            AND post_type = 'subscriber'
+            AND ID <= %d",
+            $end_on
+        );
+
+        return absint( $wpdb->get_var( $query ) );
+    }
+
     public function update_log_emails_list( $id, $emails_list ) {
         global $wpdb;
 
@@ -299,7 +320,7 @@ class Incsub_Subscribe_By_Email_Model {
 
         $query .= " LIMIT " . intval( ( $current_page - 1 ) * $per_page) . ", " . intval( $per_page );
 
-        $logs = $wpdb->get_results( $query, ARRAY_A );
+        $logs = $wpdb->get_results( $query );
 
         $results = array(
             'total' => $total,
@@ -312,7 +333,14 @@ class Incsub_Subscribe_By_Email_Model {
     public function get_single_log( $id ) {
         global $wpdb;
 
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_log_table WHERE id = %d", $id ) );
+        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_log_table WHERE id = %d", $id ) );
+
+        if ( ! empty( $result ) ) {
+            $result->campaign_settings = maybe_unserialize( $result->mail_settings );
+            return $result;
+        }
+
+        return false;
     }
 
     public function get_old_logs_ids( $time ) {
@@ -485,7 +513,10 @@ class Incsub_Subscribe_By_Email_Model {
         );
 
         if ( $status === 'pending' ) {
-            $query .= " AND sent != 0";
+            $query .= " AND sent_status = 0";
+        }
+        elseif ( $status === 'sent' ) {
+            $query .= " AND sent_status != 0";
         }
         else {
             $query .= $wpdb->prepare( " AND sent_status = %d", $status );

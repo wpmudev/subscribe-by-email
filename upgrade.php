@@ -229,7 +229,7 @@ if ( version_compare( $current_version, '2.9', '<' ) ) {
     $queue_table = $wpdb->base_prefix . 'subscriptions_queue';
     $query = "SELECT * FROM $subscriptions_log_table";
     $results = $wpdb->get_results( $query, ARRAY_A );
-var_dump($results);
+
     foreach ( $results as $log ) {           
         $mail_settings = maybe_unserialize( $log['mail_settings'] );
         $max_email_id = $log['max_email_ID'];

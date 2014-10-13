@@ -21,6 +21,7 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 		);
 
 		add_action( 'load-subscriptions_page_sbe-sent-mails', array( &$this, 'set_screen_options' ) );		
+		add_action( 'load-subscriptions_page_sbe-sent-mails', array( &$this, 'send_batch' ) );		
 		add_filter( 'set-screen-option', array( $this, 'save_screen_options' ), 10, 3 );
 
 	}
@@ -32,6 +33,16 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 
 	public function set_screen_options() {
 		add_screen_option( 'per_page', array( 'label' => __( 'Queue items per page', INCSUB_SBE_LANG_DOMAIN ), 'default' => 20, 'option' => 'sbe_queue_items_per_page' ) );
+	}
+
+	public function send_batch() {
+
+		if ( isset( $_GET['sbe_send_batch_now'] ) ) {
+			delete_transient( Incsub_Subscribe_By_Email::$pending_mails_transient_slug );
+			$redirect_url = remove_query_arg( 'sbe_send_batch_now' );
+			wp_redirect( $redirect_url );
+			exit;
+		}
 	}
 
 	private function get_current_tab() {
@@ -57,24 +68,28 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 			$log_id = isset( $_GET['log_id'] ) ? $_GET['log_id'] : false;
 
 			if ( $log_id ) {
-				$log_items = incsub_sbe_get_queue_items(
-					array(
-						'per_page' => -1,
-						'campaign_id' => $log_id,
-						'status' => 'pending'
-					)
-				);
 
-				$model = incsub_sbe_get_model();
-				$log = $model->get_single_log( $_GET['log_id'] );
+				$campaign = incsub_sbe_get_campaign( absint( $_GET['log_id'] ) );
 
-				$users_processed = $log->mail_recipients;
-				$max_email_id = $log->max_email_ID;
-
-				$total = incsub_sbe_get_subscribers_count( $max_email_id );
-				$pending = absint( $total - $users_processed );
-
-				$log_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $log->mail_date );
+				$pending = count( $campaign->get_campaign_queue() );
+				$users_processed = $campaign->mail_recipients;
+				$sent_emails = $campaign->get_campaign_sent_queue();
+				$total = $campaign->get_total_emails_count();
+				$log_date = date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $campaign->mail_date );
+				switch ( $campaign->get_status() ) {
+					case 'empty': {
+						$status = __( 'No subscribers in list', INCSUB_SBE_LANG_DOMAIN );
+						break;
+					}
+					case 'pending': {
+						$status = __( 'Pending', INCSUB_SBE_LANG_DOMAIN );
+						break;
+					}
+					case 'finished': {
+						$status = __( 'Finished', INCSUB_SBE_LANG_DOMAIN );
+						break;
+					}
+				}
 
 			}
 			else {

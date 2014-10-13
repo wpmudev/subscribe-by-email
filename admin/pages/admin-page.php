@@ -7,7 +7,7 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 
 	private $page_title;
 	private $menu_title;
-	private $capability;
+	protected $capability;
 	private $network = false;
 	private $parent = false;
 
