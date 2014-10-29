@@ -29,6 +29,7 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
 
     function column_status( $item ) {
         $status = $item->get_status();
+
         switch( $status ) {
             case 'empty': {
                 $html = '<span style="color:#DF2929; font-weight:bold;">' . __( 'No subscribers in list', INCSUB_SBE_LANG_DOMAIN ) . '</span>';

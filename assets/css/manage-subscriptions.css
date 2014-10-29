@@ -13,3 +13,9 @@
 	margin-bottom:30px;
 	padding-bottom:30px;
 }
+
+.sbe-saved {
+	padding: 10px;
+	background: #ADDDAD;
+	border: 1px solid green;
+}

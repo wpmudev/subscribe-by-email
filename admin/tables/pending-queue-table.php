@@ -57,7 +57,12 @@ class Incsub_Subscribe_By_Email_Pending_Queue_Table extends WP_List_Table {
         if ( 'delete' == $this->current_action() && ! empty( $_POST['queue_id' ] ) ) {
             $model = incsub_sbe_get_model();
             foreach ( $_POST['queue_id'] as $id ) {
-                $model->delete_queue_item( $id );
+                $queue_item = incsub_sbe_get_queue_item( absint( $id ) );
+                if ( $queue_item ) {
+                    $campaign = incsub_sbe_get_campaign( $queue_item->campaign_id );
+                    $model->delete_queue_item( absint( $id ) );
+                    $campaign->refresh_campaign_status();
+                }
             }
             ?>
                 <div class="updated">

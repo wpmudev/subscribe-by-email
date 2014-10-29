@@ -318,7 +318,7 @@ class Incsub_Subscribe_By_Email_Template {
 	 * 
 	 * @param Integer $log_id log ID
 	 */
-	public function send_mail( $subscriber = false, $queue_item ) {
+	public function send_mail( $subscriber = false, $queue_item = false ) {
 
 		$this->add_wp_mail_filters();
 		do_action( 'sbe_pre_send_emails' );

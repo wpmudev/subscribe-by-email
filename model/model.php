@@ -237,6 +237,11 @@ class Incsub_Subscribe_By_Email_Model {
 
     }
 
+    public function update_mail_log_recipients( $id, $mail_recipients ) {
+        global $wpdb;
+        $wpdb->query( $wpdb->prepare( "UPDATE $this->subscriptions_log_table SET mail_recipients = %d WHERE id = %d", $mail_recipients, $id ) );        
+    }
+
 
     public function get_log_emails_list( $log_id, $batch_size = false ) {
         global $wpdb;

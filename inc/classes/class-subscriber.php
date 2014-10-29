@@ -87,4 +87,18 @@ class SBE_Subscriber {
 
 	}
 
+	public function set_post_types( $post_types ) {
+		if ( false === $post_types ) {
+			$post_types = false;
+		}
+		else {
+			$current_post_types = $this->subscription_post_types;
+			$site_post_types = incsub_sbe_get_subscriptions_post_types();
+			$post_types = array_intersect( $site_post_types, $post_types );
+		}
+
+		update_post_meta( $this->ID, 'subscription_post_types', $post_types );
+	}
+
+
 }

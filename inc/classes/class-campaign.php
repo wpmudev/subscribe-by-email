@@ -104,5 +104,17 @@ class SBE_Campaign {
 		return $return['items'];
 	}
 
+	public function refresh_campaign_status() {
+		$queue_items = $this->get_campaign_queue();
+		
+
+		if ( empty( $queue_items ) ) {
+			$subscribers_count = $this->get_total_emails_count();
+			$this->mail_recipients = $subscribers_count;
+			$model = incsub_sbe_get_model();
+			$model->update_mail_log_recipients( $this->id, $this->mail_recipients );
+		}
+	}
+
 
 }

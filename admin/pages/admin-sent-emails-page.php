@@ -29,6 +29,8 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 	public function save_screen_options( $status, $option, $value ) {
 		if ( 'sbe_queue_items_per_page' == $option ) 
 			return $value;
+
+		return $status;
 	}
 
 	public function set_screen_options() {
@@ -61,11 +63,13 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 
 		$current_tab = $this->get_current_tab();
 
-		include_once( 'views/emails-log-tabs.php' );
+		$log_id = isset( $_GET['log_id'] ) ? $_GET['log_id'] : false;
+
+		if ( ! $log_id )
+			include_once( 'views/emails-log-tabs.php' );
 
 		$view_file = 'views/emails-log-' . $current_tab . '.php';
 		if ( 'sent-emails' == $current_tab ) {
-			$log_id = isset( $_GET['log_id'] ) ? $_GET['log_id'] : false;
 
 			if ( $log_id ) {
 

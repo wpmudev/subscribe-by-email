@@ -232,3 +232,19 @@ function incsub_sbe_debug( $message ) {
     $debugger->debug( $message );
 }
 
+function incsub_sbe_get_subscriptions_post_types() {
+	$settings = incsub_sbe_get_settings();
+	$post_types = $settings['post_types'];
+
+	$result = array();
+	if ( ! empty( $post_types ) ) {
+		foreach ( $post_types as $post_type ) {
+			$object = get_post_type_object( $post_type );
+			if ( ! empty( $object->labels->name ) )
+				$result[] = $post_type;				
+		}
+	}
+
+	return $result;
+}
+

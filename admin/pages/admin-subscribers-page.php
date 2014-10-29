@@ -12,7 +12,8 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 			'slug' => 'sbe-subscribers',
 			'page_title' => __( 'Subscriptions', INCSUB_SBE_LANG_DOMAIN ),
 			'menu_title' => __( 'Subscriptions', INCSUB_SBE_LANG_DOMAIN ),
-			'capability' => 'manage_options'
+			'capability' => 'manage_options',
+			'menu_icon' => 'dashicons-email-alt'
 		);
 		parent::__construct( $args );
 
@@ -20,12 +21,33 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 		add_action( 'admin_init', array( &$this, 'maybe_download_csv' ) );
 		add_action( 'load-toplevel_page_sbe-subscribers', array( &$this, 'set_screen_options' ) );		
 		add_filter( 'set-screen-option', array( $this, 'save_screen_options' ), 10, 3 );
+		add_action( 'admin_head', array( $this, 'render_icon_styles' ) );
 
 	}
 
+	public function render_icon_styles() {
+		global $current_screen;
+		if ( $current_screen->id == $this->page_id ) {
+			?>
+				<style>
+					.sbe-icon-confirmed-yes:before {
+						color:green;
+					}
+					.sbe-icon-confirmed-no:before {
+						color:#D55252;
+					}
+				</style>
+			<?php
+		}
+	}
+
 	public function save_screen_options( $status, $option, $value ) {
-		if ( 'subscribers_per_page' == $option ) 
+
+		if ( 'subscribers_per_page' == $option ) {
 			return $value;
+		}
+
+		return $status;
 	}
 
 	public function set_screen_options() {
@@ -35,6 +57,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 
 	public function render_page() {
+		$current_screen = get_current_screen();
 
 		$add_new_link = add_query_arg(
 			'page',

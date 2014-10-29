@@ -60,9 +60,9 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
 
     function column_status( $item ) {
         if ( $item->is_confirmed() )
-            return '<span class="sbe_icon sbe_status sbe_status_confirmed"> ' . __( 'Email confirmed', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
+            return '<span class="dashicons-before dashicons-yes sbe-icon-confirmed-yes"> ' . __( 'Email confirmed', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
         else
-            return '<span class="sbe_icon sbe_status sbe_status_awaiting"> ' . __( 'Awaiting confirmation', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
+            return '<span class="dashicons-before dashicons-no sbe-icon-confirmed-no"> ' . __( 'Awaiting confirmation', INCSUB_SBE_LANG_DOMAIN ) . '</span>';
     }
 
     function column_subscription_type( $item ) {
@@ -94,7 +94,15 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
             }
         }
         
-        return implode( ', ', $result );
+        $return = implode( ', ', $result );
+
+        $settings = incsub_sbe_get_settings();
+        if ( current_user_can( 'manage_options' ) && $item->is_confirmed() && 'page' === get_post_type( $settings['manage_subs_page'] ) ) {
+            $url = add_query_arg( 'sub_key', $item->subscription_key, get_permalink( $settings['manage_subs_page'] ) );
+            $actions['set_subscriber_post_types'] = '<a target="_blank" href="' . esc_url( $url ) . '"> ' . __( 'Set subscriber post types', INCSUB_SBE_LANG_DOMAIN ) . ' <span class="dashicons dashicons-redo"></span></a>';
+            $return .= $this->row_actions( $actions );
+        }
+        return $return;
     }
 
     function get_columns(){
@@ -207,6 +215,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         $screen_option = $current_screen->get_option( 'per_page', 'option' );
 
         $per_page = get_user_meta( $user, $screen_option, true );
+
         if ( empty ( $per_page) || $per_page < 1 ) {
             $per_page = $current_screen->get_option( 'per_page', 'default' );
         }

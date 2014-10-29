@@ -68,47 +68,6 @@ class Incsub_Subscribe_By_Email {
 		add_action( 'plugins_loaded', array( &$this, 'load_text_domain' ) );
 
 		add_action( 'wpmu_drop_tables', array( &$this, 'uninstall' ) );
-
-		add_action( 'admin_head', array( &$this, 'render_icon_styles' ) );
-
-	}
-
-	public function render_icon_styles() {
-		?>
-		<style type="text/css">
-			@font-face {
-				font-family: 'SBEFont';
-				src:url('<?php echo INCSUB_SBE_ASSETS_URL; ?>fonts/sbe.eot?-6xkqvi');
-				src:url('<?php echo INCSUB_SBE_ASSETS_URL; ?>fonts/sbe.eot?#iefix-6xkqvi') format('embedded-opentype'),
-					url('<?php echo INCSUB_SBE_ASSETS_URL; ?>fonts/sbe.woff?-6xkqvi') format('woff'),
-					url('<?php echo INCSUB_SBE_ASSETS_URL; ?>fonts/sbe.ttf?-6xkqvi') format('truetype'),
-					url('<?php echo INCSUB_SBE_ASSETS_URL; ?>fonts/sbe.svg?-6xkqvi#icomoon') format('svg');
-				font-weight: normal;
-				font-style: normal;
-			}
-
-		    .sbe_icon:before {
-		    	font-family: 'SBEFont' !important;
-		    }
-
-
-		    .sbe_status_confirmed:before {
-		    	content:"\e604";
-		    }
-
-		   
-
-		    .sbe_status_confirmed:before {
-		    	content:"\e603";
-		    	color:green;
-		    }
-		    .sbe_status_awaiting:before {
-		    	content:"\e602";
-		    	color:#D55252;
-		    }
-
-		</style>
-		<?php
 	}
 
 	public function init_plugin() {

@@ -65,13 +65,14 @@ class SBE_Queue_Item {
 
 		$posts_ids = isset( $this->campaign_settings['posts_ids'] ) ? $this->campaign_settings['posts_ids'] : array();
 
+		$settings = incsub_sbe_get_settings();
 		$this->posts = array();
 		if ( ! empty( $posts_ids ) ) {
 			$this->posts = get_posts( array(
 				'posts_per_page' => -1,
 				'ignore_sticky_posts' => true,
 				'post__in' => $posts_ids,
-				'post_type' => 'any'
+				'post_type' => $settings['post_types']
 			) );
 		}
 
@@ -87,7 +88,7 @@ class SBE_Queue_Item {
 		$settings = incsub_sbe_get_settings();
 		$posts = array();
 		if ( $subscriber ) {
-			foreach ( $this->posts as $post ) {
+			foreach ( $this->get_queue_item_posts() as $post ) {
 				$post_types = $subscriber->subscription_post_types;
 				if ( false === $post_types )
 					$post_types = $settings['post_types'];

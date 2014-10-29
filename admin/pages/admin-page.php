@@ -18,6 +18,7 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 		$this->page_title = $page_title;
 		$this->menu_title = $menu_title;
 		$this->capability = $capability;
+		$this->menu_icon = ! empty( $menu_icon ) ? $menu_icon : 'div';
 
 		if ( ! empty( $network ) )
 			$this->network = true;
@@ -58,7 +59,7 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 				$this->capability, 
 				$this->menu_slug, 
 				array( &$this, 'render_page' ),
-				'div'
+				$this->menu_icon
 			);
 
 			// Yes, SBE main menu is a bit different

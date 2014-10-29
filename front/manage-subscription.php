@@ -42,27 +42,22 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 
 			$updated = false;
 
-			$user_post_types = $subscriber->subscription_post_types;
-
 			if ( ! empty( $_POST['sub_submit'] ) ) {
-				$user_post_types = $subscriber->subscription_post_types;
-				if ( $user_post_types === false )
-					$user_post_types = array();
-
 				$submitted = empty( $_POST['sub_post_types'] ) ? array() : $_POST['sub_post_types'];
-				update_post_meta( $subscriber->ID, 'subscription_post_types', $submitted );
+				if ( ! is_array( $submitted ) )
+					$submitted = false;
+
+				$subscriber->set_post_types( $submitted );
 				$updated = true;
-				$user_post_types = $submitted;
 			}
 
-			$post_types = self::get_sbe_post_types();
-			if ( $user_post_types === false ) {
-				$user_post_types = array();
-				foreach ( $post_types as $post_type ) {
-					$user_post_types[] = $post_type['slug'];
-				}
+			$user_post_types = $subscriber->subscription_post_types;
+			if ( false === $user_post_types ) {
+				// If is false, the subscriber is subscribed to everything
+				$user_post_types = incsub_sbe_get_subscriptions_post_types();
 			}
-			
+
+			$post_types = incsub_sbe_get_subscriptions_post_types();
 
 			//TEST
 			
@@ -71,7 +66,7 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 				<div id="manage_subscription_wrap">
 
 					<?php if ( $updated ): ?>
-						<p><?php _e( 'Settings saved', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+						<p class="sbe-saved"><?php _e( 'Settings saved', INCSUB_SBE_LANG_DOMAIN ); ?></p>
 					<?php endif; ?>
 
 					<form action="" method="POST">
@@ -83,10 +78,16 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 							<h3><?php _e( 'Please select which post types you wish to be notified about.', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
 
 							<?php foreach ( $post_types as $post_type ): ?>
+								<?php 
+									$_post_type = get_post_type_object( $post_type ); 
+									if ( ! $_post_type )
+										continue;
+								?>
+
 								<div class="post-type-box">
-									<label class="sub_post_type_label" for="sub_post_type-<?php echo $post_type['slug']; ?>">
-										<input type="checkbox" class="sub_post_types" <?php checked( in_array( $post_type['slug'], $user_post_types ) ); ?> id="sub_post_type-<?php echo $post_type['slug']; ?>" name="sub_post_types[]" value="<?php echo $post_type['slug']; ?>"> 
-										<?php echo $post_type['name']; ?>
+									<label class="sub_post_type_label" for="sub_post_type-<?php echo $post_type; ?>">
+										<input type="checkbox" class="sub_post_types" <?php checked( in_array( $post_type, $user_post_types ) ); ?> id="sub_post_type-<?php echo $post_type; ?>" name="sub_post_types[]" value="<?php echo $post_type; ?>"> 
+										<?php echo $_post_type->label; ?>
 									</label><br/>
 								</div>
 							<?php endforeach; ?>
