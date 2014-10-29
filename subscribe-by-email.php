@@ -224,6 +224,9 @@ class Incsub_Subscribe_By_Email {
 		flush_rewrite_rules();
 		update_option( 'incsub_sbe_version', INCSUB_SBE_VERSION );
 		update_site_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
+
+		$settings = incsub_sbe_get_settings();
+		incsub_sbe_update_settings( $settings );
 	}
 
 	public function deactivate() {
