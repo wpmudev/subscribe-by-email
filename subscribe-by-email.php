@@ -579,6 +579,8 @@ class Incsub_Subscribe_By_Email {
 
 		if ( in_array( $post->post_type, $settings['post_types'] ) && $new_status != $old_status && 'publish' == $new_status && $settings['frequency'] == 'inmediately' ) {
 			$this->enqueue_emails( array( $post->ID ) );	
+			// Trigger the first batch
+			delete_transient( self::$pending_mails_transient_slug );
 		}
 	}
 
@@ -600,6 +602,9 @@ class Incsub_Subscribe_By_Email {
 				$posts_ids = $model->get_posts_ids( $args );
 
 				$this->enqueue_emails( $posts_ids );
+				// Trigger the first batch
+				delete_transient( self::$pending_mails_transient_slug );
+
 			}
 		}
 		elseif ( 'daily' == $settings['frequency'] && $next_time = get_option( self::$freq_daily_transient_slug ) ) {	
@@ -617,6 +622,8 @@ class Incsub_Subscribe_By_Email {
 				$posts_ids = $model->get_posts_ids( $args );
 
 				$this->enqueue_emails( $posts_ids );
+				// Trigger the first batch
+				delete_transient( self::$pending_mails_transient_slug );
 
 			}
 		}
