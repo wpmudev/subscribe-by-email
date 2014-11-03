@@ -8,6 +8,16 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+2.9 - 2014/11/03
+----------------------------------------------------------------------
+- Enhancement: Added queue screen that allows more control over emails that are going to be sent.
+- Enhancement: Trigger next batch of emails with a button.
+- Enhancement: Many performance improvements
+- Enhancement: UI/Icons Improvements
+- Enhancement: Added more filters.
+- Fixed: Settings needed to be saved twice when the plugin was activated.
+- Other minor fixes.
+
 2.8.3 - 2014/08/29
 ----------------------------------------------------------------------
 - Preview email was only sent if the email was a subscriber.
