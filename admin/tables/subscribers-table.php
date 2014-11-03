@@ -216,7 +216,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
 
         $per_page = get_user_meta( $user, $screen_option, true );
 
-        if ( empty ( $per_page) || $per_page < 1 ) {
+        if ( empty ( $per_page ) || $per_page < 1 ) {
             $per_page = $current_screen->get_option( 'per_page', 'default' );
         }
         
