@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: WPMU DEV
-Version: 2.9
+Version: 2.9.1
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -217,8 +217,7 @@ class Incsub_Subscribe_By_Email {
 		incsub_sbe_update_settings( $settings );
 	}
 
-	public function deactivate() {
-	}
+	public function deactivate() {}
 
 	public function register_taxonomies() {
 		// Register the Subscriber Post Type
@@ -307,13 +306,19 @@ class Incsub_Subscribe_By_Email {
 	private function maybe_upgrade_network() {
 		$current_network_version = get_site_option( 'incsub_sbe_network_version' );
 
+		if ( $current_network_version == INCSUB_SBE_VERSION )
+			return;
+
 		if ( $current_network_version === false ) {
 			$this->activate();
 			return;
 		}
 
-		if ( $current_network_version == INCSUB_SBE_VERSION )
-			return;
+
+		if ( version_compare( $current_network_version, '2.9.1', '<' ) ) {
+			$model = incsub_sbe_get_model();
+			$model->create_network_squema();
+		}
 		
 		update_site_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
 	}
