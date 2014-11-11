@@ -4,8 +4,8 @@
 class Incsub_Subscribe_By_Email_Model {
 
 	public static $instance;
-    private $subscriptions_log_table;
-    private $subscriptions_queue_table;
+    public $subscriptions_log_table;
+    public $subscriptions_queue_table;
 
 	/**
 	 * Singleton Pattern
@@ -190,10 +190,13 @@ class Incsub_Subscribe_By_Email_Model {
         );
     }
 
-    public function get_remaining_batch_mail() {
+    public function get_remaining_batch_mail( $blog_id = false ) {
         global $wpdb;
 
-        $query = "SELECT campaign_id, campaign_settings FROM $this->subscriptions_queue_table WHERE sent = 0 ORDER BY id ASC LIMIT 1";
+        if ( ! $blog_id && is_multisite() )
+            $blog_id = get_current_blog_id();
+
+        $query = $wpdb->prepare( "SELECT campaign_id, campaign_settings FROM $this->subscriptions_queue_table WHERE sent = 0 AND blog_id = %d ORDER BY id ASC LIMIT 1", $blog_id );
         $results = $wpdb->get_row( $query );
 
         if ( ! empty( $results ) ) {
@@ -351,7 +354,7 @@ class Incsub_Subscribe_By_Email_Model {
     public function get_old_logs_ids( $time ) {
         global $wpdb;
 
-        $results = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM $this->subscriptions_log_table WHERE mail_date < %d AND mail_settings = ''", $time ) );
+        $results = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM $this->subscriptions_log_table WHERE mail_date < %d", $time ) );
         return $results;
     }
 
@@ -494,79 +497,6 @@ class Incsub_Subscribe_By_Email_Model {
         }
 
         return $result;
-    }
-
-    public function get_queue_items( $args = array() ) {
-        global $wpdb;
-
-        $defaults = array(
-            'campaign_id' => false,
-            'page' => 1,
-            'per_page' => 30,
-            'blog_id' => get_current_blog_id(),
-            'count' => false,
-            'status' => 0
-        );
-
-        $args = wp_parse_args( $args, $defaults );
-        extract( $args );
-
-        $query = $wpdb->prepare( 
-            "SELECT * FROM $this->subscriptions_queue_table 
-            WHERE blog_id = %d",
-            $blog_id 
-        );
-
-        if ( $status === 'pending' ) {
-            $query .= " AND sent_status = 0";
-        }
-        elseif ( $status === 'sent' ) {
-            $query .= " AND sent_status != 0";
-        }
-        else {
-            $query .= $wpdb->prepare( " AND sent_status = %d", $status );
-        }
-
-
-        if ( $campaign_id )
-            $query .= $wpdb->prepare( " AND campaign_id = %d", $campaign_id );
-
-        $query .= " ORDER BY id";
-        
-        if ( $count ) {
-            $query_count = str_replace( '*', 'COUNT(id)', $query );
-            $items_count = $wpdb->get_var( $query_count );
-        }
-        else {
-            $items_count = 0;
-        }
-
-        if ( $per_page > -1 )
-            $query .= $wpdb->prepare( " LIMIT %d, %d", intval( ( $page - 1 ) * $per_page ), intval( $per_page ) );
-
-        $results = $wpdb->get_results( $query );
-
-        if ( ! empty( $results ) ) {
-            $_return = array();
-            foreach ( $results as $result ) {
-                $result->campaign_settings = maybe_unserialize( $result->campaign_settings );
-                $_return[] = $result;
-            }
-
-            $return = array();
-            if ( $count ) {
-                $return['items'] = $_return;
-                $return['count'] = absint( $items_count );
-            }
-            else {
-                $return['items'] = $_return;
-            }
-
-            return $return;
-            
-        }
-
-        return array( 'items' => array(), 'count' => absint( $items_count ) );
     }
 
 

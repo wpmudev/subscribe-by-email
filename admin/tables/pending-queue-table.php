@@ -107,7 +107,7 @@ class Incsub_Subscribe_By_Email_Pending_Queue_Table extends WP_List_Table {
         if ( empty ( $per_page) || $per_page < 1 ) {
             $per_page = $current_screen->get_option( 'per_page', 'default' );
         }
-      
+
         $columns = $this->get_columns();
         $hidden = array();
         $sortable = array();
@@ -116,7 +116,7 @@ class Incsub_Subscribe_By_Email_Pending_Queue_Table extends WP_List_Table {
 
         $current_page = $this->get_pagenum();
 
-        $result = incsub_sbe_get_queue_items( array( 'count' => true, 'per_page' => $per_page, 'page' => $current_page ) );
+        $result = incsub_sbe_get_queue_items( array( 'count' => true, 'per_page' => $per_page, 'page' => $current_page, 'blog_id' => get_current_blog_id() ) );
 
         $this->items = $result['items'];
 

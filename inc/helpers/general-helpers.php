@@ -248,3 +248,13 @@ function incsub_sbe_get_subscriptions_post_types() {
 	return $result;
 }
 
+function incsub_sbe_is_user_allowed_send_batch() {
+	if ( is_multisite() && is_super_admin() )
+		return true;
+
+	if ( ! is_multisite() && current_user_can( 'manage_options' ) )
+		return true;
+
+	return false;
+}
+

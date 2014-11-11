@@ -38,12 +38,23 @@ class Incsub_Subscribe_By_Email {
 	// Widget
 	public $widget;
 
+	public static $instance = null;
+
+	public static function get_instance() {
+		if ( self::$instance === null ) {
+			self::$instance = new self();
+		}
+
+		return self::$instance;
+	}
 
 	public function __construct() {
 		self::$time_between_batches = apply_filters( 'sbe_time_between_batches', 1200 );
-		
+
 		$this->set_globals();
 		$this->includes();
+
+		$this->model = incsub_sbe_get_model();
 
 		add_action( 'init', array( &$this, 'init_plugin' ), 1 );
 
@@ -477,21 +488,14 @@ class Incsub_Subscribe_By_Email {
 
 			set_transient( self::$pending_mails_transient_slug, 'next', self::$time_between_batches );
 
-			$model = incsub_sbe_get_model();
-			$pending_log = $model->get_remaining_batch_mail();
-
-			if ( ! $pending_log )
-				return false;
-				
-			$pending_log_id = absint( $pending_log->campaign_id );
+			do_action( 'sbe_before_send_pending_emails' );
 
 			$settings = incsub_sbe_get_settings();
-			$settings = $settings + $pending_log->campaign_settings;
 
-			$args = array( 
-				'campaign_id' => $pending_log_id, 
-				'per_page' => $settings['mails_batch_size'] 
-			);
+			$args = apply_filters( 'sbe_send_pending_emails_args', array( 
+				'per_page' => $settings['mails_batch_size']
+			) );
+
 			$queue_items = incsub_sbe_get_queue_items( $args );
 
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
@@ -502,16 +506,18 @@ class Incsub_Subscribe_By_Email {
 				$subscriber = incsub_sbe_get_subscriber( $item->subscriber_email );
 
 				// In order to avoid duplicated emails we'll set temporary this email as sent
-				$model->set_queue_item_sent( $item->id, 1 );
+				incsub_sbe_set_queue_item_sent_status( $item->id, 1 );
 
 				$result = $mail_template->send_mail( $subscriber, $item );
 
 				// Now we update the status
-				$model->set_queue_item_sent( $item->id, absint( $result ) );
+				incsub_sbe_set_queue_item_sent_status( $item->id, absint( $result ) );
 
 				$return[ $item->subscriber_email ] = $result;
 
 			}
+
+			do_action( 'sbe_after_send_pending_emails' );
 
 			return $return;
 
@@ -713,18 +719,21 @@ class Incsub_Subscribe_By_Email {
 	public function maybe_delete_logs() {
 
 		if ( ! get_transient( 'incsub_sbe_check_logs' ) ) {
+		
 			$settings = incsub_sbe_get_settings();
 			$model = incsub_sbe_get_model();
 
 			$days_old = absint( $settings['keep_logs_for'] );
 			$timestamp_old = current_time( 'timestamp' ) - ( $days_old * 24 * 60 * 60 );
-			$logs_ids = $model->get_old_logs_ids( $timestamp_old );
 
-			if ( ! empty( $logs_ids ) ) {
-				$model->delete_log( $logs_ids );
+			$old_campaigns = incsub_sbe_get_sent_campaigns( $timestamp_old );
+
+			if ( ! empty( $old_campaigns ) ) {
+				foreach ( $old_campaigns as $campaign )
+					incsub_sbe_delete_campaign( $campaign->id );
 			
-				foreach ( $logs_ids as $log_id ) {
-					Subscribe_By_Email_Logger::delete_log( $log_id );
+				foreach ( $old_campaigns as $campaign ) {
+					Subscribe_By_Email_Logger::delete_log( $campaign->id );
 				}
 			}
 			set_transient( 'incsub_sbe_check_logs', true, 86400 ); // We'll check every day
@@ -735,5 +744,14 @@ class Incsub_Subscribe_By_Email {
 
 }
 
-global $subscribe_by_email_plugin;
-$subscribe_by_email_plugin = new Incsub_Subscribe_By_Email();
+
+
+
+if ( ! function_exists( 'subscribe_by_email' ) ) {
+	function subscribe_by_email() {
+		return Incsub_Subscribe_By_Email::get_instance();
+	}
+
+	global $subscribe_by_email_plugin;
+	$subscribe_by_email_plugin = subscribe_by_email();
+}

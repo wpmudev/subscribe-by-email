@@ -39,7 +39,7 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 
 	public function send_batch() {
 
-		if ( isset( $_GET['sbe_send_batch_now'] ) ) {
+		if ( isset( $_GET['sbe_send_batch_now'] ) && incsub_sbe_is_user_allowed_send_batch() ) {
 			delete_transient( Incsub_Subscribe_By_Email::$pending_mails_transient_slug );
 			$redirect_url = remove_query_arg( 'sbe_send_batch_now' );
 			wp_redirect( $redirect_url );
