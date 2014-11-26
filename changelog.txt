@@ -1,12 +1,18 @@
 Plugin Name: Subscribe by Email
 Author: WPMU DEV
 Requires at least: 3.5
-Tested up to: 3.9.2
-Stable tag: 2.8.2
+Tested up to: 4.0.1
+Stable tag: 2.9.1
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+2.9.1 - 2014/11/26
+----------------------------------------------------------------------
+- Fixed: Queue table was not created in some cases.
+- Fixed: Sites in multisite were not sending their own queue but other sites queue
+- Other minor fixes
 
 2.9 - 2014/11/03
 ----------------------------------------------------------------------
