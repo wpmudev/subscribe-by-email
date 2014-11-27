@@ -1,97 +1,5 @@
 <?php
 
-function incsub_sbe_get_campaign( $campaign_item ) {
-	return SBE_Campaign::get_instance( $campaign_item );
-}
-
-function incsub_sbe_get_campaigns( $args ) {
-	$defaults = array(
-		'current_page' => 1,
-		'per_page' => 10,
-		'sortable' => array(),
-		'search' => false
-	);
-
-	$args = wp_parse_args( $args, $defaults );
-
-	extract( $args );
-
-	$model = incsub_sbe_get_model();
-	$campaigns = $model->get_log( $current_page, $per_page, $sortable, $search );
-
-	$return = array(
-		'items' => array(),
-		'count' => $campaigns['total']
-	);
-	foreach ( $campaigns['logs'] as $campaign ) {
-		$campaign->mail_settings = maybe_unserialize( $campaign->mail_settings );
-		$return['items'][] = incsub_sbe_get_campaign( $campaign );
-	}
-
-	return $return;
-}
-
-function incsub_sbe_delete_campaign( $id ) {
-	global $wpdb;
-
-	$campaign = incsub_sbe_get_campaign( $id );
-	if ( ! $campaign )
-		return false;
-
-	$args = array(
-		'campaign_id' => $id,
-		'per_page' => -1,
-		'status' => 'all'
-	);
-	$items = $campaign->get_campaign_all_queue();
-
-	foreach ( $items as $item )
-		incsub_sbe_delete_queue_item( $item->id );
-
-	$table = subscribe_by_email()->model->subscriptions_log_table;
-
-	$wpdb->query( $wpdb->prepare( "DELETE FROM $table WHERE id = %d", $id ) );
-
-	return true;
-
-}
-
-function incsub_sbe_get_sent_campaigns( $timestamp ) {
-	$timestamp = absint( $timestamp );
-	if ( ! $timestamp )
-		return array();
-
-	global $wpdb;
-
-	$table = subscribe_by_email()->model->subscriptions_log_table;
-    $results = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM $table WHERE mail_date < %d", $timestamp ) );
-
-    $campaigns = array();
-    foreach ( $results as $result ) {
-    	$campaigns[] = incsub_sbe_get_campaign( $result );
-    }
-
-    return $campaigns;
-
-}
-
-
-function incsub_sbe_sanitize_campaign_fields( $campaign_item ) {
-	$int_fields = array( 'id', 'mail_recipients', 'mail_date', 'max_email_ID' );
-	$array_fields = array( 'mail_settings' );
-
-	foreach ( get_object_vars( $campaign_item ) as $name => $value ) {
-		if ( in_array( $name, $int_fields ) )
-			$value = intval( $value );
-
-		if ( in_array( $name, $array_fields ) )
-			$value = maybe_unserialize( $value );
-
-		$campaign_item->$name = $value;
-	}
-
-	return $campaign_item;
-}
 
 class SBE_Campaign {
 
@@ -200,6 +108,101 @@ class SBE_Campaign {
 
 }
 
+
+function incsub_sbe_get_campaign( $campaign_item ) {
+	return SBE_Campaign::get_instance( $campaign_item );
+}
+
+function incsub_sbe_get_campaigns( $args ) {
+	$defaults = array(
+		'current_page' => 1,
+		'per_page' => 10,
+		'sortable' => array(),
+		'search' => false
+	);
+
+	$args = wp_parse_args( $args, $defaults );
+
+	extract( $args );
+
+	$model = incsub_sbe_get_model();
+	$campaigns = $model->get_log( $current_page, $per_page, $sortable, $search );
+
+	$return = array(
+		'items' => array(),
+		'count' => $campaigns['total']
+	);
+	foreach ( $campaigns['logs'] as $campaign ) {
+		$campaign->mail_settings = maybe_unserialize( $campaign->mail_settings );
+		$return['items'][] = incsub_sbe_get_campaign( $campaign );
+	}
+
+	return $return;
+}
+
+function incsub_sbe_delete_campaign( $id ) {
+	global $wpdb;
+
+	$campaign = incsub_sbe_get_campaign( $id );
+	if ( ! $campaign )
+		return false;
+
+	$args = array(
+		'campaign_id' => $id,
+		'per_page' => -1,
+		'status' => 'all'
+	);
+	$items = $campaign->get_campaign_all_queue();
+
+	foreach ( $items as $item )
+		incsub_sbe_delete_queue_item( $item->id );
+
+	$table = subscribe_by_email()->model->subscriptions_log_table;
+
+	$wpdb->query( $wpdb->prepare( "DELETE FROM $table WHERE id = %d", $id ) );
+
+	return true;
+
+}
+
+function incsub_sbe_get_sent_campaigns( $timestamp ) {
+	$timestamp = absint( $timestamp );
+	if ( ! $timestamp )
+		return array();
+
+	global $wpdb;
+
+	$table = subscribe_by_email()->model->subscriptions_log_table;
+    $results = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM $table WHERE mail_date < %d", $timestamp ) );
+
+    $campaigns = array();
+    foreach ( $results as $result ) {
+    	$campaigns[] = incsub_sbe_get_campaign( $result );
+    }
+
+    return $campaigns;
+
+}
+
+
+function incsub_sbe_sanitize_campaign_fields( $campaign_item ) {
+	$int_fields = array( 'id', 'mail_recipients', 'mail_date', 'max_email_ID' );
+	$array_fields = array( 'mail_settings' );
+
+	foreach ( get_object_vars( $campaign_item ) as $name => $value ) {
+		if ( in_array( $name, $int_fields ) )
+			$value = intval( $value );
+
+		if ( in_array( $name, $array_fields ) )
+			$value = maybe_unserialize( $value );
+
+		$campaign_item->$name = $value;
+	}
+
+	return $campaign_item;
+}
+
+
 function incsub_sbe_update_campaign( $campaign_id, $args ) {
 	global $wpdb;
 
@@ -234,11 +237,12 @@ function incsub_sbe_update_campaign( $campaign_id, $args ) {
 	return $result;
 
 }
+
 function incsub_sbe_finish_campaign( $campaign_item ) {
 	$campaign = incsub_sbe_get_campaign( $campaign_item );
 	if ( ! $campaign )
 		return false;
 
-	$max_id = $campaign->max_email_ID;
+	$max_id = $campaign->get_total_emails_count();
 	return incsub_sbe_update_campaign( $campaign->id, array( 'mail_recipients' => $max_id ) );
 }

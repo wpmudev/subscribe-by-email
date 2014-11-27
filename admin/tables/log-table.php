@@ -80,17 +80,12 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
 
     function process_bulk_action() {
         if ( 'finish' == $this->current_action() && ! empty( $_POST['campaign_id' ] ) ) {
-                   wp_die(var_dump($_POST));
-
-            $model = incsub_sbe_get_model();
             foreach ( $_POST['campaign_id'] as $id ) {
+                $campaign = incsub_sbe_get_campaign( absint( $id ) );
+                if ( ! $campaign )
+                    continue;
+                
                 incsub_sbe_finish_campaign( $id );
-                $queue_item = incsub_sbe_get_queue_item( absint( $id ) );
-                if ( $queue_item ) {
-                    $campaign = incsub_sbe_get_campaign( $queue_item->campaign_id );
-                    $model->delete_queue_item( absint( $id ) );
-                    $campaign->refresh_campaign_status();
-                }
             }
             ?>
                 <div class="updated">
