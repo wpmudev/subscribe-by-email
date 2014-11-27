@@ -199,3 +199,46 @@ class SBE_Campaign {
 
 
 }
+
+function incsub_sbe_update_campaign( $campaign_id, $args ) {
+	global $wpdb;
+
+	$campaign = incsub_sbe_get_campaign( $campaign_id );
+	if ( ! $campaign )
+		return false;
+
+	$fields = array( 'mail_subject' => '%s', 'mail_recipients' => '%d' );
+	$update = array();
+	$update_wildcards = array();
+
+	foreach ( $fields as $field => $wildcard ) {
+		if ( isset( $args[ $field ] ) ) {
+			$update[ $field ] = $args[ $field ];
+			$update_wildcards[] = $wildcard;
+		}
+	}
+
+	if ( empty( $update ) )
+		return false;
+
+	$campaign_table = subscribe_by_email()->model->subscriptions_log_table;
+
+	$result = $wpdb->update(
+		$campaign_table,
+		$update,
+		array( 'id' => $campaign->id ),
+		$update_wildcards,
+		array( '%d' )
+	);
+
+	return $result;
+
+}
+function incsub_sbe_finish_campaign( $campaign_item ) {
+	$campaign = incsub_sbe_get_campaign( $campaign_item );
+	if ( ! $campaign )
+		return false;
+
+	$max_id = $campaign->max_email_ID;
+	return incsub_sbe_update_campaign( $campaign->id, array( 'mail_recipients' => $max_id ) );
+}

@@ -17,6 +17,14 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
         
     }
 
+    function column_cb( $item ){
+        return sprintf(
+            '<input type="checkbox" name="%1$s[]" value="%2$s" />',
+                'campaign_id',  
+                $item->id
+        );
+    }
+
 
     function column_date( $item ) { 
         return date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int)$item->mail_date );
@@ -55,11 +63,44 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
 
     function get_columns() {
         $columns = array(
+            'cb'      => '<input type="checkbox" />', //Render a checkbox instead of text
             'date'   => __( 'Date', INCSUB_SBE_LANG_DOMAIN ),
             'recipients'    => __( 'Recipients no.', INCSUB_SBE_LANG_DOMAIN ),
             'status'   => __( 'Status', INCSUB_SBE_LANG_DOMAIN )
         );
         return $columns;
+    }
+
+    function get_bulk_actions() {
+        $actions = array(
+            'finish'    => __( 'Finish campaign', INCSUB_SBE_LANG_DOMAIN )
+        );
+        return $actions;
+    }
+
+    function process_bulk_action() {
+        if ( 'finish' == $this->current_action() && ! empty( $_POST['campaign_id' ] ) ) {
+                   wp_die(var_dump($_POST));
+
+            $model = incsub_sbe_get_model();
+            foreach ( $_POST['campaign_id'] as $id ) {
+                incsub_sbe_finish_campaign( $id );
+                $queue_item = incsub_sbe_get_queue_item( absint( $id ) );
+                if ( $queue_item ) {
+                    $campaign = incsub_sbe_get_campaign( $queue_item->campaign_id );
+                    $model->delete_queue_item( absint( $id ) );
+                    $campaign->refresh_campaign_status();
+                }
+            }
+            ?>
+                <div class="updated">
+                    <p><?php _e( 'Queue items deleted', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+                </div>
+            <?php
+
+        }
+
+        
     }
 
 
@@ -73,6 +114,8 @@ class Incsub_Subscribe_By_Email_Log_Table extends WP_List_Table {
 
     function prepare_items() {
         global $wpdb, $page;
+
+        $this->process_bulk_action();
 
         $per_page = 15;
       
