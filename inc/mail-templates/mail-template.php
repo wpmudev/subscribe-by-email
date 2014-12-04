@@ -62,6 +62,7 @@ class Incsub_Subscribe_By_Email_Template {
 			add_filter( 'the_content', 'wpautop'            );
 			add_filter( 'the_content', 'shortcode_unautop'  );
 			add_filter( 'the_content', 'prepend_attachment' );
+			add_filter( 'the_content', 'do_shortcode', 11 );
 
 			foreach ( $content as $content_post ):
 				
