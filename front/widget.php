@@ -174,9 +174,11 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 						<?php endforeach; ?>
 	        		</ul>
 	        	<?php endif; ?>
-	        	<p class="sbe-widget-top-text">
-		        	<?php echo $text; ?>
-		        </p>
+	        	<?php if ( $text && ! empty( $text ) ) : ?>
+	        		<p class="sbe-widget-top-text">
+	        			<?php echo $text; ?>
+	        		</p>
+	        	<?php endif; ?>
         		
         		<?php $email = isset( $_POST['subscription-email'] ) ? $_POST['subscription-email'] : ''; ?>
         		<div class="sbe-widget-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div>
