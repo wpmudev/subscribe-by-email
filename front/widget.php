@@ -16,9 +16,9 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		$this->success = false;
 
 		/* Widget settings. */
-		$widget_ops = array( 
-			'classname' => 'subscribe-by-email' , 
-			'description' => __('This widget allows visitors to subscribe to receive email updates when a new post is made to your blog.', INCSUB_SBE_LANG_DOMAIN ) 
+		$widget_ops = array(
+			'classname' => 'subscribe-by-email' ,
+			'description' => __('This widget allows visitors to subscribe to receive email updates when a new post is made to your blog.', INCSUB_SBE_LANG_DOMAIN )
 		);
 
 		/* Create the widget. */
@@ -27,7 +27,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
 
-		
+
 		add_action( 'wp_ajax_sbe_widget_subscribe_user', array( &$this, 'validate_widget' ) );
 		add_action( 'wp_ajax_nopriv_sbe_widget_subscribe_user', array( &$this, 'validate_widget' ) );
 
@@ -106,9 +106,9 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			}
 
 			$this->errors = apply_filters( 'sbe_widget_validate_form', $errors, $email, $fields_to_save );
-    		
+
 			if ( empty( $this->errors ) ) {
-				
+
     			$instance = $instance[ $this->number ];
 				$autopt = $instance['autopt'];
 
@@ -124,7 +124,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 					$redirect_to = add_query_arg( 'sbe_widget_subscribed', 'true' ) . '#subscribe-by-email-' . $this->number;
 					$redirect_to = apply_filters( 'sbe_widget_redirect_on_subscribe', $redirect_to );
 					wp_redirect( $redirect_to );
-					exit;		
+					exit;
 				}
 				else {
 					$default_settings = $this->get_default_settings();
@@ -132,12 +132,12 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 					$text = empty( $text ) || $text == 'null' ? $default_settings['subscribed_placeholder'] : $text;
 					wp_send_json_success( array( 'message' => $text ) );
 				}
-				
+
     		}
     		elseif ( ! empty( $this->errors ) && $doing_ajax ) {
     			wp_send_json_error( $this->errors );
     		}
-	    	
+
 	    }
 	}
 
@@ -152,9 +152,9 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		$button_text = ! empty( $instance['button_text'] ) ? $instance['button_text'] : __( 'Subscribe', INCSUB_SBE_LANG_DOMAIN );
 
 	    echo $before_widget;
-	     
+
 	    if ( $title )
-	     	echo $before_title . $title . $after_title; 
+	     	echo $before_title . $title . $after_title;
 
 	    $default_settings = $this->get_default_settings();
 	    $message = trim( $instance['subscribed_placeholder'] );
@@ -174,10 +174,12 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 						<?php endforeach; ?>
 	        		</ul>
 	        	<?php endif; ?>
-	        	<p class="sbe-widget-top-text">
-		        	<?php echo $text; ?>
-		        </p>
-        		
+	        	<?php if ( ! empty( $text ) ) : ?>
+	        		<p class="sbe-widget-top-text">
+	        			<?php echo $text; ?>
+	        		</p>
+	        	<?php endif; ?>
+
         		<?php $email = isset( $_POST['subscription-email'] ) ? $_POST['subscription-email'] : ''; ?>
         		<div class="sbe-widget-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div>
 	        	<input type="email" class="sbe-widget-form-field sbe-widget-email-field sbe-form-field"  name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo $email; ?>"><br/>
@@ -189,7 +191,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 							<div class="sbe-widget-form-field-title"><?php echo $value['title']; ?> <?php echo $value['required'] ? '<span class="sbe-widget-required">(*)</span>' : ''; ?></div>
 						<?php endif; ?>
 
-	        			<?php 
+	        			<?php
 	        				$current_value = isset( $_POST[ 'sbe_extra_field_' . $value['slug'] ] ) ? $_POST[ 'sbe_extra_field_' . $value['slug'] ] : '';
 							$atts = array(
 								'placeholder' => '',
@@ -229,7 +231,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	        	</style>
 	    	<?php endif; ?>
 
-	        
+
         <?php else: ?>
 			<p class="sbe-widget-updated"><?php echo $message; ?></p>
     	<?php endif;
@@ -257,9 +259,9 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	}
 
 	private function get_default_settings() {
-		return array( 
-			'title' => __( 'Subscribe by Email', INCSUB_SBE_LANG_DOMAIN ), 
-			'text' => __( 'Completely spam free, opt out any time.', INCSUB_SBE_LANG_DOMAIN ), 
+		return array(
+			'title' => __( 'Subscribe by Email', INCSUB_SBE_LANG_DOMAIN ),
+			'text' => __( 'Completely spam free, opt out any time.', INCSUB_SBE_LANG_DOMAIN ),
 			'button_text' => __( 'Subscribe', INCSUB_SBE_LANG_DOMAIN  ),
 			'autopt' => false,
 			'show_count' => false,
@@ -277,7 +279,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 
 		$defaults = $this->get_default_settings();
 		/* Set up some default widget settings. */
-		
+
 
 		$defaults = apply_filters( 'sbe_widget_admin_form_default_values', $defaults, $instance );
 		$instance = wp_parse_args( (array) $instance, $defaults ); ?>
@@ -298,17 +300,17 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			<input type="text" class="widefat" id="<?php echo $this->get_field_id( 'subscribed_placeholder' ); ?>" name="<?php echo $this->get_field_name( 'subscribed_placeholder' ); ?>" value="<?php echo esc_attr( $instance['subscribed_placeholder'] ); ?>" />
 		</p>
 		<p>
-			<input type="checkbox" id="<?php echo $this->get_field_id( 'show_count' ); ?>" name="<?php echo $this->get_field_name( 'show_count' ); ?>" value="1" <?php checked( $instance['show_count'] ); ?> /> 
+			<input type="checkbox" id="<?php echo $this->get_field_id( 'show_count' ); ?>" name="<?php echo $this->get_field_name( 'show_count' ); ?>" value="1" <?php checked( $instance['show_count'] ); ?> />
 			<label for="<?php echo $this->get_field_id( 'show_count' ); ?>"><?php _e( 'Show number of subscribers', INCSUB_SBE_LANG_DOMAIN ); ?></label>
 		</p>
 		<p>
-			<input type="checkbox" id="<?php echo $this->get_field_id( 'autopt' ); ?>" name="<?php echo $this->get_field_name( 'autopt' ); ?>" value="1" <?php checked( $instance['autopt'] ); ?> /> 
+			<input type="checkbox" id="<?php echo $this->get_field_id( 'autopt' ); ?>" name="<?php echo $this->get_field_name( 'autopt' ); ?>" value="1" <?php checked( $instance['autopt'] ); ?> />
 			<label for="<?php echo $this->get_field_id( 'autopt' ); ?>"><?php _e('Auto-opt In (it will not send a confirmation email to the user)', INCSUB_SBE_LANG_DOMAIN ); ?></label>
 		</p>
 		<p>
 			<label for="<?php echo $this->get_field_id( 'css' ); ?>"><?php _e( 'Custom CSS', INCSUB_SBE_LANG_DOMAIN ); ?></label><br/>
 			<textarea rows="10" cols="30" id="<?php echo $this->get_field_id( 'css' ); ?>" name="<?php echo $this->get_field_name( 'css' ); ?>" ><?php echo esc_textarea( ( $instance['css'] ) ); ?></textarea>
-			
+
 		</p>
 		<?php do_action( 'sbe_widget_admin_form_fields', $this, $instance ); ?>
 
