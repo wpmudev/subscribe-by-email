@@ -181,19 +181,22 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 
 			$model = incsub_sbe_get_model();
 
-			$email = $_POST['subscribe-email'];
 			$sid = $_POST['sid'];
 			$error = false;
 
 			$subscriber = incsub_sbe_get_subscriber( $sid );
+			if ( ! $subscriber )
+				return;
 
 			$settings = incsub_sbe_get_settings();
 			$extra_fields = $settings['extra_fields'];
 
+			$extra_fields_values = array();
 			foreach ( $extra_fields as $extra_field ) {
 				$meta_value = isset( $_POST['subscribe-meta'][ $extra_field['slug'] ] ) ? $_POST['subscribe-meta'][ $extra_field['slug'] ] : '';
 				$meta_value = incsub_sbe_validate_extra_field( $extra_field['type'], $meta_value );
 
+				$extra_fields_values[ $extra_field['slug'] ] = $meta_value;
 				if ( empty( $meta_value ) && $extra_field['required'] ) {
 					add_settings_error( 'subscribe', 'required-extra-field', sprintf( __( '%s is a required field', INCSUB_SBE_LANG_DOMAIN ), $extra_field['title'] ) );
 					$_POST['subscribe-meta'][ $extra_field['slug'] ] = $subscriber->get_meta( $extra_field['slug'] );
@@ -203,11 +206,15 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 				if ( $error )
 					break;
 
-				$model->update_subscriber_meta( $sid, $extra_field['slug'], $meta_value );
 			}
 
-			if ( ! $error )
+			if ( ! $error ) {
+				foreach ( $extra_fields_values as $slug => $value ) {
+					update_post_meta( $sid, $slug, $value );	
+				}
+				
 				wp_redirect( add_query_arg( 'updated', 'true' ) );
+			}
 
 
 		}

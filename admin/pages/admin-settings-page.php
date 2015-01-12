@@ -120,13 +120,14 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 			$settings = incsub_sbe_get_settings();
 			if ( isset( $settings['extra_fields'][ $_GET['remove'] ] ) ) {
+				$meta_slug = $settings['extra_fields'][ $_GET['remove'] ]['slug'];
 				unset( $settings['extra_fields'][ $_GET['remove'] ] );
 				remove_filter( 'sanitize_option_' . $this->settings_name, array( &$this, 'sanitize_settings' ) );
 				incsub_sbe_update_settings( $settings );
 				add_filter( 'sanitize_option_' . $this->settings_name, array( &$this, 'sanitize_settings' ) );
 
-				$model = incsub_sbe_get_model();
-				$model->delete_subscribers_all_meta( $_GET['remove'] );
+				sbe_delete_all_subscribers_meta( $meta_slug );
+
 				wp_redirect( 
 					add_query_arg(
 						array( 

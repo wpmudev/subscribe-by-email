@@ -204,3 +204,10 @@ function incsub_sbe_cancel_subscription( $sid ) {
 
 	return wp_delete_post( $sid, true );
 }
+
+function sbe_delete_all_subscribers_meta( $meta_key ) {
+	$subscribers = incsub_sbe_get_subscribers( array( 'per_page' => -1 ) );
+	foreach ( $subscribers->subscribers as $subscriber ) {
+		delete_post_meta( $subscriber->ID, $meta_key );
+	}
+}
