@@ -259,11 +259,13 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 
 	function get_default_network_settings() {
 		if ( is_multisite() && is_subdomain_install() ) {
-			$blog_details = get_blog_details();
+			$current_site = get_current_site();
+			$blog_details = get_blog_details( $current_site->blog_id );
 			$base_domain = $blog_details->domain;
 		}
 		elseif ( is_multisite() && ! is_subdomain_install() ) {
-			$blog_details = get_blog_details();
+			$current_site = get_current_site();
+			$blog_details = get_blog_details( $current_site->blog_id );
 			$base_domain = $blog_details->path;
 			$base_domain = preg_replace( '/^\//', '', $base_domain );
 			$base_domain = preg_replace( '/\/$/', '', $base_domain );
