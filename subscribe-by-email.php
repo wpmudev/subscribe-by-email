@@ -389,7 +389,7 @@ class Incsub_Subscribe_By_Email {
 			incsub_sbe_confirm_subscription( $subscriber->ID );
 
 			$this->sbe_subscribing_notice( __( 'Thank you, your subscription has been confirmed.', INCSUB_SBE_LANG_DOMAIN ) );
-			die();
+			wp_die();
 
 		}
 	}
@@ -413,20 +413,30 @@ class Incsub_Subscribe_By_Email {
 
 			$this->sbe_subscribing_notice( __( 'Your email subscription has been successfully cancelled.', INCSUB_SBE_LANG_DOMAIN ) );
 
-			die();
+			wp_die();
 		}
 	}
 
 
 	private function sbe_subscribing_notice( $text ) {
-		$this->subscribe_notices_styles();
-		?>
-			<div class="sbe-notice">
-				<p>
-					<?php echo $text; ?>
-				</p><br/><br/>
-				<a href="<?php echo get_home_url(); ?>"><?php _e( 'Go to site', INCSUB_SBE_LANG_DOMAIN ); ?></a>
-			</div>
+		nocache_headers();
+        @header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) );
+
+        ?>
+        <!DOCTYPE html>
+        <html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
+	        <head>
+	            <meta name="viewport" content="width=device-width" />
+	            <meta http-equiv="Content-Type" content="<?php bloginfo( 'html_type' ); ?>; charset=<?php echo get_option( 'blog_charset' ); ?>" />
+	            <?php $this->subscribe_notices_styles(); ?>
+	        </head>
+			<body class="wp-core-ui">
+				<div class="sbe-notice">
+					<p> <?php echo esc_html( $text ); ?> </p>
+					<a href="<?php echo get_home_url(); ?>" class="button-primary" title="<?php esc_attr_e( 'Go to site', INCSUB_SBE_LANG_DOMAIN ); ?>"><?php _e( 'Go to site', INCSUB_SBE_LANG_DOMAIN ); ?></a>
+				</div>
+			</body>
+		</html>
 		<?php
 	}
 
@@ -440,39 +450,57 @@ class Incsub_Subscribe_By_Email {
 
 		?>
 			<style>
-				body {
-					background-color:#EFEFEF;
-					padding:25px;
+				.wp-core-ui {
+					border-top:2px solid <?php echo $settings['header_color']; ?>;
+					border-bottom:2px solid <?php echo $settings['header_color']; ?>;
 				}
-				.sbe-notice {
-					border-top:5px solid <?php echo $settings['header_color']; ?>;
-					border-bottom:5px solid <?php echo $settings['header_color']; ?>;
-					background-color:#FFF;
-					width:<?php echo $content_width; ?>px;
-					margin: 0 auto;
-					margin-top:15px;
-					padding:25px;
-				}
-				.sbe-notice p {
-					color:#333 !important;
-					margin:0;
-				}
-				.sbe-notice a {
-					background-color:#278AB6;
-					border-radius:25px;
-					text-decoration:none;
-					color: #FFF !important;
+				.wp-core-ui .button-primary {
+					background: #2ea2cc;
+					border-color: #0074a2;
+					-webkit-box-shadow: inset 0 1px 0 rgba( 120, 200, 230, 0.5), 0 1px 0 rgba( 0, 0, 0, 0.15 );
+					box-shadow: inset 0 1px 0 rgba( 120, 200, 230, 0.5 ), 0 1px 0 rgba( 0, 0, 0, 0.15 );
+					color: #fff;
+					text-decoration: none;
+					vertical-align: baseline;
 					display: inline-block;
-					line-height: 23px;
-					height: 24px;
+					font-size: 13px;
+					line-height: 26px;
+					height: 28px;
+					margin: 0;
 					padding: 0 10px 1px;
-					cursor:pointer;
+					cursor: pointer;
+					border-width: 1px;
+					border-style: solid;
+					-webkit-appearance: none;
+					-webkit-border-radius: 3px;
+					border-radius: 3px;
+					white-space: nowrap;
+					-webkit-box-sizing: border-box;
+					-moz-box-sizing: border-box;
 					box-sizing: border-box;
-					font-size:12px;
-					border:1px solid transparent;
 				}
-				.sbe-notice a:hover {
-					border:1px solid #555;
+				.wp-core-ui .button-primary:hover {
+					background: #1e8cbe;
+					border-color: #0074a2;
+					-webkit-box-shadow: inset 0 1px 0 rgba( 120, 200, 230, 0.6 );
+					box-shadow: inset 0 1px 0 rgba( 120, 200, 230, 0.6 );
+					color: #fff;
+				}
+				.wp-core-ui .button-primary:focus {
+					-webkit-box-shadow: inset 0 1px 0 rgba( 120, 200, 230, 0.6 ), 0 0 0 1px #5b9dd9, 0 0 2px 1px rgba(30, 140, 190, .8);
+					box-shadow: inset 0 1px 0 rgba( 120, 200, 230, 0.6 ), 0 0 0 1px #5b9dd9, 0 0 2px 1px rgba(30, 140, 190, .8);
+					background: #1e8cbe;
+					border-color: #0074a2;
+					color: #fff;
+				}
+				.wp-core-ui .button-primary:active {
+					background: #1b7aa6;
+					border-color: #005684;
+					color: rgba( 255, 255, 255, 0.95 );
+					-webkit-box-shadow: inset 0 1px 0 rgba( 0, 0, 0, 0.1 );
+					box-shadow: inset 0 1px 0 rgba( 0, 0, 0, 0.1 );
+					vertical-align: top;
+					outline: none;
 				}
 			</style>
 		<?php
