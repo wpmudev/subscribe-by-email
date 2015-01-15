@@ -93,9 +93,7 @@ function incsub_sbe_insert_subscriber( $email, $autopt = false, $args = array(),
 	$post = get_page_by_title( $email, OBJECT, 'subscriber' );
 
 	if ( ! empty( $post ) ) {
-		if ( $post->post_status != 'publish' ) {
-			incsub_sbe_send_confirmation_email( $post->ID );
-		}
+		incsub_sbe_send_confirmation_email( $post->ID );
 
 		return false;
 	}
