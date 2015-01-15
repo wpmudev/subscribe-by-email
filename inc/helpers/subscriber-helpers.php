@@ -86,19 +86,19 @@ function incsub_sbe_insert_subscriber( $email, $autopt = false, $args = array(),
 	// Sanitize email
 	$email = sanitize_email( $email );
 
+	if ( ! is_email( $email ) )
+		return false;
+
 	// Check if subscriber already exist
 	$post = get_page_by_title( $email, OBJECT, 'subscriber' );
 
 	if ( ! empty( $post ) ) {
 		if ( $post->post_status != 'publish' ) {
-			Incsub_Subscribe_By_Email::send_confirmation_mail( $post->ID );
+			incsub_sbe_send_confirmation_email( $post->ID );
 		}
+
 		return false;
 	}
-
-	
-	if ( ! is_email( $email ) )
-		return false;
 
 	$autopt = apply_filters( 'sbe_autopt_subscription', $autopt, $email );
 
@@ -128,7 +128,7 @@ function incsub_sbe_insert_subscriber( $email, $autopt = false, $args = array(),
 		add_post_meta( $subscriber_id, 'key', $user_key );
 
 		if ( ! $autopt ) {
-			Incsub_Subscribe_By_Email::send_confirmation_mail( $subscriber_id );
+			incsub_sbe_send_confirmation_email( $subscriber_id );
 		}
 	}
 	

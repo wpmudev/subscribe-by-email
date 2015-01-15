@@ -363,15 +363,8 @@ class Incsub_Subscribe_By_Email {
 	 * 
 	 * @param Integer $subscription_id 
 	 */
-	public static function send_confirmation_mail( $subscription_id ) {
-		$model = incsub_sbe_get_model();
-		$settings = incsub_sbe_get_settings();
-
-		$subscriber = incsub_sbe_get_subscriber( $subscription_id );
-
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/confirmation-mail-template.php' );
-		$confirmation_mail = new Incsub_Subscribe_By_Email_Confirmation_Template( $settings, $subscriber->subscription_email );
-		$confirmation_mail->send_mail();
+	public static function send_confirmation_mail( $subscription_id, $force = false ) {
+		incsub_sbe_send_confirmation_email( $subscription_id, $force );
 	}
 
 	/**

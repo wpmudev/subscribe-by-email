@@ -176,7 +176,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         }
 
         if ( 'send_confirmation' == $this->current_action() && isset( $_GET['sid'] ) ) {
-            Incsub_Subscribe_By_Email::send_confirmation_mail( absint( $_GET['sid'] ) );
+            incsub_sbe_send_confirmation_email( absint( $_GET['sid'] ), true );
             ?>
                 <div class="updated">
                     <p><?php _e( 'Confirmation mail sent', INCSUB_SBE_LANG_DOMAIN ); ?></p>
