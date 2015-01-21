@@ -64,7 +64,7 @@ class Incsub_Subscribe_By_Email {
 		
 		if ( ! get_transient( 'incsub_sbe_updating' ) ) {
 			add_action( 'transition_post_status', array( &$this, 'process_instant_subscriptions' ), 2, 3);
-			add_action( 'init', array( &$this, 'process_scheduled_subscriptions' ), 2, 3);
+			add_action( 'wp_loaded', array( &$this, 'process_scheduled_subscriptions' ) );
 			add_action( 'init', array( &$this, 'maybe_delete_logs' ) );
 		}
 		
@@ -555,13 +555,46 @@ class Incsub_Subscribe_By_Email {
 		$args = array( 'posts_ids' => array() );
 
 		$settings = incsub_sbe_get_settings();
+
+		// Check if the post has been already sent
 		foreach ( $posts_ids as $post_id ) {
 			$is_sent = get_post_meta( $post_id, 'sbe_sent', true );
 			if ( ! $is_sent )
 				$args['posts_ids'][] = $post_id;
 		}
 
+		// Check if the post type is valid
+		$allowed_post_types = $settings['post_types'];
+		foreach ( $args['posts_ids'] as $key => $post_id ) {
+			if ( ! in_array( get_post_type( $post_id ), $allowed_post_types ) ) {
+				unset( $args['posts_ids'][ $key ] );
+			}
+		}
 
+		// Check if the taxonomy is valid
+		foreach ( $args['posts_ids'] as $key => $post_id ) {
+			$post_type = get_post_type( $post_id );
+			$allowed_post_type_taxonomies = array_keys( $settings['taxonomies'][ $post_type ] );
+			$allowed_post_type_terms = array();
+			foreach ( $allowed_post_type_taxonomies as $post_type_tax ) {
+				$allowed_post_type_terms = array_merge( $allowed_post_type_terms, array_values( $settings['taxonomies'][ $post_type ][ $post_type_tax ] ) );
+			}
+
+			if ( in_array( 'all', $allowed_post_type_terms ) ) {
+				// All terms in this taxonomy are accepted
+				continue;
+			}
+
+			$post_terms = wp_get_post_terms( $post_id, $allowed_post_type_taxonomies );
+			if ( is_wp_error( $post_terms ) )
+				$post_terms = array();
+
+			$post_terms = wp_list_pluck( $post_terms, 'term_id' );
+
+			$intersect = array_intersect( $post_terms, $allowed_post_type_terms );
+			if ( empty( $intersect ) )
+				unset( $args['posts_ids'][ $key ] );
+		}
 
 		if ( empty( $args['posts_ids'] ) )
 			return;
