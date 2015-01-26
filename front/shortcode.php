@@ -196,12 +196,6 @@ class Subscribe_By_Email_Shortcode {
 			if ( empty( $this->errors ) ) {
 				
 				$sid = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant', false, $fields_to_save );
-
-				if ( $sid && $settings['get_notifications'] ) {
-					require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
-					$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Subscribed_Notice_Template( $email );
-					$admin_notice->send_email();
-				}
 				
 				return true;		
     		}

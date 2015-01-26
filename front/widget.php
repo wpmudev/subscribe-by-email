@@ -114,11 +114,6 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 
 				$sid = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant', $autopt, $fields_to_save );
 
-				if ( $sid && $settings['get_notifications'] ) {
-					require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
-					$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Subscribed_Notice_Template( $email );
-					$admin_notice->send_email();
-				}
 
 				if ( ! $doing_ajax ) {
 					$redirect_to = add_query_arg( 'sbe_widget_subscribed', 'true' ) . '#subscribe-by-email-' . $this->number;

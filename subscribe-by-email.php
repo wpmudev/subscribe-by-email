@@ -382,6 +382,14 @@ class Incsub_Subscribe_By_Email {
 			incsub_sbe_confirm_subscription( $subscriber->ID );
 
 			$this->sbe_subscribing_notice( __( 'Thank you, your subscription has been confirmed.', INCSUB_SBE_LANG_DOMAIN ) );
+
+			$settings = incsub_sbe_get_settings();
+			if ( $settings['get_notifications'] ) {
+				require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
+				$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Subscribed_Notice_Template( $email );
+				$admin_notice->send_email();
+			}
+
 			wp_die();
 
 		}
