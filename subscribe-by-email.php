@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: WPMU DEV
-Version: 3.0
+Version: 3.0.1
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -379,6 +379,12 @@ class Incsub_Subscribe_By_Email {
 				die();
 			}
 
+			if ( $subscriber->is_confirmed() ) {
+				$redirect_to = remove_query_arg( 'sbe_confirm' );
+				wp_redirect( $redirect_to );
+				exit;
+			}
+
 			incsub_sbe_confirm_subscription( $subscriber->ID );
 
 			$this->sbe_subscribing_notice( __( 'Thank you, your subscription has been confirmed.', INCSUB_SBE_LANG_DOMAIN ) );
@@ -386,7 +392,7 @@ class Incsub_Subscribe_By_Email {
 			$settings = incsub_sbe_get_settings();
 			if ( $settings['get_notifications'] ) {
 				require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/administrators-notices.php' );
-				$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Subscribed_Notice_Template( $email );
+				$admin_notice = new Incsub_Subscribe_By_Email_Administrators_Subscribed_Notice_Template( $subscriber->subscription_email );
 				$admin_notice->send_email();
 			}
 

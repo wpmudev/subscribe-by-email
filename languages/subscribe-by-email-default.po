@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Subscribe By Email\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-27 08:31+0100\n"
-"PO-Revision-Date: 2015-01-27 08:32+0100\n"
+"POT-Creation-Date: 2015-01-31 11:39+0100\n"
+"PO-Revision-Date: 2015-01-31 11:39+0100\n"
 "Last-Translator: Ignacio <igmoweb@gmail.com>\n"
 "Language-Team: WPMU DEV\n"
 "Language: English\n"
@@ -74,15 +74,15 @@ msgstr ""
 msgid "Sorry, your subscription no longer exists, please subscribe again."
 msgstr ""
 
-#: ../subscribe-by-email.php:384
+#: ../subscribe-by-email.php:390
 msgid "Thank you, your subscription has been confirmed."
 msgstr ""
 
-#: ../subscribe-by-email.php:415
+#: ../subscribe-by-email.php:421
 msgid "Your email subscription has been successfully cancelled."
 msgstr ""
 
-#: ../subscribe-by-email.php:437
+#: ../subscribe-by-email.php:443
 msgid "Go to site"
 msgstr ""
 
@@ -412,8 +412,8 @@ msgstr ""
 msgid ""
 "Dear user,\r\n"
 "\r\n"
-"A new user (###SUBSCRIBER_EMAIL###) has has confirmed its subscription to "
-"your subcribers list.\r\n"
+"A new user (###SUBSCRIBER_EMAIL###) has confirmed its subscription to your "
+"subcribers list.\r\n"
 "\r\n"
 "Click this link to manage your subscribers:\r\n"
 "###SBE_SUBSCRIBERS_URL###\r\n"
