@@ -141,7 +141,7 @@ class Incsub_Subscribe_By_Email {
 	 */
 	private function set_globals() {
 		if ( ! defined( 'INCSUB_SBE_VERSION' ) )
-			define( 'INCSUB_SBE_VERSION', '3.0' );
+			define( 'INCSUB_SBE_VERSION', '3.0.1' );
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_URL' ) )
 			define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_DIR' ) )
