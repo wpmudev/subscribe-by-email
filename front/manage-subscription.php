@@ -13,7 +13,8 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 	}
 
 	public function enqueue_scripts() {
-		if ( ! empty( $this->settings['manage_subs_page'] ) && is_page( $this->settings['manage_subs_page'] ) ) {
+		$post_id = get_the_ID();
+		if ( ! empty( $this->settings['manage_subs_page'] ) && $this->settings['manage_subs_page'] == $post_id ) {
 			wp_enqueue_style( 'manage-subscriptions-css', INCSUB_SBE_ASSETS_URL . 'css/manage-subscriptions.css' );
 		}
 	}
@@ -21,7 +22,9 @@ class Incsub_Subscribe_By_Email_Manage_Subscription {
 	public function set_the_content( $content ) {
 		$new_content = $content;
 		
-		if ( ! empty( $this->settings['manage_subs_page'] ) && is_page( $this->settings['manage_subs_page'] ) ) {
+		$post_id = get_the_ID();
+
+		if ( ! empty( $this->settings['manage_subs_page'] ) && $this->settings['manage_subs_page'] == $post_id ) {
 			$model = Incsub_Subscribe_By_Email_Model::get_instance();
 			$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
 
