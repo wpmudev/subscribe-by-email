@@ -461,7 +461,9 @@ class Incsub_Subscribe_By_Email_Model {
 
         $query = "SELECT ID FROM $wpdb->posts p $where $order";
 
-        return $wpdb->get_col( $query );
+        $posts_ids = apply_filters( 'sbe_get_posts_ids', $wpdb->get_col( $query ), $args );
+
+        return $posts_ids;
 
         
     }
