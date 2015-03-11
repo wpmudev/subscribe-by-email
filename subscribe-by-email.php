@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: WPMU DEV
-Version: 3.0.1
+Version: 3.0.2
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -141,7 +141,7 @@ class Incsub_Subscribe_By_Email {
 	 */
 	private function set_globals() {
 		if ( ! defined( 'INCSUB_SBE_VERSION' ) )
-			define( 'INCSUB_SBE_VERSION', '3.0.1' );
+			define( 'INCSUB_SBE_VERSION', '3.0.2' );
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_URL' ) )
 			define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_DIR' ) )
@@ -329,6 +329,11 @@ class Incsub_Subscribe_By_Email {
 		if ( version_compare( $current_network_version, '2.9.1', '<' ) ) {
 			$model = incsub_sbe_get_model();
 			$model->create_network_squema();
+		}
+
+		if ( version_compare( $current_network_version, '3.0.2', '<' ) ) {
+		    $model = incsub_sbe_get_model();
+		    $model->create_network_squema();
 		}
 		
 		update_site_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
@@ -547,6 +552,14 @@ class Incsub_Subscribe_By_Email {
 
 				// Now we update the status
 				incsub_sbe_set_queue_item_sent_status( $item->id, absint( $result ) );
+
+				if ( $result === 4 ) {
+					// There have been an error in PHPMailer?
+					global $phpmailer;
+					if ( ! empty( $phpmailer->ErrorInfo ) ) {
+						incsub_sbe_set_queue_item_error_message( $item->id, $phpmailer->ErrorInfo );
+					}
+				}
 
 				$return[ $item->subscriber_email ] = $result;
 

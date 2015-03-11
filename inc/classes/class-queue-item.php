@@ -89,7 +89,7 @@ function incsub_sbe_update_queue_item( $id, $args = array() ) {
 	if ( ! $queue_item )
 		return false;
 
-	$fields = array( 'campaign_settings' => '%s', 'sent' => '%d', 'sent_status' => '%d' );
+	$fields = array( 'campaign_settings' => '%s', 'sent' => '%d', 'sent_status' => '%d', 'error_msg' => '%s' );
 
 	if ( isset( $args['campaign_settings'] ) )
 		$args['campaign_settings'] = maybe_serialize( $args['campaign_settings'] );
@@ -125,6 +125,14 @@ function incsub_sbe_set_queue_item_sent_status( $id, $status ) {
 	);
 
 	return incsub_sbe_update_queue_item( $id, $args );
+}
+
+function incsub_sbe_set_queue_item_error_message( $id, $message ) {
+	$args = array(
+		'error_msg' => $message
+	);
+
+	return incsub_sbe_update_queue_item( $id, $args );	
 }
 
 function incsub_sbe_delete_queue_item( $id ) {
@@ -168,6 +176,8 @@ class SBE_Queue_Item {
 	public $sent_status = null;
 
 	public $campaign_settings = array();
+
+	public $error_msg = '';
 
 	private $posts = null;
 

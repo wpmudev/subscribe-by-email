@@ -312,3 +312,4 @@ if ( version_compare( $current_version, '2.9', '<' ) ) {
         }
     }
 }
+

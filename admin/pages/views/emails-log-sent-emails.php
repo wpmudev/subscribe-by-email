@@ -23,6 +23,7 @@
 		<h3><?php _e( 'Emails details', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
 		<table class="form-table">
 			<?php 
+
 				$errors = 0;
 				$user_content_empty = 0;
 				foreach ( $sent_emails as $item ) {
@@ -30,7 +31,15 @@
 						case 1: { $status = '<span style="color:green">' . __( 'Sent', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; break; }
 						case 2: { $status = '<span style="color:red">' . __( 'User key undefined', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $errors++; break; }
 						case 3: { $status = '<span style="color:red">' . __( 'User content empty', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $user_content_empty++; break; }
-						case 4: { $status = '<span style="color:red">' . __( 'Error', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $errors++; break; }
+						case 4: { 
+							$status = '<span style="color:red">' . __( 'Error', INCSUB_SBE_LANG_DOMAIN ); 
+							if ( ! empty( $item->error_msg ) )
+								$status .= ': ' . $item->error_msg;
+
+							$status .= '</span>';
+							$errors++; 
+							break; 
+						}
 						case 5: { $status = '<span style="color:red">' . __( 'Subscriber does not exist', INCSUB_SBE_LANG_DOMAIN ) . '</span>'; $errors++; break; }
 						default: { $status = __( 'No details found', INCSUB_SBE_LANG_DOMAIN ); $errors++; break; }
 					}
