@@ -2,11 +2,16 @@ Plugin Name: Subscribe by Email
 Author: WPMU DEV
 Requires at least: 3.5
 Tested up to: 4.0.1
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+3.0.2 - 2015/03/16
+----------------------------------------------------------------------
+- Enhancement: When an email fails, error is now displayed in Emails Logs
+- Other minor fixes
 
 3.0.1 - 2015/01/31
 ----------------------------------------------------------------------
