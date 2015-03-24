@@ -526,7 +526,8 @@ class Incsub_Subscribe_By_Email {
 
 		if ( ! get_transient( self::$pending_mails_transient_slug ) ) {
 
-			set_transient( self::$pending_mails_transient_slug, 'next', self::$time_between_batches );
+			// We first set the transient for at least 20min
+			set_transient( self::$pending_mails_transient_slug, 'next', 1200 );
 
 			do_action( 'sbe_before_send_pending_emails' );
 
@@ -566,6 +567,9 @@ class Incsub_Subscribe_By_Email {
 			}
 
 			do_action( 'sbe_after_send_pending_emails' );
+
+			// Once we have finished we set the transient right
+			set_transient( self::$pending_mails_transient_slug, 'next', self::$time_between_batches );
 
 			return $return;
 
