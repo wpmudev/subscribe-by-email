@@ -37,11 +37,23 @@ function incsub_sbe_get_subscribers( $args = array() ) {
 
 	$return = new stdClass;
 	$return->subscribers = $subscribers;
-	$return->total = $query->found_posts;
+	$return->total = absint( $query->found_posts );
 
 	return $return;
 }
 
+/**
+ * Update a subscriber
+ * @param  Integer $id   Subscriber ID
+ * @param  array  $args 
+	array(
+		'email' => 'New email',
+		'meta_key1' => 'meta_value1',
+		'meta_key2' => 'meta_value2',
+		...
+	)
+ * @return Boolean      True if everything went ok
+ */
 function incsub_sbe_update_subscriber( $id, $args = array() ) {
 	$subscriber = incsub_sbe_get_subscriber( $id );
 
@@ -72,7 +84,20 @@ function incsub_sbe_update_subscriber( $id, $args = array() ) {
 
 }
 
-function incsub_sbe_insert_subscriber( $email, $autopt = false, $args = array(), $update = false ) {
+/**
+ * Insert a new subscriber
+ * 
+ * @param  string  $email  Subscriber Email
+ * @param  boolean $autopt If a confirmation email should be avoided
+ * @param  array   $args   
+ 	array(
+		note => String
+		type => String
+		meta => Array of key/value metadata
+ 	)
+ * @return Integer          New subscriber ID/False in case of error
+ */
+function incsub_sbe_insert_subscriber( $email, $autopt = false, $args = array() ) {
 	$defaults = array(
 		'note' => '',
 		'type' => '',
@@ -82,6 +107,8 @@ function incsub_sbe_insert_subscriber( $email, $autopt = false, $args = array(),
 	$args = wp_parse_args( $args, $defaults );
 
 	$subscribe_user = apply_filters( 'sbe_pre_subscribe_user', true, $email, $args['note'], $args['type'], $autopt, $args['meta'] );
+	if ( ! $subscribe_user )
+		return false;
 
 	// Sanitize email
 	$email = sanitize_email( $email );
@@ -133,6 +160,11 @@ function incsub_sbe_insert_subscriber( $email, $autopt = false, $args = array(),
 	return $subscriber_id;
 }
 
+/**
+ * Confirm a subscriber Subscription
+ * 
+ * @param  Integer $sid Subscriber ID
+ */
 function incsub_sbe_confirm_subscription( $sid ) {
 	$subscriber = get_post( $sid );
 
@@ -142,6 +174,12 @@ function incsub_sbe_confirm_subscription( $sid ) {
 	wp_publish_post( $sid );
 }
 
+/**
+ * Get a subscriber instance
+ * 
+ * @param  Instance $sid Subscriber ID
+ * @return Object      SBE_Subscriber instance/ False in case of error
+ */
 function incsub_sbe_get_subscriber( $sid ) {
 	if ( is_email( $sid ) ) {
 		$post = get_page_by_title( $sid, OBJECT, 'subscriber' );
@@ -153,6 +191,11 @@ function incsub_sbe_get_subscriber( $sid ) {
 	return SBE_Subscriber::get_instance( $sid );
 }
 
+/**
+ * Get a subscriber by its unique key (not the same than the ID)
+ * @param  String $key Subscriber Key
+ * @return Object      SBE_Subscriber instance/ False in case of error
+ */
 function incsub_sbe_get_subscriber_by_key( $key ) {
 	$query = new WP_Query(
         array(
@@ -177,6 +220,14 @@ function incsub_sbe_get_subscriber_by_key( $key ) {
     return false;
 }
 
+/**
+ * Get a total count of the current number of subscribers
+ * 
+ * If $max_id is especified, only confirmed subscribers count will be returned up to that ID
+ * 
+ * @param  boolean $max_id Max ID to count up to
+ * @return Integer          Number of subscribers in Database
+ */
 function incsub_sbe_get_subscribers_count( $max_id = false ) {
 	global $wpdb;
 	$query = "SELECT COUNT(ID) FROM $wpdb->posts WHERE post_type = 'subscriber'";
@@ -187,6 +238,12 @@ function incsub_sbe_get_subscribers_count( $max_id = false ) {
 	return absint( $count );
 }
 
+/**
+ * Cancel and delete a subscriber
+ * 
+ * @param  Integer $sid Subscriber ID
+ * @return Boolean      True if everything went ok
+ */
 function incsub_sbe_cancel_subscription( $sid ) {
 	if ( is_email( $sid ) ) {
 		$subscriber = incsub_sbe_get_subscriber( $sid );
@@ -203,6 +260,11 @@ function incsub_sbe_cancel_subscription( $sid ) {
 	return wp_delete_post( $sid, true );
 }
 
+/**
+ * Delete a meta key for all subscribers in Database
+ *
+ * @param  String $meta_key Meta Key
+ */
 function sbe_delete_all_subscribers_meta( $meta_key ) {
 	$subscribers = incsub_sbe_get_subscribers( array( 'per_page' => -1 ) );
 	foreach ( $subscribers->subscribers as $subscriber ) {

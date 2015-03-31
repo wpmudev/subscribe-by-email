@@ -148,49 +148,6 @@ class Incsub_Subscribe_By_Email_Model {
     }
 
 
-
-
-
-    public function add_new_mail_log( $subject, $args = array() ) {
-        global $wpdb;
-
-        $max_id = $wpdb->get_var( "SELECT MAX(ID) max_id FROM $wpdb->posts WHERE post_type = 'subscriber' AND post_status = 'publish'" );
-
-        $wpdb->insert( 
-            $this->subscriptions_log_table,
-            array( 
-                'mail_subject' => $subject,
-                'mail_recipients' => 0,
-                'mail_date' => current_time( 'timestamp' ),
-                'mail_settings' => maybe_serialize( $args ),
-                'max_email_ID' => $max_id
-            ),
-            array(
-                '%s',
-                '%d',
-                '%d',
-                '%s',
-                '%s',
-                '%d'
-            )
-        );
-
-        return $wpdb->insert_id;
-
-    }
-
-    public function update_mail_log_subject( $log_id, $subject ) {
-        global $wpdb;
-
-        $wpdb->update(
-            $this->subscriptions_log_table,
-            array( 'mail_subject' => $subject ),
-            array( 'id' => $log_id ),
-            array( '%s' ),
-            array( '%d' )
-        );
-    }
-
     public function get_remaining_batch_mail( $blog_id = false ) {
         global $wpdb;
 
@@ -208,31 +165,6 @@ class Incsub_Subscribe_By_Email_Model {
         return false;
     }
 
-    public function set_mail_log_settings( $id, $settings ) {
-        global $wpdb;
-
-        $wpdb->update(
-            $this->subscriptions_log_table,
-            array( 'mail_settings' => $settings ),
-            array( 'id' => $id ),
-            array( '%s' ),
-            array( '%d' )
-        );
-    }
-
-    public function clear_mail_log_settings( $id ) {
-        global $wpdb;
-      
-
-        $wpdb->update(
-            $this->subscriptions_log_table,
-            array( 'mail_settings' => '' ),
-            array( 'id' => $id ),
-            array( '%s' ),
-            array( '%d' )
-        );
-
-    }
 
     public function increment_mail_log( $id ) {
         global $wpdb;
@@ -276,27 +208,6 @@ class Incsub_Subscribe_By_Email_Model {
         return $subscribers;
     }
 
-    public function get_campaign_emails_list_count( $log_id ) {
-        global $wpdb;
-
-        $log = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_log_table WHERE id = %d", $log_id ) );
-
-        if ( empty( $log ) )
-            return 0;
-
-        $continue_from = $log->mail_recipients;
-        $end_on = $log->max_email_ID;
-
-        $query = $wpdb->prepare( 
-            "SELECT COUNT(ID) FROM $wpdb->posts 
-            WHERE post_status = 'publish' 
-            AND post_type = 'subscriber'
-            AND ID <= %d",
-            $end_on
-        );
-
-        return absint( $wpdb->get_var( $query ) );
-    }
 
     public function update_log_emails_list( $id, $emails_list ) {
         global $wpdb;
@@ -310,47 +221,6 @@ class Incsub_Subscribe_By_Email_Model {
         );
     }
 
-
-    public function get_log( $current_page, $per_page, $sort = array(), $search = false ) {
-        global $wpdb;
-
-        $query = "SELECT * FROM $this->subscriptions_log_table ";
-
-        if ( ! empty ( $search ) )
-            $query .= sprintf( "WHERE mail_subject LIKE '%s'", '%' . esc_sql( $search ) . '%' );
-
-        $total = $wpdb->get_var( str_replace( 'SELECT *', 'SELECT COUNT(*)', $query) );
-
-        if ( $sort['subject'][1] )
-            $query .= " ORDER BY " . $sort['subject'][0] . " " . $sort['subject'][1];
-
-        if ( $sort['date'][1] )
-          $query .= " ORDER BY " . $sort['date'][0] . " " . $sort['date'][1];
-
-        $query .= " LIMIT " . intval( ( $current_page - 1 ) * $per_page) . ", " . intval( $per_page );
-
-        $logs = $wpdb->get_results( $query );
-
-        $results = array(
-            'total' => $total,
-            'logs' => $logs
-        );
-        
-        return $results;
-    }
-
-    public function get_single_log( $id ) {
-        global $wpdb;
-
-        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_log_table WHERE id = %d", $id ) );
-
-        if ( ! empty( $result ) ) {
-            $result->campaign_settings = maybe_unserialize( $result->mail_settings );
-            return $result;
-        }
-
-        return false;
-    }
 
     public function get_old_logs_ids( $time ) {
         global $wpdb;
@@ -394,19 +264,6 @@ class Incsub_Subscribe_By_Email_Model {
         $wpdb->query( "DROP TABLE IF EXISTS $this->subscriptions_queue_table" );
     }
 
-
-    public function is_digest_sent( $sid, $mail_log_id ) {
-        global $wpdb;
-
-        $meta_key = 'digest_sent_' . $mail_log_id;
-        $results = get_post_meta( $sid, $meta_key, true );
-
-        if ( empty( $results ) )
-            return false;
-
-        return true;
-
-    }
 
 
     public function get_posts_ids( $args ) {
@@ -524,34 +381,5 @@ class Incsub_Subscribe_By_Email_Model {
         $wpdb->query( $wpdb->prepare( "DELETE FROM $this->subscriptions_queue_table WHERE id = %d", $id ) );
     }
 
-    public function delete_queue_items_before( $timestamp ) {
-        global $wpdb;
-
-        $timestamp = absint( $timestamp );
-        if ( ! $timestamp )
-            return;
-
-        $wpdb->query( $wpdb->prepare( "DELETE FROM $this->subscriptions_queue_table WHERE sent <= %d AND sent != 0", $timestamp ) );
-    }
-
-    public function is_queue_empty_for_campaign( $campaign_id ) {
-        global $wpdb;
-        $blog_id = get_current_blog_id();
-        $results = $wpdb->get_var( 
-            $wpdb->prepare( 
-                "SELECT COUNT(id) FROM $this->subscriptions_queue_table 
-                WHERE blog_id = %d
-                AND campaign_id = %s
-                AND sent = 0",
-                $blog_id, 
-                $campaign_id
-            ) 
-        );
-
-        if ( empty( $results ) )
-            return true;
-        else
-            return false;
-    }
 
 }
