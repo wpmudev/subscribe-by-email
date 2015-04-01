@@ -345,7 +345,7 @@ class Incsub_Subscribe_By_Email_Template {
 			$mail = $subscriber->subscription_email;
 			$subscriber_id = $subscriber->ID;
 
-			$model->increment_mail_log( $queue_item->campaign_id );
+			incsub_sbe_increment_campaign_recipients( $queue_item->campaign_id );
 
 			if ( empty( $key ) ) {
 				$status = 2; // Empty key

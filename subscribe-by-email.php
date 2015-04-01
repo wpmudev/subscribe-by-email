@@ -201,7 +201,6 @@ class Incsub_Subscribe_By_Email {
 		// Helpers
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/general-helpers.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/extra-fields-helpers.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/subscriber-helpers.php' );
 
 		// Log class
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/logger.php' );
@@ -581,7 +580,6 @@ class Incsub_Subscribe_By_Email {
 
 
 	public function enqueue_emails( $posts_ids = array() ) {
-		$model = incsub_sbe_get_model();
 
 		$args = array( 'posts_ids' => array() );
 
@@ -631,16 +629,11 @@ class Incsub_Subscribe_By_Email {
 			return;
 
 		$campaign_id = incsub_sbe_insert_campaign( '', $args );
+		$campaign = incsub_sbe_get_campaign( $campaign_id );
 
-		$emails_list = $model->get_log_emails_list( $campaign_id );
-
-		if ( ! empty( $emails_list ) ) {
-			$model->insert_queue_items( $emails_list, $campaign_id, $args );
-		}
-		else {
-			$model->delete_log( $campaign_id );
-			Subscribe_By_Email_Logger::delete_log( $campaign_id );
-		}
+		$result = incsub_sbe_insert_queue_items( $campaign_id );
+		if ( ! $result )
+			incsub_sbe_delete_campaign( $campaign_id );			
 
 		foreach ( $args['posts_ids'] as $post_id )
 			update_post_meta( $post_id, 'sbe_sent', true );
@@ -662,6 +655,7 @@ class Incsub_Subscribe_By_Email {
 		$settings = incsub_sbe_get_settings();
 
 		if ( in_array( $post->post_type, $settings['post_types'] ) && $new_status != $old_status && 'publish' == $new_status && $settings['frequency'] == 'inmediately' ) {
+
 			$this->enqueue_emails( array( $post->ID ) );	
 			// Trigger the first batch
 			delete_transient( self::$pending_mails_transient_slug );
