@@ -67,29 +67,6 @@ class SBE_Campaign {
 			return 'pending';
 	}
 
-	public function get_subscribers_list() {
-		global $wpdb;
-
-        $end_on = $this->max_email_ID;
-
-        $query = $wpdb->prepare( 
-            "SELECT ID FROM $wpdb->posts 
-            WHERE post_status = 'publish' 
-            AND post_type = 'subscriber'
-            AND ID <= %d",
-            $end_on
-        );
-
-        $subscribers_ids = $wpdb->get_col( $query );
-        if ( empty( $subscribers_ids ) )
-        	return array();
-
-        $subscribers = array_map( 'incsub_sbe_get_subscriber', $subscribers_ids );
-
-        return $subscribers;
-
-	}
-
 	/**
 	 * Get the pending subscribers for this campaign
 	 * 
@@ -142,16 +119,13 @@ class SBE_Campaign {
 	 * Refresh the campaign status if the queue has finished
 	 */
 	public function refresh_campaign_status() {
-		global $wpdb;
-
 		$queue_items = $this->get_campaign_queue();
 
 		if ( empty( $queue_items ) ) {
 			$subscribers_count = $this->get_total_emails_count();
 			$this->mail_recipients = $subscribers_count;
 			$model = incsub_sbe_get_model();
-			$table = $model->subscriptions_log_table;
-        	$wpdb->query( $wpdb->prepare( "UPDATE $table SET mail_recipients = %d WHERE id = %d", $this->mail_recipients, $this->id ) );    
+			$model->update_mail_log_recipients( $this->id, $this->mail_recipients );
 		}
 	}
 
@@ -313,19 +287,6 @@ function incsub_sbe_get_campaigns_since( $timestamp ) {
 
     return $campaigns;
 
-}
-
-/**
- * Increment the number of users that have received n email for a campaign
- *
- * @param  Integer $campaign_id
- */
-function incsub_sbe_increment_campaign_recipients( $campaign_id ) {
-	global $wpdb;
-
-	$model = incsub_sbe_get_model();
-	$table = $model->subscriptions_log_table;
-    $wpdb->query( $wpdb->prepare( "UPDATE $table SET mail_recipients = mail_recipients + 1 WHERE id = %d", $campaign_id ) );
 }
 
 /**

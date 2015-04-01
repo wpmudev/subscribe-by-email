@@ -133,6 +133,10 @@ class Incsub_Subscribe_By_Email_Model {
         unset( $emails_list );
     }
 
+    private function generate_user_key( $email ) {
+        return substr( md5( time() . rand() . $email ), 0, 16 );
+    }
+
 
 
     function get_active_subscribers_count() {
@@ -162,7 +166,47 @@ class Incsub_Subscribe_By_Email_Model {
     }
 
 
+    public function increment_mail_log( $id ) {
+        global $wpdb;
 
+        $wpdb->query( $wpdb->prepare( "UPDATE $this->subscriptions_log_table SET mail_recipients = mail_recipients + 1 WHERE id = %d", $id ) );
+
+    }
+
+    public function update_mail_log_recipients( $id, $mail_recipients ) {
+        global $wpdb;
+        $wpdb->query( $wpdb->prepare( "UPDATE $this->subscriptions_log_table SET mail_recipients = %d WHERE id = %d", $mail_recipients, $id ) );        
+    }
+
+
+    public function get_log_emails_list( $log_id, $batch_size = false ) {
+        global $wpdb;
+
+        $log = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_log_table WHERE id = %d", $log_id ) );
+
+        if ( empty( $log ) )
+            return false;
+
+        $continue_from = $log->mail_recipients;
+        $end_on = $log->max_email_ID;
+
+        $query = $wpdb->prepare( 
+            "SELECT post_title FROM $wpdb->posts 
+            WHERE post_status = 'publish' 
+            AND post_type = 'subscriber'
+            AND ID <= %d",
+            $end_on
+        );
+
+        if ( $batch_size !== false ) {
+            $query .= $wpdb->prepare( " LIMIT %d, %d", $continue_from, $batch_size );
+        }
+
+        $subscribers = $wpdb->get_col( $query );
+
+
+        return $subscribers;
+    }
 
 
     public function update_log_emails_list( $id, $emails_list ) {
@@ -174,6 +218,41 @@ class Incsub_Subscribe_By_Email_Model {
             array( 'id' => $id ),
             array( '%s' ),
             array( '%d' )
+        );
+    }
+
+
+    public function get_old_logs_ids( $time ) {
+        global $wpdb;
+
+        $results = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM $this->subscriptions_log_table WHERE mail_date < %d", $time ) );
+        return $results;
+    }
+
+    public function delete_log( $log_id ) {
+        global $wpdb;
+
+        if ( is_array( $log_id ) && ! empty( $log_id ) ) {
+            $where = "WHERE id IN (" . implode( ', ', $log_id ) . ")";
+            $where_digest = "WHERE meta_key IN ('digest_sent_" . implode( "','digest_sent_", $log_id ) . "')";
+        }
+        else {
+            $where = $wpdb->prepare( "WHERE id = %d", $log_id );   
+            $meta_key = 'digest_sent_' . $log_id;
+            $where_digest = "WHERE meta_key = '$meta_key'";   
+        }
+
+        $query = "DELETE FROM $this->subscriptions_log_table $where";
+        $wpdb->query( $query );
+
+        $wpdb->query( "DELETE FROM $wpdb->postmeta $where_digest" );
+
+        $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM $this->subscriptions_queue_table
+                WHERE campaign_id = %d",
+                $log_id
+            )
         );
     }
 
@@ -247,6 +326,54 @@ class Incsub_Subscribe_By_Email_Model {
         
     }
 
+    public function insert_queue_items( $emails, $campaign_id, $settings ) {
+        global $wpdb;
+
+        $blog_id = get_current_blog_id();
+
+        if ( empty( $emails ) )
+            return;
+
+        $settings = maybe_serialize( $settings );
+
+        $query = "INSERT IGNORE INTO $this->subscriptions_queue_table ( blog_id, subscriber_email, campaign_id, campaign_settings ) VALUES ";
+        $values = array();
+        foreach ( $emails as $email ) {
+            $values[] = $wpdb->prepare( "( %d, %s, %s, %s )", $blog_id, $email, $campaign_id, $settings );
+        }
+
+        $query .= implode( ' , ', $values );
+
+        $wpdb->query( $query );
+        
+    }
+
+    public function get_queue_item( $id ) {
+        global $wpdb;
+
+        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $this->subscriptions_queue_table WHERE id = %d", $id ) );
+        if ( $result ) {
+            $result->campaign_settings = maybe_unserialize( $result->campaign_settings );
+        }
+
+        return $result;
+    }
+
+
+    public function set_queue_item_sent( $id, $status ) {
+        global $wpdb;
+
+        $result = $wpdb->update(
+            $this->subscriptions_queue_table,
+            array( 
+                'sent' => current_time( 'timestamp' ),
+                'sent_status' => $status
+            ),
+            array( 'id' => $id ),
+            array( '%d' ),
+            array( '%d' )
+        );
+    }
 
     public function delete_queue_item( $id ) {
         global $wpdb;
