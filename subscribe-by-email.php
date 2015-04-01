@@ -630,22 +630,22 @@ class Incsub_Subscribe_By_Email {
 		if ( empty( $args['posts_ids'] ) )
 			return;
 
-		$campaign_id = incsub_sbe_insert_campaign( '', $args );
+		$log_id = $model->add_new_mail_log( '', $args );
 
-		$emails_list = $model->get_log_emails_list( $campaign_id );
+		$emails_list = $model->get_log_emails_list( $log_id );
 
 		if ( ! empty( $emails_list ) ) {
-			$model->insert_queue_items( $emails_list, $campaign_id, $args );
+			$model->insert_queue_items( $emails_list, $log_id, $args );
 		}
 		else {
-			$model->delete_log( $campaign_id );
-			Subscribe_By_Email_Logger::delete_log( $campaign_id );
+			$model->delete_log( $log_id );
+			Subscribe_By_Email_Logger::delete_log( $log_id );
 		}
 
 		foreach ( $args['posts_ids'] as $post_id )
 			update_post_meta( $post_id, 'sbe_sent', true );
 
-		return $campaign_id;
+		return $log_id;
 	}
 
 	/**
@@ -811,7 +811,7 @@ class Incsub_Subscribe_By_Email {
 			$days_old = absint( $settings['keep_logs_for'] );
 			$timestamp_old = current_time( 'timestamp' ) - ( $days_old * 24 * 60 * 60 );
 
-			$old_campaigns = incsub_sbe_get_campaigns_since( $timestamp_old );
+			$old_campaigns = incsub_sbe_get_sent_campaigns( $timestamp_old );
 
 			if ( ! empty( $old_campaigns ) ) {
 				foreach ( $old_campaigns as $campaign )
