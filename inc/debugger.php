@@ -2,13 +2,12 @@
 
 class Subscribe_By_Email_Debugger {
 	public $file = null;
+	public static $instance = null;
 
-	public static $instance;
-
-	public function get_instance() {
+	public static function get_instance() {
 		if ( self::$instance ==  null )
-			return new self();
-		return $instance;
+			self::$instance = new self();
+		return self::$instance;
 	}
 
 	public function __construct() {
@@ -21,13 +20,13 @@ class Subscribe_By_Email_Debugger {
 
 	    /* Build the string containing the complete log line. */
 	    $line = PHP_EOL.sprintf('[%s, <%s>, (%d)]==> %s', 
-	                            date("Y/m/d h:i:s", mktime()),
+	                            date("Y/m/d h:i:s", time()),
 	                            basename($bTrace[0]['file']), 
 	                            $bTrace[0]['line'], 
 	                            $message );
 	    
 	    // log to file
-	    file_put_contents($this->file,$line,FILE_APPEND);
+	    $result = file_put_contents($this->file,$line,FILE_APPEND);
 	    
 	    return true;
 	}
