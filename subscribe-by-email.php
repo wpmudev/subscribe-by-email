@@ -672,12 +672,11 @@ class Incsub_Subscribe_By_Email {
 				self::set_next_week_schedule_time( $settings['day_of_week'], $settings['time'] );
 				$days = self::get_last_x_days_sending_time( 7 );
 
-				$today_sending_time = self::get_today_sending_time();
 				$args = array(
 					'post_type' => $settings['post_types'],
 					'after_date' => date( 'Y-m-d H:i:s', $days )
 				);
-				$posts_ids = $model->get_posts_ids( $args );
+				$posts_ids = incsub_sbe_get_digest_posts_ids( $args );
 
 				$this->enqueue_emails( $posts_ids );
 				// Trigger the first batch
@@ -692,14 +691,14 @@ class Incsub_Subscribe_By_Email {
 				self::set_next_day_schedule_time( $settings['time'] );
 				$days = self::get_last_x_days_sending_time( 1 );
 
-				$today_sending_time = self::get_today_sending_time();
 				$args = array(
 					'post_type' => $settings['post_types'],
 					'after_date' => date( 'Y-m-d H:i:s', $days )
 				);
-				$posts_ids = $model->get_posts_ids( $args );
+				$posts_ids = incsub_sbe_get_digest_posts_ids( $args );
 
 				$this->enqueue_emails( $posts_ids );
+				
 				// Trigger the first batch
 				delete_transient( self::$pending_mails_transient_slug );
 
