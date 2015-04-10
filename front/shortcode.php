@@ -16,14 +16,49 @@ class Subscribe_By_Email_Shortcode {
 		add_action( 'wp_enqueue_scripts', array( &$this, 'register_scripts' ), 999 );
 
 
+		$this->init_tiny_mce_button();
+
 		if ( ( is_admin() || apply_filters( 'sbe_display_tinymce_buttons_in_front', true ) ) && current_user_can( apply_filters( 'sbe_display_tinymce_buttons_cap', 'publish_posts' ) ) ) {
-			add_action( 'init', array( &$this, 'add_tinymce_buttons' ) );
-			add_action( 'admin_head', array( &$this, 'register_footer_scripts' ) );
-			add_action( 'admin_head', array( $this,'add_icon_styles' ) );
 			add_action( 'wp_head', array( &$this, 'register_footer_scripts' ) );
 			add_action( 'wp_head', array( $this,'add_icon_styles' ) );
 		}
 	}
+
+	// TINY MCE FUNCTIONS
+	function init_tiny_mce_button() {
+		add_action( 'admin_head', array( $this, 'add_shortcode_button' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_editor_admin_scripts' ) );
+	}
+
+	function add_shortcode_button() {
+		if ( 'true' == get_user_option( 'rich_editing' ) ) {
+			add_filter( 'mce_external_plugins', array( $this, 'add_shortcode_tinymce_plugin' ) );
+			add_filter( 'mce_buttons', array( $this, 'register_shortcode_button' ) );
+			add_filter( 'mce_external_languages', array( $this, 'add_tinymce_i18n' ) );
+		}
+	}
+
+	public function enqueue_editor_admin_scripts() {
+		wp_enqueue_style( 'sbe-admin-shortcodes', INCSUB_SBE_PLUGIN_URL . '/admin/assets/css/editor-shortcode.css' );
+	}
+
+	public function add_shortcode_tinymce_plugin( $plugins ) {
+		$plugins['sbe_shortcodes'] = INCSUB_SBE_PLUGIN_URL . '/admin/assets/js/editor-shortcode.js';
+		return $plugins;
+	}
+
+	public function register_shortcode_button( $buttons ) {
+		array_push( $buttons, '|', 'sbe_shortcodes' );
+		return $buttons;
+	}
+
+	public function add_tinymce_i18n( $i18n ) {
+		$i18n['sbe_shortcodes'] = INCSUB_SBE_PLUGIN_DIR . '/admin/tinymce-shortcodes-i18n.php';
+		return $i18n;
+	}
+
+
+	// END //
 
 	function add_icon_styles() {
 		?>
@@ -37,10 +72,7 @@ class Subscribe_By_Email_Shortcode {
 	}
 
 
-	public function add_tinymce_buttons() {
-		add_filter( 'mce_external_plugins', array( &$this, 'add_buttons' ) );
-    	add_filter( 'mce_buttons', array( &$this, 'register_buttons' ) );
-	}
+
 
 	public function register_scripts() {
 		wp_enqueue_style( 'sbe-form-css', INCSUB_SBE_ASSETS_URL . '/css/shortcode.css', array(), '20140212' );
@@ -58,18 +90,6 @@ class Subscribe_By_Email_Shortcode {
 				var sbe_l10n = <?php echo $l10n; ?>;
 			</script>
 		<?php
-	}
-
-
-	public function add_buttons( $plugin_arr ) {
-		$plugin_arr['sbeshortcode'] = INCSUB_SBE_ASSETS_URL . 'js/tiny-mce-buttons.js';
-		return $plugin_arr;
-	}
-
-
-	public function register_buttons( $buttons ) {
-		array_push( $buttons, 'sbeform' );
-		return $buttons;
 	}
 
 
