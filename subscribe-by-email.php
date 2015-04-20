@@ -603,11 +603,20 @@ class Incsub_Subscribe_By_Email {
 		// Check if the taxonomy is valid
 		foreach ( $args['posts_ids'] as $key => $post_id ) {
 			$post_type = get_post_type( $post_id );
-			$allowed_post_type_taxonomies = array_keys( $settings['taxonomies'][ $post_type ] );
-			$allowed_post_type_terms = array();
-			foreach ( $allowed_post_type_taxonomies as $post_type_tax ) {
-				$allowed_post_type_terms = array_merge( $allowed_post_type_terms, array_values( $settings['taxonomies'][ $post_type ][ $post_type_tax ] ) );
+
+			if ( isset( $settings['taxonomies'][ $post_type ] ) ) {
+				$allowed_post_type_taxonomies = array_keys( $settings['taxonomies'][ $post_type ] );
+				$allowed_post_type_terms = array();
+				foreach ( $allowed_post_type_taxonomies as $post_type_tax ) {
+					$allowed_post_type_terms = array_merge( $allowed_post_type_terms, array_values( $settings['taxonomies'][ $post_type ][ $post_type_tax ] ) );
+				}	
 			}
+			else {
+				// The post type has no taxonomies, send it
+				$allowed_post_type_terms = array( 'all' );
+				$allowed_post_type_taxonomies = array();
+			}
+			
 
 			if ( in_array( 'all', $allowed_post_type_terms ) ) {
 				// All terms in this taxonomy are accepted
