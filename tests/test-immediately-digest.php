@@ -19,6 +19,7 @@ class SBE_Immediately_Digest_Tests extends SBE_UnitTestCase {
 		$this->insert_subscribers();
 		$settings = incsub_sbe_get_settings();
 		$settings['frequency'] = 'inmediately';
+		$settings['post_types'] = array( 'post' );
 		incsub_sbe_update_settings( $settings );
 
 		$campaigns = incsub_sbe_get_campaigns();
@@ -55,6 +56,7 @@ class SBE_Immediately_Digest_Tests extends SBE_UnitTestCase {
 	function test_enqueue_emails_with_empty_subscribers() {
 		$settings = incsub_sbe_get_settings();
 		$settings['frequency'] = 'inmediately';
+		$settings['post_types'] = array( 'post' );
 		incsub_sbe_update_settings( $settings );
 
 		$campaigns = incsub_sbe_get_campaigns();
@@ -74,8 +76,9 @@ class SBE_Immediately_Digest_Tests extends SBE_UnitTestCase {
 		$settings = incsub_sbe_get_settings();
 		$settings['frequency'] = 'inmediately';
 		$settings['mails_batch_size'] = 1;
+		$settings['post_types'] = array( 'post' );
 		incsub_sbe_update_settings( $settings );
-		
+
 		$post_id = $this->factory->post->create_object(
 			$this->factory->post->generate_args()
 		);
