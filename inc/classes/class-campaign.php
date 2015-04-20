@@ -16,6 +16,8 @@ class SBE_Campaign {
 	public $max_email_ID = 0;
 
 	public static function get_instance( $campaign_item ) {
+		global $wpdb;
+
 		if ( is_object( $campaign_item ) ) {
 			$campaign_item = incsub_sbe_sanitize_campaign_fields( $campaign_item );
 			return new self( $campaign_item );
@@ -26,10 +28,13 @@ class SBE_Campaign {
 			return false;
 
 		$model = incsub_sbe_get_model();
-		$campaign_item = $model->get_single_log( $id );
+		$table = $model->subscriptions_log_table;
 
+        $campaign_item = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $id ) );
 		if ( ! $campaign_item )
 			return false;
+
+        $campaign_item->campaign_settings = maybe_unserialize( $campaign_item->mail_settings );
 
 		$campaign_item = incsub_sbe_sanitize_campaign_fields( $campaign_item );
 
@@ -38,15 +43,17 @@ class SBE_Campaign {
 	}
 
 	public function __construct( $campaign_item ) {
-
 		foreach ( get_object_vars( $campaign_item ) as $key => $value ) 
-			$this->$key = $value;
-		
+			$this->$key = $value;		
 	}
 
-	public function get_total_emails_count() {
-		$model = incsub_sbe_get_model();
-		return $model->get_campaign_emails_list_count( $this->id );
+	/**
+	 * Get the total subscribers that this campaign is goign to send emails to
+	 *
+	 * @return Integer
+	 */
+	public function get_total_emails_count() {		
+        return incsub_sbe_get_subscribers_count( $this->max_email_ID );
 	} 
 
 	public function get_status() {
@@ -60,6 +67,34 @@ class SBE_Campaign {
 			return 'pending';
 	}
 
+	public function get_subscribers_list() {
+		global $wpdb;
+
+        $end_on = $this->max_email_ID;
+
+        $query = $wpdb->prepare( 
+            "SELECT ID FROM $wpdb->posts 
+            WHERE post_status = 'publish' 
+            AND post_type = 'subscriber'
+            AND ID <= %d",
+            $end_on
+        );
+
+        $subscribers_ids = $wpdb->get_col( $query );
+        if ( empty( $subscribers_ids ) )
+        	return array();
+
+        $subscribers = array_map( 'incsub_sbe_get_subscriber', $subscribers_ids );
+
+        return $subscribers;
+
+	}
+
+	/**
+	 * Get the pending subscribers for this campaign
+	 * 
+	 * @return array list of queue items pending to be sent
+	 */
 	public function get_campaign_queue() {
 		$args = array(
 			'campaign_id' => $this->id,
@@ -71,6 +106,11 @@ class SBE_Campaign {
 		return $return['items'];
 	}
 
+	/**
+	 * Get the whole queue for this campaign including pending/sent emails
+	 * 
+	 * @return array list of queue items
+	 */
 	public function get_campaign_all_queue() {
 		$args = array(
 			'campaign_id' => $this->id,
@@ -82,6 +122,11 @@ class SBE_Campaign {
 		return $return['items'];
 	}
 
+	/**
+	 * Get the sent queue for this campaign
+	 * 
+	 * @return array list of sent queue items
+	 */
 	public function get_campaign_sent_queue() {
 		$args = array(
 			'campaign_id' => $this->id,
@@ -93,27 +138,89 @@ class SBE_Campaign {
 		return $return['items'];
 	}
 
+	/**
+	 * Refresh the campaign status if the queue has finished
+	 */
 	public function refresh_campaign_status() {
+		global $wpdb;
+
 		$queue_items = $this->get_campaign_queue();
-		
 
 		if ( empty( $queue_items ) ) {
 			$subscribers_count = $this->get_total_emails_count();
 			$this->mail_recipients = $subscribers_count;
 			$model = incsub_sbe_get_model();
-			$model->update_mail_log_recipients( $this->id, $this->mail_recipients );
+			$table = $model->subscriptions_log_table;
+        	$wpdb->query( $wpdb->prepare( "UPDATE $table SET mail_recipients = %d WHERE id = %d", $this->mail_recipients, $this->id ) );    
 		}
 	}
 
 
 }
 
-
+/**
+ * Get a Campaign instance
+ * 
+ * @param  Instance $sid Campaign ID
+ * @return Object      SBE_Campaign instance/ False in case of error
+ */
 function incsub_sbe_get_campaign( $campaign_item ) {
 	return SBE_Campaign::get_instance( $campaign_item );
 }
 
-function incsub_sbe_get_campaigns( $args ) {
+/**
+ * Insert a new campaign
+ * 
+ * @param  String $subject Campaign Subject
+ * @param  array  $args    Campaign Settings
+ * 
+ * @return mixed          New camapign ID/False
+ */
+function incsub_sbe_insert_campaign( $subject, $args = array() ) {
+    global $wpdb;
+
+    $table = subscribe_by_email()->model->subscriptions_log_table;
+
+    $max_id = $wpdb->get_var( "SELECT MAX(ID) max_id FROM $wpdb->posts WHERE post_type = 'subscriber' AND post_status = 'publish'" );
+
+    if ( ! $max_id )
+    	return false;
+
+    $wpdb->insert( 
+        $table,
+        array( 
+            'mail_subject' => $subject,
+            'mail_recipients' => 0,
+            'mail_date' => current_time( 'timestamp' ),
+            'mail_settings' => maybe_serialize( $args ),
+            'max_email_ID' => $max_id
+        ),
+        array(
+            '%s',
+            '%d',
+            '%d',
+            '%s',
+            '%s',
+            '%d'
+        )
+    );
+
+    return $wpdb->insert_id;
+}
+
+/**
+ * Get a list of campaigns based on an arguments list
+ * 
+ * @param  Array $args Arguments
+ * @return array       
+ 	array(
+ 		'items' => List of SBE_Campaign instances objects
+ 		'total' => Number of campaigns found in DB
+	)
+ */
+function incsub_sbe_get_campaigns( $args = array() ) {
+	global $wpdb;
+
 	$defaults = array(
 		'current_page' => 1,
 		'per_page' => 10,
@@ -126,20 +233,47 @@ function incsub_sbe_get_campaigns( $args ) {
 	extract( $args );
 
 	$model = incsub_sbe_get_model();
-	$campaigns = $model->get_log( $current_page, $per_page, $sortable, $search );
 
-	$return = array(
-		'items' => array(),
-		'count' => $campaigns['total']
+	$table = $model->subscriptions_log_table;
+
+    $query = "SELECT * FROM $table";
+
+    if ( ! empty ( $search ) )
+        $query .= sprintf( "WHERE mail_subject LIKE '%s'", '%' . esc_sql( $search ) . '%' );
+
+    $total = $wpdb->get_var( str_replace( 'SELECT *', 'SELECT COUNT(*)', $query) );
+
+    $default_sortable = array(
+    	'subject' => array( false, false ),
+    	'date' => array( false, false ),
+    );
+    $sortable = wp_parse_args( $default_sortable, $sortable );
+
+    if ( $sortable['subject'][1] )
+        $query .= " ORDER BY " . $sortable['subject'][0] . " " . $sortable['subject'][1];
+
+    if ( $sortable['date'][1] )
+      $query .= " ORDER BY " . $sortable['date'][0] . " " . $sortable['date'][1];
+
+    $query .= " LIMIT " . intval( ( $current_page - 1 ) * $per_page) . ", " . intval( $per_page );
+
+    $campaigns = $wpdb->get_results( $query );
+    $campaigns = array_map( 'incsub_sbe_get_campaign', $campaigns );
+
+	return array(
+		'items' => $campaigns,
+		'count' => absint( $total )
 	);
-	foreach ( $campaigns['logs'] as $campaign ) {
-		$campaign->mail_settings = maybe_unserialize( $campaign->mail_settings );
-		$return['items'][] = incsub_sbe_get_campaign( $campaign );
-	}
 
-	return $return;
 }
 
+/**
+ * Delete a campaign
+ * 
+ * @param  Integer $id Campaign ID
+ * 
+ * @return Boolean     True if everything went OK
+ */
 function incsub_sbe_delete_campaign( $id ) {
 	global $wpdb;
 
@@ -165,7 +299,7 @@ function incsub_sbe_delete_campaign( $id ) {
 
 }
 
-function incsub_sbe_get_sent_campaigns( $timestamp ) {
+function incsub_sbe_get_campaigns_since( $timestamp ) {
 	$timestamp = absint( $timestamp );
 	if ( ! $timestamp )
 		return array();
@@ -175,16 +309,31 @@ function incsub_sbe_get_sent_campaigns( $timestamp ) {
 	$table = subscribe_by_email()->model->subscriptions_log_table;
     $results = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM $table WHERE mail_date < %d", $timestamp ) );
 
-    $campaigns = array();
-    foreach ( $results as $result ) {
-    	$campaigns[] = incsub_sbe_get_campaign( $result );
-    }
+    $campaigns = array_map( 'incsub_sbe_get_campaign', $results );
 
     return $campaigns;
 
 }
 
+/**
+ * Increment the number of users that have received n email for a campaign
+ *
+ * @param  Integer $campaign_id
+ */
+function incsub_sbe_increment_campaign_recipients( $campaign_id ) {
+	global $wpdb;
 
+	$model = incsub_sbe_get_model();
+	$table = $model->subscriptions_log_table;
+    $wpdb->query( $wpdb->prepare( "UPDATE $table SET mail_recipients = mail_recipients + 1 WHERE id = %d", $campaign_id ) );
+}
+
+/**
+ * Sanitize fields for the SBE_Campaign instance
+ * 
+ * @param  SBE_Campaign $campaign_item SBE_Campaign instance
+ * @return SBE_Campaign                Sanitized SBE_Campaign instance
+ */
 function incsub_sbe_sanitize_campaign_fields( $campaign_item ) {
 	$int_fields = array( 'id', 'mail_recipients', 'mail_date', 'max_email_ID' );
 	$array_fields = array( 'mail_settings' );

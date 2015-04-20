@@ -142,7 +142,6 @@ class Incsub_Subscribe_By_Email {
 	private function set_globals() {
 		if ( ! defined( 'INCSUB_SBE_VERSION' ) )
 			define( 'INCSUB_SBE_VERSION', '3.1' );
-
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_URL' ) )
 			define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_DIR' ) )
@@ -202,7 +201,6 @@ class Incsub_Subscribe_By_Email {
 		// Helpers
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/general-helpers.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/extra-fields-helpers.php' );
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/subscriber-helpers.php' );
 
 		// Log class
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/logger.php' );
@@ -582,7 +580,6 @@ class Incsub_Subscribe_By_Email {
 
 
 	public function enqueue_emails( $posts_ids = array() ) {
-		$model = incsub_sbe_get_model();
 
 		$args = array( 'posts_ids' => array() );
 
@@ -640,22 +637,17 @@ class Incsub_Subscribe_By_Email {
 		if ( empty( $args['posts_ids'] ) )
 			return;
 
-		$log_id = $model->add_new_mail_log( '', $args );
+		$campaign_id = incsub_sbe_insert_campaign( '', $args );
+		$campaign = incsub_sbe_get_campaign( $campaign_id );
 
-		$emails_list = $model->get_log_emails_list( $log_id );
-
-		if ( ! empty( $emails_list ) ) {
-			$model->insert_queue_items( $emails_list, $log_id, $args );
-		}
-		else {
-			$model->delete_log( $log_id );
-			Subscribe_By_Email_Logger::delete_log( $log_id );
-		}
+		$result = incsub_sbe_insert_queue_items( $campaign_id );
+		if ( ! $result )
+			incsub_sbe_delete_campaign( $campaign_id );			
 
 		foreach ( $args['posts_ids'] as $post_id )
 			update_post_meta( $post_id, 'sbe_sent', true );
 
-		return $log_id;
+		return $campaign_id;
 	}
 
 	/**
@@ -820,7 +812,7 @@ class Incsub_Subscribe_By_Email {
 			$days_old = absint( $settings['keep_logs_for'] );
 			$timestamp_old = current_time( 'timestamp' ) - ( $days_old * 24 * 60 * 60 );
 
-			$old_campaigns = incsub_sbe_get_sent_campaigns( $timestamp_old );
+			$old_campaigns = incsub_sbe_get_campaigns_since( $timestamp_old );
 
 			if ( ! empty( $old_campaigns ) ) {
 				foreach ( $old_campaigns as $campaign )
