@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: WPMU DEV
-Version: 3.0.3
+Version: 3.1
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -141,7 +141,8 @@ class Incsub_Subscribe_By_Email {
 	 */
 	private function set_globals() {
 		if ( ! defined( 'INCSUB_SBE_VERSION' ) )
-			define( 'INCSUB_SBE_VERSION', '3.0.3' );
+			define( 'INCSUB_SBE_VERSION', '3.1' );
+
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_URL' ) )
 			define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_DIR' ) )
@@ -605,11 +606,20 @@ class Incsub_Subscribe_By_Email {
 		// Check if the taxonomy is valid
 		foreach ( $args['posts_ids'] as $key => $post_id ) {
 			$post_type = get_post_type( $post_id );
-			$allowed_post_type_taxonomies = array_keys( $settings['taxonomies'][ $post_type ] );
-			$allowed_post_type_terms = array();
-			foreach ( $allowed_post_type_taxonomies as $post_type_tax ) {
-				$allowed_post_type_terms = array_merge( $allowed_post_type_terms, array_values( $settings['taxonomies'][ $post_type ][ $post_type_tax ] ) );
+
+			if ( isset( $settings['taxonomies'][ $post_type ] ) ) {
+				$allowed_post_type_taxonomies = array_keys( $settings['taxonomies'][ $post_type ] );
+				$allowed_post_type_terms = array();
+				foreach ( $allowed_post_type_taxonomies as $post_type_tax ) {
+					$allowed_post_type_terms = array_merge( $allowed_post_type_terms, array_values( $settings['taxonomies'][ $post_type ][ $post_type_tax ] ) );
+				}	
 			}
+			else {
+				// The post type has no taxonomies, send it
+				$allowed_post_type_terms = array( 'all' );
+				$allowed_post_type_taxonomies = array();
+			}
+			
 
 			if ( in_array( 'all', $allowed_post_type_terms ) ) {
 				// All terms in this taxonomy are accepted
@@ -678,12 +688,11 @@ class Incsub_Subscribe_By_Email {
 				self::set_next_week_schedule_time( $settings['day_of_week'], $settings['time'] );
 				$days = self::get_last_x_days_sending_time( 7 );
 
-				$today_sending_time = self::get_today_sending_time();
 				$args = array(
 					'post_type' => $settings['post_types'],
 					'after_date' => date( 'Y-m-d H:i:s', $days )
 				);
-				$posts_ids = $model->get_posts_ids( $args );
+				$posts_ids = incsub_sbe_get_digest_posts_ids( $args );
 
 				$this->enqueue_emails( $posts_ids );
 				// Trigger the first batch
@@ -698,14 +707,14 @@ class Incsub_Subscribe_By_Email {
 				self::set_next_day_schedule_time( $settings['time'] );
 				$days = self::get_last_x_days_sending_time( 1 );
 
-				$today_sending_time = self::get_today_sending_time();
 				$args = array(
 					'post_type' => $settings['post_types'],
 					'after_date' => date( 'Y-m-d H:i:s', $days )
 				);
-				$posts_ids = $model->get_posts_ids( $args );
+				$posts_ids = incsub_sbe_get_digest_posts_ids( $args );
 
 				$this->enqueue_emails( $posts_ids );
+				
 				// Trigger the first batch
 				delete_transient( self::$pending_mails_transient_slug );
 

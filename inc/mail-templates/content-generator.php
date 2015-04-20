@@ -25,7 +25,7 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 				'post_type' => $this->post_types,
 				'include'	=>	$this->post_ids,
 			);
-			$_post_ids = $model->get_posts_ids( $args );
+			$_post_ids = incsub_sbe_get_digest_posts_ids( $args );
 
 			$content = array();
 			foreach ( $_post_ids as $post_id ) {

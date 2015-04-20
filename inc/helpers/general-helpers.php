@@ -277,3 +277,63 @@ function incsub_sbe_send_confirmation_email( $subscription_id, $force = false ) 
 	$confirmation_mail = new Incsub_Subscribe_By_Email_Confirmation_Template( $settings, $subscriber->subscription_email );
 	$confirmation_mail->send_mail();
 }
+
+
+function incsub_sbe_get_digest_posts_ids( $args ) {
+	global $wpdb;
+	
+    $defaults = array(
+        'post_type' => array( 'post' ),
+        'post_status' => array( 'publish' ),
+        'after_date' => '',
+        'include' => ''
+    );
+
+    $args = wp_parse_args( $args, $defaults );
+
+    extract( $args );
+
+    $order = "ORDER BY p.post_date DESC";
+
+    $where = array();
+
+    // Post Type
+    if ( empty( $post_type ) )
+        return array();
+
+    if ( is_string( $post_type ) )
+        $post_type = array( $post_type );
+
+    $where[] = "p.post_type IN ('" . join("', '", $post_type) . "')";
+
+    // Post Status
+    if ( empty( $post_status ) )
+        return array();
+
+    if ( is_string( $post_status ) )
+        $post_status = array( $post_status );
+
+    $where[] = "p.post_status IN ('" . join("', '", $post_status) . "')";
+
+    // Date
+    if ( ! empty( $after_date ) ) {
+        $where[] = $wpdb->prepare( "p.post_date > %s", $after_date );
+    }
+
+    // Include IDs
+    if ( ! empty( $include ) ) {
+        if ( is_numeric( $include ) )
+            $include = array( absint( $include ) );
+
+        $where[] = "p.ID IN (" . implode(',', array_map( 'absint', $include )) . ")";
+    }
+
+    $where = "WHERE " . implode( " AND ", $where );
+
+    $query = "SELECT ID FROM $wpdb->posts p $where $order";
+
+    $posts_ids = apply_filters( 'sbe_get_posts_ids', $wpdb->get_col( $query ), $args );
+
+    return $posts_ids;
+}
+
