@@ -2,11 +2,18 @@ Plugin Name: Subscribe by Email
 Author: WPMU DEV
 Requires at least: 3.5
 Tested up to: 4.1
-Stable tag: 3.0.2
+Stable tag: 3.1
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+3.1 2015/04/20
+----------------------------------------------------------------------
+- Enhancement: Removed old legacy code.
+- Enhancement: Plugin is now faster loading.
+- Fixed: Post types with no taxonomies were not being sent.
+- Added unit tests folder
 
 3.0.3 2015/04/10
 ----------------------------------------------------------------------
