@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: WPMU DEV
-Version: 3.1
+Version: 3.1.1
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -141,7 +141,7 @@ class Incsub_Subscribe_By_Email {
 	 */
 	private function set_globals() {
 		if ( ! defined( 'INCSUB_SBE_VERSION' ) )
-			define( 'INCSUB_SBE_VERSION', '3.1' );
+			define( 'INCSUB_SBE_VERSION', '3.1.1' );
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_URL' ) )
 			define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_DIR' ) )
@@ -379,8 +379,8 @@ class Incsub_Subscribe_By_Email {
 			$subscriber = incsub_sbe_get_subscriber_by_key( $_GET['sbe_confirm'] );
 
 			if ( ! $subscriber ) {
-				$this->sbe_subscribing_notice( __( 'Sorry, your subscription no longer exists, please subscribe again.', INCSUB_SBE_LANG_DOMAIN ) );
-				die();
+				$this->sbe_subscribing_notice( __( 'Sorry, your subscription no longer exists, please subscribe again.', INCSUB_SBE_LANG_DOMAIN ), __( 'Your subscription no longer exists', INCSUB_SBE_LANG_DOMAIN ) );
+				wp_die();
 			}
 
 			if ( $subscriber->is_confirmed() ) {
@@ -391,7 +391,8 @@ class Incsub_Subscribe_By_Email {
 
 			incsub_sbe_confirm_subscription( $subscriber->ID );
 
-			$this->sbe_subscribing_notice( __( 'Thank you, your subscription has been confirmed.', INCSUB_SBE_LANG_DOMAIN ) );
+			$title = __( 'Thank you, your subscription has been confirmed.', INCSUB_SBE_LANG_DOMAIN );
+			$this->sbe_subscribing_notice( $title, $title );
 
 			$settings = incsub_sbe_get_settings();
 			if ( $settings['get_notifications'] ) {
@@ -422,16 +423,20 @@ class Incsub_Subscribe_By_Email {
 				}
 			}
 
-			$this->sbe_subscribing_notice( __( 'Your email subscription has been successfully cancelled.', INCSUB_SBE_LANG_DOMAIN ) );
+			$title =  __( 'Your email subscription has been successfully cancelled.', INCSUB_SBE_LANG_DOMAIN );
+			$this->sbe_subscribing_notice( $title, $title );
 
 			wp_die();
 		}
 	}
 
 
-	private function sbe_subscribing_notice( $text ) {
+	public function sbe_subscribing_notice( $text, $title = false ) {
 		nocache_headers();
         @header( 'Content-Type: ' . get_option( 'html_type' ) . '; charset=' . get_option( 'blog_charset' ) );
+
+        if ( empty( $title ) )
+        	$title = get_bloginfo( 'blogtitle' );
 
         ?>
         <!DOCTYPE html>
@@ -439,6 +444,7 @@ class Incsub_Subscribe_By_Email {
 	        <head>
 	            <meta name="viewport" content="width=device-width" />
 	            <meta http-equiv="Content-Type" content="<?php bloginfo( 'html_type' ); ?>; charset=<?php echo get_option( 'blog_charset' ); ?>" />
+	            <title><?php echo esc_html( $title ); ?></title>
 	            <?php $this->subscribe_notices_styles(); ?>
 	        </head>
 			<body class="wp-core-ui">
