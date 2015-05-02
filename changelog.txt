@@ -1,12 +1,16 @@
 Plugin Name: Subscribe by Email
 Author: WPMU DEV
 Requires at least: 3.5
-Tested up to: 4.2
-Stable tag: 3.1.1
+Tested up to: 4.2.1
+Stable tag: 3.1.2
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+3.1.2 2015/04/30
+----------------------------------------------------------------------
+- Added script to scroll down to the shortcode form if there have been errors while processing it.
 
 3.1.1 2015/04/30
 ----------------------------------------------------------------------

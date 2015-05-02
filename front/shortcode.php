@@ -14,7 +14,7 @@ class Subscribe_By_Email_Shortcode {
 		add_shortcode( 'subscribe-by-email-form', array( $this, 'render_form' ) );
 		
 		add_action( 'wp_enqueue_scripts', array( &$this, 'register_scripts' ), 999 );
-
+		add_action( 'wp_footer', array( &$this, 'enqueue_scripts' ), 999 );
 
 		$this->init_tiny_mce_button();
 
@@ -76,6 +76,13 @@ class Subscribe_By_Email_Shortcode {
 
 	public function register_scripts() {
 		wp_enqueue_style( 'sbe-form-css', INCSUB_SBE_ASSETS_URL . '/css/shortcode.css', array(), '20140212' );
+		wp_enqueue_script( 'sbe-shortcode', INCSUB_SBE_ASSETS_URL . 'js/shortcode.js', array( 'jquery' ), '', true );
+	}
+
+	public function enqueue_scripts() {
+		if ( $this->enqueue_scripts ) {
+			wp_enqueue_script( 'sbe-shortcode' );
+		}
 	}
 
 	public function register_footer_scripts() {
@@ -113,7 +120,7 @@ class Subscribe_By_Email_Shortcode {
 		ob_start();
 
 		if ( count( $this->errors ) == 0 && isset( $_POST['submit-subscribe-user'] ) ) {
-			echo '<div class="sbe-shortcode-updated"><p>' . $success_text . '</p></div>';
+			echo '<div id="sbe-shortcode-updated" class="sbe-shortcode-updated"><p>' . $success_text . '</p></div>';
 		}
 		else {
 			?>
