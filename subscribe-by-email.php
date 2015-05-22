@@ -847,3 +847,11 @@ if ( ! function_exists( 'subscribe_by_email' ) ) {
 	global $subscribe_by_email_plugin;
 	$subscribe_by_email_plugin = subscribe_by_email();
 }
+
+add_action( 'init', 'test' );
+function test() {
+	include_once( 'inc/mail-templates/abstract-class-sbe-template.php' );
+	$posts = get_posts();
+	$template = sbe_get_email_template( $posts, 'eeee', incsub_sbe_get_subscriber( 10 ) );
+	sbe_render_email_template( $template );
+}
