@@ -544,31 +544,34 @@ class Incsub_Subscribe_By_Email {
 
 			$queue_items = incsub_sbe_get_queue_items( $args );
 
-			require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
-			$mail_template = new Incsub_Subscribe_By_Email_Template( $settings, false );
+			if ( ! empty( $queue_items['items'] ) ) {
+				incsub_sbe_include_templates_files();
+				$digest_sender = new SBE_Digest_Sender();
+				$content_generator = new Incsub_Subscribe_By_Email_Content_Generator( $settings['frequency'], $settings['post_types'] );
 
-			$return = array();
-			foreach ( $queue_items['items'] as $item ) {
-				$subscriber = incsub_sbe_get_subscriber( $item->subscriber_email );
+				$return = array();
+				foreach ( $queue_items['items'] as $item ) {
+					$subscriber = incsub_sbe_get_subscriber( $item->subscriber_email );
 
-				// In order to avoid duplicated emails we'll set temporary this email as sent
-				incsub_sbe_set_queue_item_sent_status( $item->id, 1 );
+					// In order to avoid duplicated emails we'll set temporary this email as sent
+					incsub_sbe_set_queue_item_sent_status( $item->id, 1 );
+					
+					$result = $digest_sender->send_digest( $content_generator->get_content(), $subscriber );
 
-				$result = $mail_template->send_mail( $subscriber, $item );
+					// Now we update the status
+					incsub_sbe_set_queue_item_sent_status( $item->id, absint( $result ) );
 
-				// Now we update the status
-				incsub_sbe_set_queue_item_sent_status( $item->id, absint( $result ) );
-
-				if ( $result === 4 ) {
-					// There have been an error in PHPMailer?
-					global $phpmailer;
-					if ( ! empty( $phpmailer->ErrorInfo ) ) {
-						incsub_sbe_set_queue_item_error_message( $item->id, $phpmailer->ErrorInfo );
+					if ( $result === 4 ) {
+						// There have been an error in PHPMailer?
+						global $phpmailer;
+						if ( ! empty( $phpmailer->ErrorInfo ) ) {
+							incsub_sbe_set_queue_item_error_message( $item->id, $phpmailer->ErrorInfo );
+						}
 					}
+
+					$return[ $item->subscriber_email ] = $result;
+
 				}
-
-				$return[ $item->subscriber_email ] = $result;
-
 			}
 
 			do_action( 'sbe_after_send_pending_emails' );
@@ -848,10 +851,3 @@ if ( ! function_exists( 'subscribe_by_email' ) ) {
 	$subscribe_by_email_plugin = subscribe_by_email();
 }
 
-add_action( 'init', 'test' );
-function test() {
-	include_once( 'inc/mail-templates/abstract-class-sbe-template.php' );
-	$posts = get_posts();
-	$template = sbe_get_email_template( $posts, 'eeee', incsub_sbe_get_subscriber( 10 ) );
-	sbe_render_email_template( $template );
-}

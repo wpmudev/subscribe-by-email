@@ -46,10 +46,10 @@ abstract class Abstract_SBE_Mail_Template {
 	 * @param array   $posts      List of posts that is going to be rendered
 	 * @param boolean $subscriber The subscriber that this template is going to be sent to
 	 */
-	public function __construct( $posts = array(), $subject = '', $subscriber = false ) {
+	public function __construct( $posts = array(), $subscriber = false ) {
 		$this->posts = $posts;
 		$this->subscriber = $subscriber;
-		$this->subject = $subject;
+		$this->generate_subject();
 	}
 
 	/**
@@ -67,6 +67,11 @@ abstract class Abstract_SBE_Mail_Template {
 		add_filter( 'the_content', 'prepend_attachment' );
 		add_filter( 'the_content', 'do_shortcode', 11 );
 
+		add_filter( 'the_title', array( $this, 'get_the_title' ) );
+		add_filter( 'the_content', array( $this, 'get_the_content' ) );
+		add_filter( 'the_excerpt', array( $this, 'get_the_excerpt' ) );
+		
+
 		do_action( 'sbe_mail_template_before_content', $this->posts );
 
 		$this->header();
@@ -75,6 +80,9 @@ abstract class Abstract_SBE_Mail_Template {
 
 		do_action( 'sbe_mail_template_after_content', $this->posts );
 
+		remove_filter( 'the_title', array( $this, 'get_the_title' ) );
+		remove_filter( 'the_content', array( $this, 'get_the_content' ) );
+		remove_filter( 'the_excerpt', array( $this, 'get_the_excerpt' ) );
 		remove_filter( 'excerpt_more', array( $this, 'excerpt_more' ), 80 );
 		remove_filter( 'excerpt_length', array( $this, 'excerpt_length' ), 80 );
 		add_filter( 'the_content', array( $GLOBALS['wp_embed'], 'autoembed' ), 8 );
@@ -142,6 +150,35 @@ abstract class Abstract_SBE_Mail_Template {
 		return $this->subscriber;
 	}
 
+	public function get_the_title( $title ) {
+		global $post;
+
+		if ( isset( $post->is_dummy ) && $post->is_dummy ) {
+			return $post->post_title;
+		}
+
+		return $title;
+	}
+
+	public function get_the_content( $content ) {
+		global $post;
+
+		if ( isset( $post->is_dummy ) && $post->is_dummy ) {
+			return $post->post_content;
+		}
+
+		return $title;
+	}
+
+	public function get_the_excerpt( $excerpt ) {
+		global $post;
+
+		if ( isset( $post->is_dummy ) && $post->is_dummy )
+			return wp_trim_words( $post->post_content, $this->excerpt_length(), $this->excerpt_more() );
+
+		return $title;
+	}
+
 	public function get_manage_subscriptions_url() {
 		if ( is_object( $this->subscriber ) && $manage_subs_page_id = sbe_get_manage_subscriptions_page_id() )
 			return add_query_arg( 'sub_key', $this->subscriber->subscription_key, get_permalink( $manage_subs_page_id ) );
@@ -159,6 +196,48 @@ abstract class Abstract_SBE_Mail_Template {
 
 		return '';
 	}
+
+
+	public function generate_subject() {
+
+		$settings = incsub_sbe_get_settings();
+		$this->subject = $settings['subject'];
+
+		$titles = array();
+		foreach ( $this->posts as $content_post ) {
+			$titles[] = $content_post->post_title;
+		}
+
+		if ( strpos( $this->subject, '%title%' ) > -1 ) {
+			$this->subject = trim( $this->subject );
+
+			// Now we count how many characters we have in the subject right now
+			// We have to substract the wildcard length (7)
+			$subject_length = strlen( $this->subject ) - 7;
+
+			$max_length_surpassed = ( $subject_length >= Incsub_Subscribe_By_Email::$max_subject_length );
+			$titles_count = 0;
+
+			if ( $subject_length < Incsub_Subscribe_By_Email::$max_subject_length ) {
+				foreach ( $titles as $title ) {
+
+					$subject_length = $subject_length + strlen( $title );
+					if ( $subject_length >= Incsub_Subscribe_By_Email::$max_subject_length )
+						break;
+					
+					$titles_count++;
+				}
+			}
+
+			// Could be that the first title is too long. In that case we will force to show the first title
+			if ( 0 == $titles_count )
+				$titles_count = 1;
+
+			$tmp_subject = implode( '; ', array_slice( $titles, 0, $titles_count ) );
+			$this->subject = str_replace( '%title%', $tmp_subject, $this->subject );
+		}
+	}
+			
 }
 
 
@@ -169,7 +248,7 @@ abstract class Abstract_SBE_Mail_Template {
  * @param  boolean $subscriber Subscriber object/false
  * @return object              SBE_Mail_Template object
  */
-function sbe_get_email_template( $posts = array(), $subject = '', $subscriber = false ) {
+function sbe_get_email_template( $posts = array(), $subscriber = false ) {
 	include_once( 'classes/class-sbe-template.php' );
 	$classname = apply_filters( 'sbe_email_template_classname', 'SBE_Mail_Template' );
 
@@ -190,12 +269,19 @@ function sbe_get_email_template( $posts = array(), $subject = '', $subscriber = 
  * 
  * @param Object $template The templte Object
  */
-function sbe_render_email_template( $template ) {	
+function sbe_render_email_template( $template, $echo = true ) {	
 	global $sbe_template;
 
 	if ( $template ) {
 		$sbe_template = $template;
+
+		if ( ! $echo )
+			ob_start();
+
 		$sbe_template->content();
+
+		if ( ! $echo )
+			return ob_get_clean();
 	}
 }
 
@@ -404,6 +490,20 @@ function sbe_mail_template_load_template_part( $name ) {
 }
 
 /**
+ * Wrapper function for the_content(). It avoids some warnings if the post is a dummy post
+ */
+function sbe_mail_template_the_content() {
+	global $post;
+
+	if ( isset( $post->is_dummy ) && $post->is_dummy ) {
+		echo $post->post_content;
+		return;
+	}
+
+	the_content();
+}
+
+/**
  * Display the post thumbnail.
  * 
  * @param string $size Optional. Registered image size to use. Default 'post-thumbnail'.
@@ -422,3 +522,5 @@ if ( ! function_exists( 'sbe_mail_template_the_post_thumbnail' ) ) {
 		}
 	}	
 }
+
+

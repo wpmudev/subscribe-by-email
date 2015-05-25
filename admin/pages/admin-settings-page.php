@@ -654,6 +654,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	}
 
 	public function render_email_preview_section() {
+		$settings = incsub_sbe_get_settings();
 		?>
 			<p>
 				<?php submit_button( __( 'Refresh changes', INCSUB_SBE_LANG_DOMAIN ), 'primary', $this->settings_name . '[submit_refresh_changes]', false ) ?>
@@ -671,9 +672,11 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			<p><a href="<?php echo $restore_link; ?>"><?php _e( 'Restore template to default', INCSUB_SBE_LANG_DOMAIN ); ?></a></p>
 
 			<?php 
-				require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
-				$template = new Incsub_Subscribe_By_Email_Template( $this->settings, true ); 
-				$template->render_mail_contents();
+				incsub_sbe_include_templates_files();	
+				$content_generator = new Incsub_Subscribe_By_Email_Content_Generator( $settings['frequency'], array( 'post' ), true );
+				$posts = $content_generator->get_content();
+				$template = sbe_get_email_template( $posts, false );
+				sbe_render_email_template( $template );
 			?>
 		<?php
 	}
@@ -1006,9 +1009,14 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				$mail = sanitize_email( $input['test_mail'] );
 
 				if ( is_email( $mail ) ) {
-					require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/mail-template.php' );
-					$template = new Incsub_Subscribe_By_Email_Template( $new_settings, true );
-					$template->send_mail( $mail );
+					$_settings = incsub_sbe_get_settings();
+					incsub_sbe_include_templates_files();	
+					$content_generator = new Incsub_Subscribe_By_Email_Content_Generator( $_settings['frequency'], array( 'post' ), true );
+					$posts = $content_generator->get_content();
+
+					$digest_sender = new SBE_Digest_Sender( true );
+					$digest_sender->send_digest( $posts, $mail );
+					
 				}
 			}
 

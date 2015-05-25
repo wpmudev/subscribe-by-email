@@ -180,17 +180,21 @@ class Incsub_Subscribe_By_Email_Content_Generator {
 		$posts = array();
 
 		for ( $i = 0; $i < $post_count; $i++ ) {
-			$post = new stdClass();
+			$_post = new stdClass();
 
-			$post->ID = 0;
-			$post->post_author = get_current_user_id();
-			$post->post_name = 'lorem-ipsum';
-			$post->post_title = 'Lorem Ipsum';
-			$post->post_date	= current_time( 'mysql' );
-			$post->post_date_gmt = current_time( 'mysql', 1 );
-			$post->post_content = $this->generate_lorem_content();
-			$post->post_status = 'publish';
+			$_post->ID = 0;
+			$_post->post_author = get_current_user_id();
+			$_post->post_name = 'lorem-ipsum';
+			$_post->post_title = 'Lorem Ipsum';
+			$_post->post_date	= current_time( 'mysql' );
+			$_post->post_date_gmt = current_time( 'mysql', 1 );
+			$_post->post_content = $this->generate_lorem_content();
+			$_post->post_excerpt = $this->generate_lorem_content();
+			$_post->post_status = 'publish';
+			$_post->is_dummy = true;
 			
+			$post = new WP_Post( $_post );
+
 			$posts[] = $post;
 		}
 

@@ -9,4 +9,6 @@ class SBE_Mail_Template extends Abstract_SBE_Mail_Template {
 	public function excerpt_length() {
 		return 25;
 	}
+
+	
 }

@@ -2,9 +2,20 @@
 
 class SBE_Digest_Sender {
 
-	public function send_digest( $subscriber = false, $queue_item = false ) {
+	public $dummy = false;
+
+	public function __construct( $dummy = false ) {
+		$this->dummy = $dummy;
+	}
+
+	public function send_digest( $content, $subscriber = false, $queue_item = false ) {
+		if ( ! is_array( $content ) || empty( $content ) )
+			return 3;
+
 		$this->add_wp_mail_filters();
-		do_action( 'sbe_pre_send_emails' );
+		$this->content = $content;
+
+		do_action( 'sbe_pre_send_emails', $this );
 
 		if ( $this->dummy && is_email( $subscriber ) ) {
 			// Test Email
@@ -16,8 +27,10 @@ class SBE_Digest_Sender {
 				'x-mailer-php' => "X-Mailer:PHP/".phpversion(),
 				'reply-to' => "Reply-To: <$mail>",
 			);
-			$content = $this->render_mail_contents( $this->content, false, $key );
-			$result = wp_mail( $mail, $this->subject, $content, $headers );
+
+			$template = sbe_get_email_template( $this->content, false );
+			$content = sbe_render_email_template( $template, false );
+			$result = wp_mail( $mail, $template->get_subject(), $content, $headers );
 		}
 		elseif ( $subscriber && ! empty( $queue_item->campaign_id ) ) {
 			// Campaign email
@@ -42,10 +55,11 @@ class SBE_Digest_Sender {
 				return $status;
 			}
 
-			$content = $this->render_mail_contents( $user_content, false, $key );
+			$template = sbe_get_email_template( $user_content, $subscriber );
+			$content = sbe_render_email_template( $template, false );
 
 			// Send!
-			$unsubscribe_url = $this->get_unsubscribe_url( $key );
+			$unsubscribe_url = $template->get_unsubscribe_url();
 			$headers = array(
 				'x-mailer-php' => "X-Mailer:PHP/".phpversion(),
 				'reply-to' => "Reply-To: <$mail>",
@@ -57,7 +71,7 @@ class SBE_Digest_Sender {
 			$headers = array_values( $headers );
 
 			do_action( 'sbe_before_send_single_email', $user_content, $mail );
-			$result = wp_mail( $mail, $this->subject, $content, $headers );
+			$result = wp_mail( $mail, $template->get_subject(), $content, $headers );
 			do_action( 'sbe_after_send_single_email', $user_content, $mail );
 
 			if ( ! $result ) {

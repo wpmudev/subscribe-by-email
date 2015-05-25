@@ -15,9 +15,9 @@
 	</h3>
 	<div style="margin:1em 0;font-size: 13px;color:#000 !important;line-height: 23px;">
 		<?php if ( sbe_mail_template_send_full_post() ): ?>
-			<?php the_content(); ?>
+			<?php sbe_mail_template_the_content(); ?>
 		<?php else: ?>
-			<?php the_excerpt(); ?>
+			<?php @the_excerpt(); ?>
 		<?php endif; ?>
 	</div>
 </div>
