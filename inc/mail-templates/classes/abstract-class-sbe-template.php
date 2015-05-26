@@ -249,7 +249,7 @@ abstract class Abstract_SBE_Mail_Template {
  * @return object              SBE_Mail_Template object
  */
 function sbe_get_email_template( $posts = array(), $subscriber = false ) {
-	include_once( 'classes/class-sbe-template.php' );
+	include_once( 'class-sbe-template.php' );
 	$classname = apply_filters( 'sbe_email_template_classname', 'SBE_Mail_Template' );
 
 	$sbe_template = false;
