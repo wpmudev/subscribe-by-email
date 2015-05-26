@@ -544,19 +544,20 @@ class Incsub_Subscribe_By_Email {
 
 			$queue_items = incsub_sbe_get_queue_items( $args );
 
+			$return = array();
 			if ( ! empty( $queue_items['items'] ) ) {
 				incsub_sbe_include_templates_files();
 				$digest_sender = new SBE_Digest_Sender();
 				$content_generator = new Incsub_Subscribe_By_Email_Content_Generator( $settings['frequency'], $settings['post_types'] );
 
-				$return = array();
 				foreach ( $queue_items['items'] as $item ) {
 					$subscriber = incsub_sbe_get_subscriber( $item->subscriber_email );
 
 					// In order to avoid duplicated emails we'll set temporary this email as sent
 					incsub_sbe_set_queue_item_sent_status( $item->id, 1 );
 					
-					$result = $digest_sender->send_digest( $content_generator->get_content(), $subscriber );
+					incsub_sbe_increment_campaign_recipients( $item->campaign_id );
+					$result = $digest_sender->send_digest( $item->get_subscriber_posts(), $subscriber );
 
 					// Now we update the status
 					incsub_sbe_set_queue_item_sent_status( $item->id, absint( $result ) );
