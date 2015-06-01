@@ -2,11 +2,17 @@ Plugin Name: Subscribe by Email
 Author: WPMU DEV
 Requires at least: 3.5
 Tested up to: 4.2.1
-Stable tag: 3.1.2
+Stable tag: 3.2
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+3.2 2015/06/01
+----------------------------------------------------------------------
+- Enhancement: Email templates can now be overriden with custom templates in theme folder.
+- Fixed typos.
+- Fixed several warnings.
 
 3.1.2 2015/04/30
 ----------------------------------------------------------------------
