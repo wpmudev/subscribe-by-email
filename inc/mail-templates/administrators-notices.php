@@ -32,7 +32,7 @@ class Incsub_Subscribe_By_Email_Administrators_Subscribed_Notice_Template extend
 
 		$content = __( 'Dear user,
 
-A new user (###SUBSCRIBER_EMAIL###) has confirmed its subscription to your subcribers list.
+A new user (###SUBSCRIBER_EMAIL###) has confirmed his subscription to your subscribers list.
 
 Click this link to manage your subscribers:
 ###SBE_SUBSCRIBERS_URL###
