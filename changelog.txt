@@ -10,7 +10,7 @@ Change Log:
 
 3.2.1 2015/06/08
 ----------------------------------------------------------------------
-- Fixed: Full post content were not being rendered in digests.
+- Fixed: Full post/excerpt content were not being rendered in digests.
 
 3.2 2015/06/01
 ----------------------------------------------------------------------

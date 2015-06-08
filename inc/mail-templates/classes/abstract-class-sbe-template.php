@@ -174,7 +174,7 @@ abstract class Abstract_SBE_Mail_Template {
 		if ( isset( $post->is_dummy ) && $post->is_dummy )
 			return wp_trim_words( $post->post_content, $this->excerpt_length(), $this->excerpt_more() );
 
-		return $title;
+		return $excerpt;
 	}
 
 	public function get_manage_subscriptions_url() {
