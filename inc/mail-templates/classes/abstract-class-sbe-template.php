@@ -68,7 +68,6 @@ abstract class Abstract_SBE_Mail_Template {
 		add_filter( 'the_content', 'do_shortcode', 11 );
 
 		add_filter( 'the_title', array( $this, 'get_the_title' ) );
-		add_filter( 'the_content', array( $this, 'get_the_content' ) );
 		add_filter( 'the_excerpt', array( $this, 'get_the_excerpt' ) );
 		
 
@@ -81,7 +80,6 @@ abstract class Abstract_SBE_Mail_Template {
 		do_action( 'sbe_mail_template_after_content', $this->posts );
 
 		remove_filter( 'the_title', array( $this, 'get_the_title' ) );
-		remove_filter( 'the_content', array( $this, 'get_the_content' ) );
 		remove_filter( 'the_excerpt', array( $this, 'get_the_excerpt' ) );
 		remove_filter( 'excerpt_more', array( $this, 'excerpt_more' ), 80 );
 		remove_filter( 'excerpt_length', array( $this, 'excerpt_length' ), 80 );
