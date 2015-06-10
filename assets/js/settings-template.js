@@ -7,7 +7,7 @@ jQuery(document).ready(function($) {
 
 			if ( $( '#upload-logo-value' ).val() == '' )
 				$( '#remove-logo-button' ).hide();
-
+return;
 			$('#header-color-picker').farbtastic('#header-color')
 			$('#header-color').click( sbe_settings.toggle_colorpicker );
 

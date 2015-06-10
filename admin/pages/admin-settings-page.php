@@ -75,8 +75,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			}
 			elseif ( 'template' == $this->get_current_tab() ) {
 				wp_enqueue_media();
-			    wp_enqueue_script( 'farbtastic' );
 			    wp_enqueue_script( 'jquery-ui-slider' );
+			    wp_enqueue_script( 'wp-color-picker' );
 				wp_enqueue_script( 'sbe-settings-scripts', INCSUB_SBE_ASSETS_URL . 'js/settings-template.js', array( 'thickbox', 'media-upload' ), '20130721' );
 			}
 			elseif ( 'extra-fields' == $this->get_current_tab() ) {
@@ -104,8 +104,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			wp_enqueue_style( 'thickbox' );
 			wp_enqueue_style( 'farbtastic' );
 
-			if ( 'template' == $this->get_current_tab() )
+			if ( 'template' == $this->get_current_tab() ) {
 				wp_enqueue_style( 'jquery-ui-css', INCSUB_SBE_ASSETS_URL .'css/jquery-ui/jquery-ui-1.10.3.custom.min.css' );
+				wp_enqueue_style( 'wp-color-picker' ); 
+			}
 
 			if ( 'extra-fields' == $this->get_current_tab() )
 				wp_enqueue_style( 'sbe-settings', INCSUB_SBE_ASSETS_URL .'css/settings.css' );				
@@ -197,25 +199,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		elseif ( $this->get_current_tab() == 'template' ) {
 			add_settings_section( 'logo-settings', __( 'Logo', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'logo', __( 'Logo for notifications', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_logo_field' ), $this->get_menu_slug(), 'logo-settings' ); 
-			add_settings_field( 'logo-width', __( 'Logo max width in pixels', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_logo_width_field' ), $this->get_menu_slug(), 'logo-settings' ); 
-
-			add_settings_section( 'header-settings', __( 'Header', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
-			add_settings_field( 'header-color', __( 'Header color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_color_field' ), $this->get_menu_slug(), 'header-settings' ); 
-			add_settings_field( 'header-text-color', __( 'Header text color', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_color_field' ), $this->get_menu_slug(), 'header-settings' ); 
-			add_settings_field( 'header-text', __( 'Subtitle text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_header_text_field' ), $this->get_menu_slug(), 'header-settings' ); 
-			add_settings_field( 'header-blog-name', __( 'Show From Sender', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_show_blog_name_field' ), $this->get_menu_slug(), 'header-settings' ); 
-
-			add_settings_section( 'footer-settings', __( 'Footer', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
-			add_settings_field( 'footer-text', __( 'Footer text', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_footer_text_field' ), $this->get_menu_slug(), 'footer-settings' ); 
 
 			add_settings_section( 'subscribe-email-settings', __( 'Subscribe Email', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'subscribe-email-content', __( 'Subscribe Email Content', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribe_email_content' ), $this->get_menu_slug(), 'subscribe-email-settings' ); 
 
-			add_settings_section( 'other-styling-settings', __( 'Other options', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
-			add_settings_field( 'featured-images', __( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_featured_image' ), $this->get_menu_slug(), 'other-styling-settings' ); 
-			add_settings_field( 'full-posts', __( 'Show full posts', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_full_posts_field' ), $this->get_menu_slug(), 'other-styling-settings' ); 
-
-			add_settings_section( 'email-preview', __( 'Email preview', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_email_preview_section' ), $this->get_menu_slug() );
 		}
 		elseif ( $this->get_current_tab() == 'extra-fields' ) {
 			add_settings_section( 'custom-fields', __( 'Custom Fields', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_extra_fields_section' ), $this->get_menu_slug() );
@@ -279,7 +266,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		}
 		?>
 		
-			<form action="options.php" method="post">
+			<form action="options.php" method="post" id="sbe-settings-form">
 				<?php settings_fields( $this->settings_group ); ?>
 				<?php do_settings_sections( $this->get_menu_slug() ); ?>
 				
@@ -543,122 +530,234 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	public function render_logo_field() {
 		$display_preview = empty( $this->settings['logo'] ) ? 'display:none' : '';
 
+
+
 		?>
-			
-			<input type="hidden" name="<?php echo $this->settings_name; ?>[logo]" id="upload-logo-value" value="<?php echo esc_url( $this->settings['logo'] ); ?>">
-			<input type="button" class="button-secondary" id="upload-logo" data-frame-title="<?php echo esc_attr( 'Select a template logo', INCSUB_SBE_LANG_DOMAIN ); ?>" data-frame-update="<?php echo esc_attr( 'Select this logo', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
-			<div class="sbe-logo-preview">
-				<img style="max-width:300px;border:1px solid #DDD;padding:3px;background:#EFEFEF;margin-top:20px;<?php echo $display_preview; ?>" id="sbe-logo-img" src="<?php echo esc_url( $this->settings['logo'] ); ?>"></img>
-				<?php submit_button( __( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[remove-logo]', true, array( 'id' => 'remove-logo-button' ) ); ?>
+			<div class="media-modal wp-core-ui" id="sbe-preview-modal">
+				<a class="media-modal-close" href="#">
+					<span class="media-modal-icon"><span class="screen-reader-text"><?php _e( 'Close Preview Template Panel', INCSUB_SBE_LANG_DOMAIN ); ?></span></span>
+				</a>
+				
+				<div class="media-modal-content">
+					<div class="media-frame mode-select wp-core-ui hide-menu">
+						<div class="media-frame-title">
+							<h1><?php _e( 'Preview Template', INCSUB_SBE_LANG_DOMAIN ); ?><span class="dashicons dashicons-arrow-down"></span></h1>
+						</div>
+				
+						<div class="media-frame-content" data-columns="10">
+							<div class="attachments-browser">
+
+								<div class="sbe-modal-preview-content">
+									<?php $this->render_email_preview_section(); ?>
+								</div>
+								<div class="media-sidebar">
+									<div class="sbe-modal-sidebar-section">
+										<h3><?php _e( 'Logo', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+										<div class="sbe-modal-sidebar-field">
+											<input type="hidden" name="<?php echo $this->settings_name; ?>[logo]" id="upload-logo-value" value="<?php echo esc_url( $this->settings['logo'] ); ?>">
+											<input type="button" class="button-secondary" id="upload-logo" data-frame-title="<?php echo esc_attr( 'Select a template logo', INCSUB_SBE_LANG_DOMAIN ); ?>" data-frame-update="<?php echo esc_attr( 'Select this logo', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
+											<div class="sbe-logo-preview">
+												<img style="max-width:100px;margin-top:20px;<?php echo $display_preview; ?>" id="sbe-logo-img" src="<?php echo esc_url( $this->settings['logo'] ); ?>"></img>
+												<?php submit_button( __( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[remove-logo]', true, array( 'id' => 'remove-logo-button' ) ); ?>
+											</div>
+										</div>
+										<div class="sbe-modal-sidebar-field">
+											<label class="big-label" for="logo-width"><?php _e( 'Logo max width in pixels', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+											<div style="max-width:100%;" id="logo-width-slider"></div><br/>
+											<p id="logo-width-caption"><span id="logo-width-quantity"><?php echo $this->settings['logo_width']; ?></span> <span class="description">px</span></p>
+											<input type="hidden" class="small-text" name="<?php echo $this->settings_name; ?>[logo_width]" id="logo-width" value="<?php echo $this->settings['logo_width']; ?>" />
+										</div>
+									</div>
+
+									<div class="sbe-modal-sidebar-section">
+										<h3><?php _e( 'Header', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+										<div class="sbe-modal-sidebar-field">
+											<input type="checkbox" name="<?php echo $this->settings_name; ?>[show_blog_name]" <?php checked( $this->settings['show_blog_name'] ); ?> id="show-blog-name"> 
+											<label for="show-blog-name"><?php _e( 'Show Blog Name', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+										</div>
+
+										<div class="sbe-modal-sidebar-field">
+											<label class="big-label" for="header-color"><?php _e( 'Background color', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+											<input type="text" class="colorpicker" id="header-color" data-styles-rule="background-color" data-styles-class="header-bg-color" name="<?php echo $this->settings_name; ?>[header_color]" value="<?php echo esc_attr( $this->settings['header_color'] ); ?>" />
+										</div>
+										<div class="sbe-modal-sidebar-field">
+											<label class="big-label" for="header-text-color"><?php _e( 'Text color', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+											<input type="text" class="colorpicker" id="header-text-color" data-styles-rule="color" data-styles-class="header-text-color" name="<?php echo $this->settings_name; ?>[header_text_color]" value="<?php echo esc_attr( $this->settings['header_text_color'] ); ?>" />
+										</div>
+
+										<div class="sbe-modal-sidebar-field">
+											<label class="big-label" for="header-text"><?php _e( 'Subtitle Text', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+											<textarea class="large-text" name="<?php echo $this->settings_name; ?>[header_text]" id="header-text" rows="4"><?php echo esc_textarea( $this->settings['header_text'] ); ?></textarea>
+										</div>
+										
+									</div>
+
+									<div class="sbe-modal-sidebar-section">
+										<h3><?php _e( 'Content', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+										<div class="sbe-modal-sidebar-field">
+											<input type="checkbox" name="<?php echo $this->settings_name; ?>[featured_image]" id="featured-image" <?php checked( $this->settings['featured_image'] ); ?>> 
+											<label for="featured-image"><?php _e( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+										</div>
+
+										<div class="sbe-modal-sidebar-field">
+											<input type="checkbox" name="<?php echo $this->settings_name; ?>[send_full_post]" id="send-full-post" <?php checked( $this->settings['send_full_post'] ); ?>> 
+											<label for="send-full-post"><?php _e( 'Show full posts', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+										</div>
+									</div>
+
+									<div class="sbe-modal-sidebar-section">
+										<h3><?php _e( 'Footer', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+										<div class="sbe-modal-sidebar-field">
+											<label for="footer-text"><?php _e( 'Footer Text', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+											<textarea class="large-text" name="<?php echo $this->settings_name; ?>[footer_text]" id="footer-text" rows="4"><?php echo esc_textarea( $this->settings['footer_text'] ); ?></textarea>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div>
+						
+						<div class="media-frame-toolbar">
+							<div class="media-toolbar">
+								<div class="media-toolbar-secondary">
+									<span class="spinner"></span>
+								</div>
+								<div class="media-toolbar-primary">
+									<?php submit_button( __( 'Save Changes' ), 'primary', 'submit-preview', true ); ?>
+								</div>
+							</div>
+						</div>
+					
+					</div>
+				</div>
 			</div>
-		<?php
-	}
 
-	public function render_logo_width_field() {
-		?>
-			<div style="max-width:30%;" id="logo-width-slider"></div><br/>
-			<p id="logo-width-caption"><span id="logo-width-quantity"><?php echo $this->settings['logo_width']; ?></span> <span class="description">px</span></p>
+			<button id="preview-template"><?php _e( 'Preview', INCSUB_SBE_LANG_DOMAIN ); ?></button>
+			<style>
+				#sbe-preview-modal .sbe-modal-sidebar-section {
+					border-bottom:1px solid #ddd;
+				}
+				#sbe-preview-modal .sbe-modal-sidebar-section:last-child {
+					border:none;
+				}
+				#sbe-preview-modal .sbe-modal-sidebar-field {
+					padding-left:20px;
+					padding-bottom:20px;
+					margin-top:1.33em;
+				}
+				#sbe-preview-modal label.big-label {
+					display:block;
+					font-size: 1em;
+  					margin: 0 0 1.33em 0;
+  					font-weight: 600;
+				}
 
-			<input type="hidden" class="small-text" name="<?php echo $this->settings_name; ?>[logo_width]" id="logo-width" value="<?php echo $this->settings['logo_width']; ?>" />
+				#sbe-preview-modal .sbe-modal-preview-content {
+					  position: absolute;
+					  top: 0;
+					  left: 0;
+					  right: 300px;
+					  bottom: 0;
+					  overflow: auto;
+					  outline: none;
+					  padding: 2px 8px 8px;
+					  margin:0;
+				}
+			</style>
 			<script>
-			jQuery(document).ready(function($) {
-				$( "#logo-width-slider" ).slider({
-					value:<?php echo $this->settings['logo_width']; ?>,
-					min: 100,
-					max: 700,
-					step: 10,
-					slide: function( event, ui ) {
-						$( "#logo-width" ).val( ui.value );
-						$( "#logo-width-quantity" ).text( ui.value );
+				var sbe_preview_modal;
+				jQuery(document).ready(function($) {
+					sbe_preview_modal = {
+						init:function( selector ) {
+							var self = this;
+							this.$modal = $( selector );
+							
+							this.$modal.find('.media-modal-close').click( function( e ) {
+								e.preventDefault();
+								self.hide();
+							});
+
+							this.$modal.find( "#logo-width-slider" ).slider({
+								value:<?php echo $this->settings['logo_width']; ?>,
+								min: 100,
+								max: 700,
+								step: 10,
+								slide: function( event, ui ) {
+									$( "#logo-width" ).val( ui.value );
+									$( "#logo-width-quantity" ).text( ui.value );
+								}
+							});
+					    	$( "#logo-width" ).val( $( "#logo-width-slider" ).slider( "value" ) );
+					    	$( "#logo-width-quantity" ).val( $( "#logo-width-slider" ).slider( "value" ) );
+
+					    	$('#header-color').change( function() {
+					    		console.log("AAA");
+					    		self.refreshStyles( $(this).data( 'styles-class' ), $(this).data( 'styles-rule' ), $(this).val() );
+					    	});
+
+					    	// Colorpickers
+					    	$('.colorpicker').wpColorPicker({
+					    		change: function( e, ui ) {
+					    			self.refreshStyles( $(e.target).data( 'styles-class' ), $(e.target).data( 'styles-rule' ), ui.color.toString() );
+					    		}	
+					    	});
+
+					    	$( '#submit-preview' ).click( function(e) {
+					    		e.preventDefault();
+					    		self.$modal.find( '.spinner' ).css( 'visibility', 'visible' );
+					    		$('#sbe-settings-form').submit();
+					    	});
+						},
+						show: function() {
+							this.$modal.show();
+						},
+						hide: function() {
+							this.$modal.hide();
+						},
+						reloadTemplate: function() {
+							
+						},
+						refreshStyles: function( cssClass, rule, value ) {
+							console.log(cssClass);
+							console.log(rule);
+							console.log(value);
+							$( '.' + cssClass ).css( rule, value );
+						}
 					}
-				});
-			    	$( "#logo-width" ).val( $( "#logo-width-slider" ).slider( "value" ) );
-			    	$( "#logo-width-quantity" ).val( $( "#logo-width-slider" ).slider( "value" ) );
+					
+					sbe_preview_modal.init('#sbe-preview-modal');
+
+					$('#preview-template').click( function( e ) {
+						e.preventDefault();
+
+						sbe_preview_modal.show();
+					});
 				});
 			</script>
+
+			
+			
+			
 		<?php
 	}
 
-
-	/**
-	 * Logo field
-	 */
-	public function render_featured_image() {
-		?>
-			<input type="checkbox" name="<?php echo $this->settings_name; ?>[featured_image]" id="featured-image" <?php checked( $this->settings['featured_image'] ); ?>> 
-			<span class="description"><?php _e( 'If your theme allows it, the featured image for each post will appear to the left of the post excerpt.', INCSUB_SBE_LANG_DOMAIN ); ?></span>
-		<?php
-	}
-
-	/**
-	 * Logo field
-	 */
-	public function render_full_posts_field() {
-		?>
-			<input type="checkbox" name="<?php echo $this->settings_name; ?>[send_full_post]" id="featured-image" <?php checked( $this->settings['send_full_post'] ); ?>> 
-		<?php
-	}
-
-	/**
-	 * Header color field
-	 */
-	public function render_header_color_field() {
-		?>
-			<input type="text" id="header-color" name="<?php echo $this->settings_name; ?>[header_color]" value="<?php echo esc_attr( $this->settings['header_color'] ); ?>" />
-			<div class="colorpicker-wrap" style="position:relative;">
- 				<div class="colorpicker" id="header-color-picker" style="position:absolute;background:#FFF;border:1px solid #EFEFEF; left: 139px; top:-24px; display:none;"></div>
- 			</div>
-		<?php
-	}
-
-	/**
-	 * Header text color field
-	 */
-	public function render_header_text_color_field() {
-		?>
-			<input type="text" id="header-text-color" name="<?php echo $this->settings_name; ?>[header_text_color]" value="<?php echo esc_attr( $this->settings['header_text_color'] ); ?>" />
-			<div class="colorpicker-wrap" style="position:relative;">
- 				<div class="colorpicker" id="header-text-color-picker" style="position:absolute;background:#FFF;border:1px solid #EFEFEF; left: 139px; top:-24px; display:none;"></div>
- 			</div>
-		<?php
-	}
-
-	/**
-	 * Header text field
-	 */
-	public function render_header_text_field() {
-		?>
-			<textarea class="large-text" name="<?php echo $this->settings_name; ?>[header_text]" id="header-text" rows="4"><?php echo esc_textarea( $this->settings['header_text'] ); ?></textarea>
-		<?php
-	}
-
-	/**
-	 * Header text field
-	 */
-	public function render_show_blog_name_field() {
-		?>
-			<label for="show-blog-name">
-				<input type="checkbox" name="<?php echo $this->settings_name; ?>[show_blog_name]" <?php checked( $this->settings['show_blog_name'] ); ?> id="show-blog-name"> 
-				<?php _e( 'If checked, the From Sender Text will appear on the header', INCSUB_SBE_LANG_DOMAIN ); ?>
-			</label>
-		<?php
-	}
-
-	/**
-	 * Footer text field
-	 */
-	public function render_footer_text_field() {
-		?>
-			<textarea class="large-text" name="<?php echo $this->settings_name; ?>[footer_text]" id="footer-text" rows="4"><?php echo esc_textarea( $this->settings['footer_text'] ); ?></textarea>
-		<?php
-	}
-
-	public function render_email_preview_section() {
+	public function override_templates_instructions() {
 		$settings = incsub_sbe_get_settings();
 		$sbe_templates_dir = INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/views/';
 		$theme_templates_dir = get_stylesheet_directory() . '/subscribe-by-email/';
+
+
 		?>
-			<p>
+
+		<?php 
+				$restore_link = add_query_arg( 
+					'restore-template', 
+					'true',
+					self::get_permalink()
+				);
+			?>
+			<p><a href="<?php echo $restore_link; ?>"><?php _e( 'Restore template to default', INCSUB_SBE_LANG_DOMAIN ); ?></a></p>
+		<p>
 				<strong><?php _e( 'Want to override the template files?', INCSUB_SBE_LANG_DOMAIN ); ?></strong>
 			</p>
 			<p>
@@ -679,15 +778,17 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				<?php submit_button( __( 'Send a test mail to:', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[submit_test_email]', false ) ?>
 				<input type="text" class="regular-text" name="<?php echo $this->settings_name; ?>[test_mail]" value="<?php echo esc_attr( get_option( 'admin_email') ); ?>"><br/>
 			</p>
+		<?php
+	}
 
-			<?php 
-				$restore_link = add_query_arg( 
-					'restore-template', 
-					'true',
-					self::get_permalink()
-				);
-			?>
-			<p><a href="<?php echo $restore_link; ?>"><?php _e( 'Restore template to default', INCSUB_SBE_LANG_DOMAIN ); ?></a></p>
+	public function render_email_preview_section() {
+		$settings = incsub_sbe_get_settings();
+		$sbe_templates_dir = INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/views/';
+		$theme_templates_dir = get_stylesheet_directory() . '/subscribe-by-email/';
+		?>
+			
+
+			
 
 			<?php 
 				incsub_sbe_include_templates_files();	
