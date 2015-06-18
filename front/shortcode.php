@@ -102,15 +102,23 @@ class Subscribe_By_Email_Shortcode {
 
 	public function render_form( $atts ) {
 		$this->enqueue_scripts = true;
-		$this->process();
 
 		extract( shortcode_atts( array(
 			'bgcolor' => 'transparent',
 			'textcolor' => 'inherit',
 			'width' => 'auto',
 			'center' => 'true',
-			'success_text' => __( 'Thanks, a confirmation email has been sent to you' , INCSUB_SBE_LANG_DOMAIN )
+			'success_text' => __( 'Thanks, a confirmation email has been sent to you.' , INCSUB_SBE_LANG_DOMAIN ),
+			'success_autopt_text' => __( 'Thanks, you have been subscribed to our list.' , INCSUB_SBE_LANG_DOMAIN ),
+			'autopt' => 'false'
 		), $atts ) );
+
+		if ( $autopt === 'true' )
+			$autopt = true;
+		else
+			$autopt = false;
+
+		$this->process( $autopt );
 
 		$width = 'auto' == $width ? $width : $width . '%';
 
@@ -119,8 +127,11 @@ class Subscribe_By_Email_Shortcode {
 
 		ob_start();
 
-		if ( count( $this->errors ) == 0 && isset( $_POST['submit-subscribe-user'] ) ) {
+		if ( count( $this->errors ) == 0 && isset( $_POST['submit-subscribe-user'] ) && ! $autopt ) {
 			echo '<div id="sbe-shortcode-updated" class="sbe-shortcode-updated"><p>' . $success_text . '</p></div>';
+		}
+		elseif ( count( $this->errors ) == 0 && isset( $_POST['submit-subscribe-user'] ) && $autopt ) {
+			echo '<div id="sbe-shortcode-updated" class="sbe-shortcode-updated"><p>' . $success_autopt_text . '</p></div>';
 		}
 		else {
 			?>
@@ -182,7 +193,7 @@ class Subscribe_By_Email_Shortcode {
 		return ob_get_clean();
 	}
 
-	private function process() {
+	private function process( $autopt = false ) {
 		if ( isset( $_POST['submit-subscribe-user'] ) ) {
 			if ( ! wp_verify_nonce( $_POST['sbe_subscribe_nonce'], 'sbe_shortcode_subscribe' ) )
 				return;
@@ -222,7 +233,7 @@ class Subscribe_By_Email_Shortcode {
     		
 			if ( empty( $this->errors ) ) {
 				
-				$sid = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant', false, $fields_to_save );
+				$sid = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant', $autopt, $fields_to_save );
 				
 				return true;		
     		}
