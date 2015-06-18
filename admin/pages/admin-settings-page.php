@@ -272,7 +272,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				
 				<?php if ( 'extra-fields' != $this->get_current_tab() ): ?>
 					<p class="submit">
-						<?php submit_button( null, 'primary', $this->settings_name . '[submit_settings_' . $this->get_current_tab() . ']', false ) ?>
+						<?php submit_button( null, 'primary', $this->settings_name . '[submit_settings_' . $this->get_current_tab() . ']', false, array( 'id' => 'submit_settings_' . $this->get_current_tab() ) ) ?>
 					</p>
 				<?php endif; ?>
 			</form>
@@ -533,104 +533,108 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 
 		?>
-			<div class="media-modal wp-core-ui" id="sbe-preview-modal">
-				<a class="media-modal-close" href="#">
-					<span class="media-modal-icon"><span class="screen-reader-text"><?php _e( 'Close Preview Template Panel', INCSUB_SBE_LANG_DOMAIN ); ?></span></span>
-				</a>
-				
-				<div class="media-modal-content">
-					<div class="media-frame mode-select wp-core-ui hide-menu">
-						<div class="media-frame-title">
-							<h1><?php _e( 'Preview Template', INCSUB_SBE_LANG_DOMAIN ); ?><span class="dashicons dashicons-arrow-down"></span></h1>
-						</div>
-				
-						<div class="media-frame-content" data-columns="10">
-							<div class="attachments-browser">
+			<div id="sbe-preview-modal" class="hidden">
+				<div class="media-modal wp-core-ui">
+					<a class="media-modal-close" href="#">
+						<span class="media-modal-icon"><span class="screen-reader-text"><?php _e( 'Close Preview Template Panel', INCSUB_SBE_LANG_DOMAIN ); ?></span></span>
+					</a>
+					
+					<div class="media-modal-content">
+						<div class="media-frame mode-select wp-core-ui hide-menu">
+							<div class="media-frame-title">
+								<h1><?php _e( 'Preview Template', INCSUB_SBE_LANG_DOMAIN ); ?><span class="dashicons dashicons-arrow-down"></span></h1>
+							</div>
+					
+							<div class="media-frame-content" data-columns="10">
+								<div class="attachments-browser">
 
-								<div class="sbe-modal-preview-content">
-									<?php $this->render_email_preview_section(); ?>
-								</div>
-								<div class="media-sidebar">
-									<div class="sbe-modal-sidebar-section">
-										<h3><?php _e( 'Logo', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
-										<div class="sbe-modal-sidebar-field">
-											<input type="hidden" name="<?php echo $this->settings_name; ?>[logo]" id="upload-logo-value" value="<?php echo esc_url( $this->settings['logo'] ); ?>">
-											<input type="button" class="button-secondary" id="upload-logo" data-frame-title="<?php echo esc_attr( 'Select a template logo', INCSUB_SBE_LANG_DOMAIN ); ?>" data-frame-update="<?php echo esc_attr( 'Select this logo', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
-											<div class="sbe-logo-preview">
-												<img style="max-width:100px;margin-top:20px;<?php echo $display_preview; ?>" id="sbe-logo-img" src="<?php echo esc_url( $this->settings['logo'] ); ?>"></img>
-												<?php submit_button( __( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[remove-logo]', true, array( 'id' => 'remove-logo-button' ) ); ?>
+									<div class="sbe-modal-preview-content">
+										<?php $this->render_email_preview_section(); ?>
+									</div>
+									<div class="media-sidebar">
+										<div class="sbe-modal-sidebar-section">
+											<h3><?php _e( 'Logo', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+											<div class="sbe-modal-sidebar-field">
+												<input type="hidden" name="<?php echo $this->settings_name; ?>[logo]" id="upload-logo-value" value="<?php echo esc_url( $this->settings['logo'] ); ?>">
+												<input type="button" class="button-secondary" id="upload-logo" data-frame-title="<?php echo esc_attr( 'Select a template logo', INCSUB_SBE_LANG_DOMAIN ); ?>" data-frame-update="<?php echo esc_attr( 'Select this logo', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
+												<div class="sbe-logo-preview">
+													<img style="max-width:100px;margin-top:20px;<?php echo $display_preview; ?>" id="sbe-logo-img" src="<?php echo esc_url( $this->settings['logo'] ); ?>"></img>
+													<?php submit_button( __( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[remove-logo]', true, array( 'id' => 'remove-logo-button' ) ); ?>
+												</div>
+											</div>
+											<div class="sbe-modal-sidebar-field">
+												<label class="big-label" for="logo-width"><?php _e( 'Logo max width in pixels', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+												<div style="max-width:100%;" id="logo-width-slider"></div><br/>
+												<p id="logo-width-caption"><span id="logo-width-quantity"><?php echo $this->settings['logo_width']; ?></span> <span class="description">px</span></p>
+												<input type="hidden" class="small-text" name="<?php echo $this->settings_name; ?>[logo_width]" id="logo-width" value="<?php echo $this->settings['logo_width']; ?>" />
 											</div>
 										</div>
-										<div class="sbe-modal-sidebar-field">
-											<label class="big-label" for="logo-width"><?php _e( 'Logo max width in pixels', INCSUB_SBE_LANG_DOMAIN ); ?></label>
-											<div style="max-width:100%;" id="logo-width-slider"></div><br/>
-											<p id="logo-width-caption"><span id="logo-width-quantity"><?php echo $this->settings['logo_width']; ?></span> <span class="description">px</span></p>
-											<input type="hidden" class="small-text" name="<?php echo $this->settings_name; ?>[logo_width]" id="logo-width" value="<?php echo $this->settings['logo_width']; ?>" />
+
+										<div class="sbe-modal-sidebar-section">
+											<h3><?php _e( 'Header', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+											<div class="sbe-modal-sidebar-field">
+												<input type="checkbox" name="<?php echo $this->settings_name; ?>[show_blog_name]" <?php checked( $this->settings['show_blog_name'] ); ?> id="show-blog-name"> 
+												<label for="show-blog-name"><?php _e( 'Show Blog Name', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+											</div>
+
+											<div class="sbe-modal-sidebar-field">
+												<label class="big-label" for="header-color"><?php _e( 'Background color', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+												<input type="text" class="colorpicker" id="header-color" data-styles-rule="background-color" data-styles-class="header-bg-color" name="<?php echo $this->settings_name; ?>[header_color]" value="<?php echo esc_attr( $this->settings['header_color'] ); ?>" />
+											</div>
+											<div class="sbe-modal-sidebar-field">
+												<label class="big-label" for="header-text-color"><?php _e( 'Text color', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+												<input type="text" class="colorpicker" id="header-text-color" data-styles-rule="color" data-styles-class="header-text-color" name="<?php echo $this->settings_name; ?>[header_text_color]" value="<?php echo esc_attr( $this->settings['header_text_color'] ); ?>" />
+											</div>
+
+											<div class="sbe-modal-sidebar-field">
+												<label class="big-label" for="header-text"><?php _e( 'Subtitle Text', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+												<textarea class="large-text" name="<?php echo $this->settings_name; ?>[header_text]" id="header-text" rows="4"><?php echo esc_textarea( $this->settings['header_text'] ); ?></textarea>
+											</div>
+											
 										</div>
+
+										<div class="sbe-modal-sidebar-section">
+											<h3><?php _e( 'Content', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+											<div class="sbe-modal-sidebar-field">
+												<input type="checkbox" name="<?php echo $this->settings_name; ?>[featured_image]" id="featured-image" <?php checked( $this->settings['featured_image'] ); ?>> 
+												<label for="featured-image"><?php _e( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+											</div>
+
+											<div class="sbe-modal-sidebar-field">
+												<input type="checkbox" name="<?php echo $this->settings_name; ?>[send_full_post]" id="send-full-post" <?php checked( $this->settings['send_full_post'] ); ?>> 
+												<label for="send-full-post"><?php _e( 'Show full posts', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+											</div>
+										</div>
+
+										<div class="sbe-modal-sidebar-section">
+											<h3><?php _e( 'Footer', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
+											<div class="sbe-modal-sidebar-field">
+												<label for="footer-text"><?php _e( 'Footer Text', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+												<textarea class="large-text" name="<?php echo $this->settings_name; ?>[footer_text]" id="footer-text" rows="4"><?php echo esc_textarea( $this->settings['footer_text'] ); ?></textarea>
+											</div>
+										</div>
+
 									</div>
-
-									<div class="sbe-modal-sidebar-section">
-										<h3><?php _e( 'Header', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
-										<div class="sbe-modal-sidebar-field">
-											<input type="checkbox" name="<?php echo $this->settings_name; ?>[show_blog_name]" <?php checked( $this->settings['show_blog_name'] ); ?> id="show-blog-name"> 
-											<label for="show-blog-name"><?php _e( 'Show Blog Name', INCSUB_SBE_LANG_DOMAIN ); ?></label>
-										</div>
-
-										<div class="sbe-modal-sidebar-field">
-											<label class="big-label" for="header-color"><?php _e( 'Background color', INCSUB_SBE_LANG_DOMAIN ); ?></label>
-											<input type="text" class="colorpicker" id="header-color" data-styles-rule="background-color" data-styles-class="header-bg-color" name="<?php echo $this->settings_name; ?>[header_color]" value="<?php echo esc_attr( $this->settings['header_color'] ); ?>" />
-										</div>
-										<div class="sbe-modal-sidebar-field">
-											<label class="big-label" for="header-text-color"><?php _e( 'Text color', INCSUB_SBE_LANG_DOMAIN ); ?></label>
-											<input type="text" class="colorpicker" id="header-text-color" data-styles-rule="color" data-styles-class="header-text-color" name="<?php echo $this->settings_name; ?>[header_text_color]" value="<?php echo esc_attr( $this->settings['header_text_color'] ); ?>" />
-										</div>
-
-										<div class="sbe-modal-sidebar-field">
-											<label class="big-label" for="header-text"><?php _e( 'Subtitle Text', INCSUB_SBE_LANG_DOMAIN ); ?></label>
-											<textarea class="large-text" name="<?php echo $this->settings_name; ?>[header_text]" id="header-text" rows="4"><?php echo esc_textarea( $this->settings['header_text'] ); ?></textarea>
-										</div>
-										
-									</div>
-
-									<div class="sbe-modal-sidebar-section">
-										<h3><?php _e( 'Content', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
-										<div class="sbe-modal-sidebar-field">
-											<input type="checkbox" name="<?php echo $this->settings_name; ?>[featured_image]" id="featured-image" <?php checked( $this->settings['featured_image'] ); ?>> 
-											<label for="featured-image"><?php _e( 'Show featured images', INCSUB_SBE_LANG_DOMAIN ); ?></label>
-										</div>
-
-										<div class="sbe-modal-sidebar-field">
-											<input type="checkbox" name="<?php echo $this->settings_name; ?>[send_full_post]" id="send-full-post" <?php checked( $this->settings['send_full_post'] ); ?>> 
-											<label for="send-full-post"><?php _e( 'Show full posts', INCSUB_SBE_LANG_DOMAIN ); ?></label>
-										</div>
-									</div>
-
-									<div class="sbe-modal-sidebar-section">
-										<h3><?php _e( 'Footer', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
-										<div class="sbe-modal-sidebar-field">
-											<label for="footer-text"><?php _e( 'Footer Text', INCSUB_SBE_LANG_DOMAIN ); ?></label>
-											<textarea class="large-text" name="<?php echo $this->settings_name; ?>[footer_text]" id="footer-text" rows="4"><?php echo esc_textarea( $this->settings['footer_text'] ); ?></textarea>
-										</div>
-									</div>
-
 								</div>
 							</div>
-						</div>
+							
+							<div class="media-frame-toolbar">
+								<div class="media-toolbar">
+									<div class="media-toolbar-secondary">
+										<span class="spinner"></span>
+									</div>
+									<div class="media-toolbar-primary">
+										<?php submit_button( null, 'primary', $this->settings_name . '[submit_settings_' . $this->get_current_tab() . ']', true, array( 'id' => 'submit-preview' ) ) ?>
+									</div>
+								</div>
+							</div>
 						
-						<div class="media-frame-toolbar">
-							<div class="media-toolbar">
-								<div class="media-toolbar-secondary">
-									<span class="spinner"></span>
-								</div>
-								<div class="media-toolbar-primary">
-									<?php submit_button( __( 'Save Changes' ), 'primary', 'submit-preview', true ); ?>
-								</div>
-							</div>
 						</div>
-					
 					</div>
 				</div>
+				<div class="media-modal-backdrop"></div>	
 			</div>
+			
 
 			<button id="preview-template"><?php _e( 'Preview', INCSUB_SBE_LANG_DOMAIN ); ?></button>
 			<style>
@@ -705,13 +709,16 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 					    	$( '#submit-preview' ).click( function(e) {
 					    		e.preventDefault();
 					    		self.$modal.find( '.spinner' ).css( 'visibility', 'visible' );
-					    		$('#sbe-settings-form').submit();
+					    		$('#submit_settings_template').trigger( 'click' );
 					    	});
+
 						},
 						show: function() {
+							$('body').addClass( 'modal-open' );
 							this.$modal.show();
 						},
 						hide: function() {
+							$('body').removeClass( 'modal-open' );
 							this.$modal.hide();
 						},
 						reloadTemplate: function() {
@@ -729,7 +736,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 					$('#preview-template').click( function( e ) {
 						e.preventDefault();
-
 						sbe_preview_modal.show();
 					});
 				});
