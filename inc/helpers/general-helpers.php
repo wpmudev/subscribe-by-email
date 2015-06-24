@@ -11,7 +11,12 @@ function incsub_sbe_get_model() {
 function incsub_sbe_get_settings() {
 	$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
 	$default = incsub_sbe_get_default_settings();
-	return wp_parse_args( $settings_handler->get_settings(), $default );
+	return apply_filters( 'sbe_get_settings', wp_parse_args( $settings_handler->get_settings(), $default ) );
+}
+
+function incsub_sbe_sanitize_template_settings( $new_settings ) {
+	$settings_handler = Incsub_Subscribe_By_Email_Settings_Handler::get_instance();
+	return $settings_handler->sanitize_template_settings( $new_settings );
 }
 
 function incsub_sbe_get_network_settings() {

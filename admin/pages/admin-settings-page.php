@@ -50,6 +50,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		add_filter( 'plugin_action_links_' . INCSUB_SBE_PLUGIN_FILE, array( &$this, 'add_plugin_list_link' ), 10 , 2 );
 
 		add_action( 'wp_ajax_incsub_sbe_sort_extra_fields', array( &$this, 'sort_extra_fields' ) );
+		add_action( 'wp_ajax_sbe_reload_preview_template', array( &$this, 'reload_preview_template' ) );
 
 	}
 
@@ -197,8 +198,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				}
 		}
 		elseif ( $this->get_current_tab() == 'template' ) {
-			add_settings_section( 'logo-settings', __( 'Logo', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
-			add_settings_field( 'logo', __( 'Logo for notifications', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_logo_field' ), $this->get_menu_slug(), 'logo-settings' ); 
+			add_settings_section( 'preview-settings', '', array( $this, 'render_preview_section' ), $this->get_menu_slug() );
 
 			add_settings_section( 'subscribe-email-settings', __( 'Subscribe Email', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
 			add_settings_field( 'subscribe-email-content', __( 'Subscribe Email Content', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribe_email_content' ), $this->get_menu_slug(), 'subscribe-email-settings' ); 
@@ -527,12 +527,11 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	/**
 	 * Logo field
 	 */
-	public function render_logo_field() {
+	public function render_preview_section() {
 		$display_preview = empty( $this->settings['logo'] ) ? 'display:none' : '';
 
-
-
 		?>
+			<h3><?php _e( 'Preview Template', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
 			<div id="sbe-preview-modal" class="hidden">
 				<div class="media-modal wp-core-ui">
 					<a class="media-modal-close" href="#">
@@ -549,18 +548,27 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 								<div class="attachments-browser">
 
 									<div class="sbe-modal-preview-content">
-										<?php $this->render_email_preview_section(); ?>
+										<div id="sbe-modal-email-preview">
+											<?php $this->render_email_preview_section(); ?>
+										</div>
+										<div id="preview-section-backdrop-wrapper">
+											<div id="preview-section-backdrop">
+											</div>
+										</div>
 									</div>
 									<div class="media-sidebar">
 										<div class="sbe-modal-sidebar-section">
 											<h3><?php _e( 'Logo', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
 											<div class="sbe-modal-sidebar-field">
 												<input type="hidden" name="<?php echo $this->settings_name; ?>[logo]" id="upload-logo-value" value="<?php echo esc_url( $this->settings['logo'] ); ?>">
-												<input type="button" class="button-secondary" id="upload-logo" data-frame-title="<?php echo esc_attr( 'Select a template logo', INCSUB_SBE_LANG_DOMAIN ); ?>" data-frame-update="<?php echo esc_attr( 'Select this logo', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?>">
+												<a href="#" id="upload-logo" data-frame-title="<?php echo esc_attr( 'Select a template logo', INCSUB_SBE_LANG_DOMAIN ); ?>" data-frame-update="<?php echo esc_attr( 'Select this logo', INCSUB_SBE_LANG_DOMAIN ); ?>"><?php _e( 'Upload logo', INCSUB_SBE_LANG_DOMAIN ); ?></a>
+												<div class="sbe-remove-logo-wrap">
+													| <a href="#" id="remove-logo" class="delete-attachment"><?php _e( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ); ?></a>
+												</div>
 												<div class="sbe-logo-preview">
 													<img style="max-width:100px;margin-top:20px;<?php echo $display_preview; ?>" id="sbe-logo-img" src="<?php echo esc_url( $this->settings['logo'] ); ?>"></img>
-													<?php submit_button( __( 'Remove logo', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[remove-logo]', true, array( 'id' => 'remove-logo-button' ) ); ?>
 												</div>
+												
 											</div>
 											<div class="sbe-modal-sidebar-field">
 												<label class="big-label" for="logo-width"><?php _e( 'Logo max width in pixels', INCSUB_SBE_LANG_DOMAIN ); ?></label>
@@ -621,10 +629,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 							<div class="media-frame-toolbar">
 								<div class="media-toolbar">
 									<div class="media-toolbar-secondary">
-										<span class="spinner"></span>
+										<div class="spinner"></div>
 									</div>
 									<div class="media-toolbar-primary">
-										<?php submit_button( null, 'primary', $this->settings_name . '[submit_settings_' . $this->get_current_tab() . ']', true, array( 'id' => 'submit-preview' ) ) ?>
+										<input type="submit" name="<?php echo $this->settings_name; ?>[submit_settings_template]" id="submit-preview" class="button button-primary media-button" value="<?php esc_attr_e( 'Save Changes' ); ?>">
 									</div>
 								</div>
 							</div>
@@ -636,7 +644,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			</div>
 			
 
-			<button id="preview-template"><?php _e( 'Preview', INCSUB_SBE_LANG_DOMAIN ); ?></button>
+			<button id="preview-template" class="button button-primary button-hero"><?php _e( 'Preview', INCSUB_SBE_LANG_DOMAIN ); ?></button>
 			<style>
 				#sbe-preview-modal .sbe-modal-sidebar-section {
 					border-bottom:1px solid #ddd;
@@ -667,11 +675,34 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 					  padding: 2px 8px 8px;
 					  margin:0;
 				}
+				#preview-section-backdrop-wrapper {
+					/**position:relative;**/
+				}
+				#preview-section-backdrop {
+					  position: absolute;
+					  right: 0;
+					  min-height: 360px;
+					  width: 100%;
+					  opacity: 0.7;
+					  z-index: 159900;
+					  background: #FFF;
+					  top: 0;
+					  bottom: 0;
+					  left: 0;
+					  display:none;
+				}
+				.sbe-remove-logo-wrap {
+					display: inline-block;
+				}
+
 			</style>
 			<script>
 				var sbe_preview_modal;
+				var frame;
 				jQuery(document).ready(function($) {
 					sbe_preview_modal = {
+						isLoading: false,
+						timeout: false,
 						init:function( selector ) {
 							var self = this;
 							this.$modal = $( selector );
@@ -689,13 +720,14 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 								slide: function( event, ui ) {
 									$( "#logo-width" ).val( ui.value );
 									$( "#logo-width-quantity" ).text( ui.value );
+									$( '.logo-width' ).css( 'max-width', ui.value );
 								}
 							});
 					    	$( "#logo-width" ).val( $( "#logo-width-slider" ).slider( "value" ) );
 					    	$( "#logo-width-quantity" ).val( $( "#logo-width-slider" ).slider( "value" ) );
 
+
 					    	$('#header-color').change( function() {
-					    		console.log("AAA");
 					    		self.refreshStyles( $(this).data( 'styles-class' ), $(this).data( 'styles-rule' ), $(this).val() );
 					    	});
 
@@ -708,9 +740,40 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 					    	$( '#submit-preview' ).click( function(e) {
 					    		e.preventDefault();
-					    		self.$modal.find( '.spinner' ).css( 'visibility', 'visible' );
+					    		self.toggleSpinner();
 					    		$('#submit_settings_template').trigger( 'click' );
 					    	});
+
+					    	$('#show-blog-name, #featured-image, #send-full-post').change( function() {
+					    		self.reloadTemplate.apply( self );
+					    	});
+
+					    	$( '#upload-logo' ).on( 'click', self.uploadLogo );
+							if ( $( '#upload-logo-value' ).val() == '' )
+								$( '.sbe-remove-logo-wrap' ).hide();
+
+							$('#remove-logo').on( 'click', function() {
+								$( '#upload-logo-value' ).val('');
+								$( '.sbe-remove-logo-wrap' ).hide();
+								$('.sbe-logo-preview').hide();
+								self.reloadTemplate();
+							});
+
+							$('#header-text, #footer-text').keyup(function(event) {
+								if ( self.timeout ) {
+									clearTimeout( self.timeout );
+								}
+
+								if ( ! self.isLoading ) {
+									self.timeout = setTimeout( function() {
+										self.isLoading = true;
+										self.reloadTemplate();
+										setTimeout( function() { self.isLoading = false; }, 1000 );
+									}, 1000 );
+								}
+
+							});
+
 
 						},
 						show: function() {
@@ -722,14 +785,86 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 							this.$modal.hide();
 						},
 						reloadTemplate: function() {
+							var preview_backdrop = $('#preview-section-backdrop');
+							preview_backdrop.css( 'height', $('#sbe-modal-email-preview').outerHeight() );
+							preview_backdrop.show();
+							this.toggleSpinner();
+							var self = this;
+
+							var form_values = $('#sbe-settings-form').serialize();
+
+							$.ajax({
+								url: ajaxurl,
+								type: 'POST',
+								data: {
+									new_settings: form_values,
+									action: 'sbe_reload_preview_template'
+								},
+							})
+							.done(function(data) {
+								if ( data.success ) {
+									$('#sbe-modal-email-preview').html( data.data );
+								}
+							})
+							.always(function(data) {
+								self.toggleSpinner();
+								preview_backdrop.hide();
+							});
+							
 							
 						},
 						refreshStyles: function( cssClass, rule, value ) {
-							console.log(cssClass);
-							console.log(rule);
-							console.log(value);
 							$( '.' + cssClass ).css( rule, value );
-						}
+						},
+						toggleSpinner: function() {
+							if ( ! this.$spinner )
+								this.$spinner = this.$modal.find( '.spinner' );
+								
+							if ( this.$spinner.css( 'visibility' ) == 'hidden' )
+								this.$spinner.css( 'visibility', 'visible' )	
+							else
+								this.$spinner.css( 'visibility', 'hidden' )	
+							
+						},
+						uploadLogo: function( e ) {
+							e.preventDefault();
+
+							var element = $(this);			
+
+							if ( frame ) {
+						    	frame.open();
+						      	return;
+						    }
+
+						    frame = wp.media.frames.sbeTemplateLogo = wp.media({
+								title: element.data( 'frame-title' ),
+								library: {
+									type: 'image'
+								},
+								button: {
+									text: element.data( 'frame-update' ),
+									close: false
+								}
+							});
+
+							frame.on( 'select', function() {
+								// Grab the selected attachment.
+								var attachment = frame.state().get('selection').first();
+								$( '#sbe-logo-img' )
+									.attr( 'src', attachment.attributes.url )
+									.css( 'display', 'inline-block' );
+
+								$( '#upload-logo-value' ).attr( 'value', attachment.attributes.url );
+								if ( attachment.attributes.url != '' )
+									$( '.sbe-remove-logo-wrap' ).show();
+
+								sbe_preview_modal.reloadTemplate.apply( sbe_preview_modal );
+
+								frame.close();
+							});
+
+							frame.open();
+						},
 					}
 					
 					sbe_preview_modal.init('#sbe-preview-modal');
@@ -745,6 +880,31 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			
 			
 		<?php
+	}
+
+	public function reload_preview_template() {
+		wp_parse_str( $_POST['new_settings'], $new_settings );
+
+		if ( ! empty( $new_settings['incsub_sbe_settings'] ) ) {
+			// Checkboxes
+			$new_settings = $new_settings['incsub_sbe_settings'];
+			$new_settings['featured_image'] = isset( $new_settings['featured_image'] ) ? true : false;
+			$new_settings['send_full_post'] = isset( $new_settings['send_full_post'] ) ? true : false;
+			$new_settings['show_blog_name'] = isset( $new_settings['show_blog_name'] ) ? true : false;
+			$this->preview_settings = incsub_sbe_sanitize_template_settings( $new_settings );
+
+			add_filter( 'sbe_get_settings', array( $this, 'filter_preview_settings' ) );
+			$template = $this->render_email_preview_section( false );
+			remove_filter( 'sbe_get_settings', array( $this, 'filter_preview_settings' ) );
+
+			wp_send_json_success( $template );
+		}
+
+		wp_send_json_error();
+	}
+
+	public function filter_preview_settings( $settings ) {
+		return wp_parse_args( $this->preview_settings, $settings );
 	}
 
 	public function override_templates_instructions() {
@@ -787,23 +947,23 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		<?php
 	}
 
-	public function render_email_preview_section() {
+	public function render_email_preview_section( $echo = true ) {
 		$settings = incsub_sbe_get_settings();
+
 		$sbe_templates_dir = INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/views/';
 		$theme_templates_dir = get_stylesheet_directory() . '/subscribe-by-email/';
-		?>
-			
 
-			
+		if ( ! $echo )
+			ob_start();
 
-			<?php 
-				incsub_sbe_include_templates_files();	
-				$content_generator = new Incsub_Subscribe_By_Email_Content_Generator( $settings['frequency'], array( 'post' ), true );
-				$posts = $content_generator->get_content();
-				$template = sbe_get_email_template( $posts, false );
-				sbe_render_email_template( $template );
-			?>
-		<?php
+		incsub_sbe_include_templates_files();	
+		$content_generator = new Incsub_Subscribe_By_Email_Content_Generator( $settings['frequency'], array( 'post' ), true );
+		$posts = $content_generator->get_content();
+		$template = sbe_get_email_template( $posts, false );
+		sbe_render_email_template( $template );
+
+		if ( ! $echo )
+			return ob_get_clean();
 	}
 
 	/**
@@ -1070,64 +1230,17 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 		if ( isset( $input['submit_settings_template'] ) || isset( $input['remove-logo'] ) || isset( $input['submit_test_email'] ) || isset( $input['submit_refresh_changes'] ) ) {
 
-			// Logo
-			if ( isset( $input['remove-logo'] ) ) {
-				$new_settings['logo'] = '';
-			}
-			else {
-				$url = esc_url_raw( $input['logo'] );
-				$new_settings['logo'] = $url;
-			}
-
-			// Logo Width
-			if ( isset( $input['logo_width'] ) && is_numeric( $input['logo_width'] ) ) {
-				$new_settings['logo_width'] = absint( $input['logo_width'] );
-			}
-			else {
-				$default_settings = incsub_sbe_get_default_settings();
-		    	$new_settings['logo_width'] = $default_settings['logo_width'];
-			}
-
 			// Featured image
-			if ( isset( $input['featured_image'] ) )
-				$new_settings['featured_image'] = true;
-			else
-				$new_settings['featured_image'] = false;
+			$input['featured_image'] = isset( $input['featured_image'] ) ? true : false;
 
 			// Full post/just excerpt
-			if ( isset( $input['send_full_post'] ) )
-				$new_settings['send_full_post'] = true;
-			else
-				$new_settings['send_full_post'] = false;
+			$input['send_full_post'] = isset( $input['send_full_post'] ) ? true : false;
 
-			// Colors
-			if ( preg_match( '/^#[a-f0-9]{6}$/i', $input['header_color'] ) ) {
-				$new_settings['header_color'] = $input['header_color'];
-			}
-			else {
-				$default_settings = incsub_sbe_get_default_settings();
-		    	$new_settings['header_color'] = $default_settings['header_color'];
-		    }
-
-		    if ( preg_match( '/^#[a-f0-9]{6}$/i', $input['header_text_color'] ) ) {
-				$new_settings['header_text_color'] = $input['header_text_color'];
-			}
-			else {
-				$default_settings = incsub_sbe_get_default_settings();
-		    	$new_settings['header_text_color'] = $default_settings['header_text_color'];
-		    }
-
-		    if ( isset( $input['show_blog_name'] ) )
-				$new_settings['show_blog_name'] = true;
-			else
-				$new_settings['show_blog_name'] = false;
-
+			$input['show_blog_name'] = isset( $input['show_blog_name'] ) ? true : false;
 			
-			
-			// Texts
-			$new_settings['header_text'] = $input['header_text'];
-			$new_settings['footer_text'] = $input['footer_text'];
-			$new_settings['subscribe_email_content'] = $input['subscribe_email_content'];
+			$input['logo'] = isset( $input['remove-logo'] ) ? '' : $input['logo'];
+
+			$new_settings = wp_parse_args( incsub_sbe_sanitize_template_settings( $input ), $new_settings );
 
 			if ( isset( $input['submit_test_email'] ) ) {
 				

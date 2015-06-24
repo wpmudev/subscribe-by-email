@@ -257,6 +257,49 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 		);
 	}
 
+	function sanitize_template_settings( $new_settings ) {
+		$settings = incsub_sbe_get_settings();
+
+		foreach ( $settings as $setting_name => $setting_value ) {
+			if ( isset( $new_settings[ $setting_name ] ) ) {
+				switch ( $setting_name ) {
+					case 'logo': {
+						if ( empty( $new_settings[ $setting_name ] ) )
+							$settings[ $setting_name ] = '';
+						else
+							$settings[ $setting_name ] = esc_url_raw( $new_settings[ $setting_name ] );
+						break;
+					}
+					case 'logo_width': {
+						if ( isset( $new_settings[ $setting_name ] ) && is_numeric( $new_settings[ $setting_name ] ) ) {
+							$settings[ $setting_name ] = absint( $new_settings[ $setting_name ] );
+						}
+						break;
+					}
+					case 'send_full_post':
+					case 'show_blog_name':
+					case 'featured_image': {
+						$settings[ $setting_name ] = (bool)$new_settings[ $setting_name ];
+						break;
+					}
+					case 'header_color':
+					case 'header_text_color': {
+						if ( preg_match('|^#([A-Fa-f0-9]{3}){1,2}$|', $new_settings[ $setting_name ] ) )
+							$settings[ $setting_name ] = $new_settings[ $setting_name ];
+						break;
+					}
+					case 'header_text': 
+					case 'footer_text': 
+					case 'subscribe_email_content':  {
+						$settings[ $setting_name ] = wp_kses( $new_settings[ $setting_name ], wp_kses_allowed_html() );
+					}
+				}
+			}
+		}
+
+		return $settings;
+	}
+
 	function get_default_network_settings() {
 		if ( is_multisite() && is_subdomain_install() ) {
 			$current_site = get_current_site();

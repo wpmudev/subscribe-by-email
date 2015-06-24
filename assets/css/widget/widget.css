@@ -62,6 +62,7 @@
 	box-sizing: border-box;
 	padding:8px;
 	margin-bottom:20px;
+	display:block;
 }
 .sbe-widget-form-field:focus {}
 

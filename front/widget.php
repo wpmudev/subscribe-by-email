@@ -177,7 +177,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 
         		<?php $email = isset( $_POST['subscription-email'] ) ? $_POST['subscription-email'] : ''; ?>
         		<div class="sbe-widget-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div>
-	        	<input type="email" class="sbe-widget-form-field sbe-widget-email-field sbe-form-field"  name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo $email; ?>"><br/>
+	        	<input type="email" class="sbe-widget-form-field sbe-widget-email-field sbe-form-field"  name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo $email; ?>">
 
 	        	<?php if ( ! empty( $extra_fields ) ): ?>
 	        		<?php foreach ( $extra_fields as $key => $value ): ?>
@@ -199,7 +199,6 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 						<?php if ( 'checkbox' === $value['type'] ): ?>
 							<?php echo $value['required'] ? '<span class="sbe-widget-required">(*)</span>' : ''; ?>
 						<?php endif; ?>
-						<br/>
 
 	        		<?php endforeach; ?>
 	        	<?php endif; ?>
