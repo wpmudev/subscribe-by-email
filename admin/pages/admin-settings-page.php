@@ -703,6 +703,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 					sbe_preview_modal = {
 						isLoading: false,
 						timeout: false,
+                        current_request: false,
 						init:function( selector ) {
 							var self = this;
 							this.$modal = $( selector );
@@ -785,6 +786,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 							this.$modal.hide();
 						},
 						reloadTemplate: function() {
+                            if ( this.current_request )
+                                this.current_request.abort();
 							var preview_backdrop = $('#preview-section-backdrop');
 							preview_backdrop.css( 'height', $('#sbe-modal-email-preview').outerHeight() );
 							preview_backdrop.show();
@@ -793,7 +796,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 							var form_values = $('#sbe-settings-form').serialize();
 
-							$.ajax({
+							this.current_request = $.ajax({
 								url: ajaxurl,
 								type: 'POST',
 								data: {
