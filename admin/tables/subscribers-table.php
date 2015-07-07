@@ -97,7 +97,7 @@ class Incsub_Subscribe_By_Email_Subscribers_Table extends WP_List_Table {
         $return = implode( ', ', $result );
 
         $settings = incsub_sbe_get_settings();
-        if ( current_user_can( 'manage_options' ) && $item->is_confirmed() && 'page' === get_post_type( $settings['manage_subs_page'] ) ) {
+        if ( current_user_can( 'manage_subscribe_by_email' ) && $item->is_confirmed() && 'page' === get_post_type( $settings['manage_subs_page'] ) ) {
             $url = add_query_arg( 'sub_key', $item->subscription_key, get_permalink( $settings['manage_subs_page'] ) );
             $actions['set_subscriber_post_types'] = '<a target="_blank" href="' . esc_url( $url ) . '"> ' . __( 'Set subscriber post types', INCSUB_SBE_LANG_DOMAIN ) . ' <span class="dashicons dashicons-redo"></span></a>';
             $return .= $this->row_actions( $actions );

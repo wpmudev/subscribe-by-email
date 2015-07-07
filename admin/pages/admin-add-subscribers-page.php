@@ -13,7 +13,7 @@ class Incsub_Subscribe_By_Email_Admin_Add_Subscribers_Page extends Incsub_Subscr
 			'slug' => 'sbe-add-subscribers',
 			'page_title' => __( 'Add New', INCSUB_SBE_LANG_DOMAIN ),
 			'menu_title' => __( 'Add Subscribers', INCSUB_SBE_LANG_DOMAIN ),
-			'capability' => 'manage_options',
+			'capability' => 'manage_subscribe_by_email',
 			'parent' => $subscribers_page->get_menu_slug()
 		);
 		parent::__construct( $args );

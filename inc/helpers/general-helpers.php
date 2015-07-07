@@ -257,7 +257,7 @@ function incsub_sbe_is_user_allowed_send_batch() {
 	if ( is_multisite() && is_super_admin() )
 		return true;
 
-	if ( ! is_multisite() && current_user_can( 'manage_options' ) )
+	if ( ! is_multisite() && current_user_can( 'manage_subscribe_by_email' ) )
 		return true;
 
 	return false;

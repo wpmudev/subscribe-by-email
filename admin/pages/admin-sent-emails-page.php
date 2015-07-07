@@ -10,7 +10,7 @@ class Incsub_Subscribe_By_Email_Sent_Emails_Page extends Incsub_Subscribe_By_Ema
 			'slug' => 'sbe-sent-mails',
 			'page_title' => __( 'Emails Log', INCSUB_SBE_LANG_DOMAIN ),
 			'menu_title' => __( 'Emails Log', INCSUB_SBE_LANG_DOMAIN ),
-			'capability' => 'manage_options',
+			'capability' => 'manage_subscribe_by_email',
 			'parent' => $subscribers_page->get_menu_slug()
 		);
 		parent::__construct( $args );

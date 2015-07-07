@@ -12,7 +12,7 @@ class Incsub_Subscribe_By_Email_Admin_Subscribers_Page extends Incsub_Subscribe_
 			'slug' => 'sbe-subscribers',
 			'page_title' => __( 'Subscriptions', INCSUB_SBE_LANG_DOMAIN ),
 			'menu_title' => __( 'Subscriptions', INCSUB_SBE_LANG_DOMAIN ),
-			'capability' => 'manage_options',
+			'capability' => 'manage_subscribe_by_email',
 			'menu_icon' => 'dashicons-email-alt'
 		);
 		parent::__construct( $args );

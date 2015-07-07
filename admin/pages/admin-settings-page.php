@@ -29,7 +29,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			'slug' => 'sbe-settings',
 			'page_title' => __( 'Settings', INCSUB_SBE_LANG_DOMAIN ),
 			'menu_title' => __( 'Settings', INCSUB_SBE_LANG_DOMAIN ),
-			'capability' => 'manage_options',
+			'capability' => 'manage_subscribe_by_email',
 			'parent' => $subscribers_page->get_menu_slug()
 		);
 		parent::__construct( $args );
@@ -52,7 +52,13 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		add_action( 'wp_ajax_incsub_sbe_sort_extra_fields', array( &$this, 'sort_extra_fields' ) );
 		add_action( 'wp_ajax_sbe_reload_preview_template', array( &$this, 'reload_preview_template' ) );
 
+        add_filter( 'option_page_capability_incsub_sbe_settings', array( $this, 'set_options_capability' ) );
+
 	}
+
+    public function set_options_capability( $cap ) {
+        return 'manage_subscribe_by_email';
+    }
 
 	public function add_plugin_list_link( $actions, $file ) {
 		$new_actions = $actions;
@@ -148,7 +154,6 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	 * Register the settings, sections and fields
 	 */
 	public function register_settings() {
-
 		register_setting( $this->settings_group, $this->settings_name, array( &$this, 'sanitize_settings' ) );
 
 		if ( $this->get_current_tab() == 'general' ) {
