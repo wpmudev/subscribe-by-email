@@ -56,7 +56,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 	public function add_plugin_list_link( $actions, $file ) {
 		$new_actions = $actions;
-		$new_actions['settings'] = '<a href="' . self::get_permalink() . '" class="edit" title="' . __( 'Subscribe by Email Settings Page', INCSUB_SBE_LANG_DOMAIN ) . '">' . __( 'Settings', INCSUB_SBE_LANG_DOMAIN ) . '</a>';
+		$new_actions['settings'] = '<a href="' . $this->get_permalink() . '" class="edit" title="' . __( 'Subscribe by Email Settings Page', INCSUB_SBE_LANG_DOMAIN ) . '">' . __( 'Settings', INCSUB_SBE_LANG_DOMAIN ) . '</a>';
 		return $new_actions;
 	}
 
@@ -200,7 +200,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		elseif ( $this->get_current_tab() == 'template' ) {
 			add_settings_section( 'preview-settings', '', array( $this, 'render_preview_section' ), $this->get_menu_slug() );
 
-			add_settings_section( 'subscribe-email-settings', __( 'Subscribe Email', INCSUB_SBE_LANG_DOMAIN ), null, $this->get_menu_slug() );
+			add_settings_section( 'subscribe-email-settings', __( 'Subscribe Email', INCSUB_SBE_LANG_DOMAIN ), array( $this, 'render_subscribe_email_section' ), $this->get_menu_slug() );
 			add_settings_field( 'subscribe-email-content', __( 'Subscribe Email Content', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribe_email_content' ), $this->get_menu_slug(), 'subscribe-email-settings' ); 
 
 		}
@@ -524,15 +524,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			
 	}
 
-	/**
-	 * Logo field
-	 */
-	public function render_preview_section() {
+	private function preview_modal() {
 		$display_preview = empty( $this->settings['logo'] ) ? 'display:none' : '';
-
 		?>
-			<h3><?php _e( 'Preview Template', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
-			<div id="sbe-preview-modal" class="hidden">
+		<div id="sbe-preview-modal" class="hidden">
 				<div class="media-modal wp-core-ui">
 					<a class="media-modal-close" href="#">
 						<span class="media-modal-icon"><span class="screen-reader-text"><?php _e( 'Close Preview Template Panel', INCSUB_SBE_LANG_DOMAIN ); ?></span></span>
@@ -541,7 +536,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 					<div class="media-modal-content">
 						<div class="media-frame mode-select wp-core-ui hide-menu">
 							<div class="media-frame-title">
-								<h1><?php _e( 'Preview Template', INCSUB_SBE_LANG_DOMAIN ); ?><span class="dashicons dashicons-arrow-down"></span></h1>
+								<h1><?php _e( 'Preview Digests Template', INCSUB_SBE_LANG_DOMAIN ); ?><span class="dashicons dashicons-arrow-down"></span></h1>
 							</div>
 					
 							<div class="media-frame-content" data-columns="10">
@@ -549,7 +544,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 									<div class="sbe-modal-preview-content">
 										<div id="sbe-modal-email-preview">
-											<?php $this->render_email_preview_section(); ?>
+											<?php $this->render_email_inner_preview(); ?>
 										</div>
 										<div id="preview-section-backdrop-wrapper">
 											<div id="preview-section-backdrop">
@@ -642,9 +637,22 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				</div>
 				<div class="media-modal-backdrop"></div>	
 			</div>
+			<?php
+	}
+
+	/**
+	 * Logo field
+	 */
+	public function render_preview_section() {
+
+		?>
+			<h3><?php _e( 'Preview Template', INCSUB_SBE_LANG_DOMAIN ); ?></h3>
 			
+			<?php $this->preview_modal(); ?>			
 
 			<button id="preview-template" class="button button-primary button-hero"><?php _e( 'Preview', INCSUB_SBE_LANG_DOMAIN ); ?></button>
+
+			<?php $this->override_templates_instructions(); ?>
 			<style>
 				#sbe-preview-modal .sbe-modal-sidebar-section {
 					border-bottom:1px solid #ddd;
@@ -897,7 +905,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			$this->preview_settings = incsub_sbe_sanitize_template_settings( $new_settings );
 
 			add_filter( 'sbe_get_settings', array( $this, 'filter_preview_settings' ) );
-			$template = $this->render_email_preview_section( false );
+			$template = $this->render_email_inner_preview( false );
 			remove_filter( 'sbe_get_settings', array( $this, 'filter_preview_settings' ) );
 
 			wp_send_json_success( $template );
@@ -922,11 +930,10 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				$restore_link = add_query_arg( 
 					'restore-template', 
 					'true',
-					self::get_permalink()
+					$this->get_permalink()
 				);
 			?>
-			<p><a href="<?php echo $restore_link; ?>"><?php _e( 'Restore template to default', INCSUB_SBE_LANG_DOMAIN ); ?></a></p>
-		<p>
+			<p>
 				<strong><?php _e( 'Want to override the template files?', INCSUB_SBE_LANG_DOMAIN ); ?></strong>
 			</p>
 			<p>
@@ -943,18 +950,15 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				<li><strong><code>post.php</code></strong> <?php _e( 'The code that handles every single post included in the digests', INCSUB_SBE_LANG_DOMAIN ); ?></li>
 			</ol>
 			<p>
-				<?php submit_button( __( 'Refresh changes', INCSUB_SBE_LANG_DOMAIN ), 'primary', $this->settings_name . '[submit_refresh_changes]', false ) ?>
 				<?php submit_button( __( 'Send a test mail to:', INCSUB_SBE_LANG_DOMAIN ), 'secondary', $this->settings_name . '[submit_test_email]', false ) ?>
 				<input type="text" class="regular-text" name="<?php echo $this->settings_name; ?>[test_mail]" value="<?php echo esc_attr( get_option( 'admin_email') ); ?>"><br/>
 			</p>
+			<p><a href="<?php echo $restore_link; ?>"><?php _e( 'Restore template to default', INCSUB_SBE_LANG_DOMAIN ); ?></a></p>
 		<?php
 	}
 
-	public function render_email_preview_section( $echo = true ) {
+	public function render_email_inner_preview( $echo = true ) {
 		$settings = incsub_sbe_get_settings();
-
-		$sbe_templates_dir = INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/views/';
-		$theme_templates_dir = get_stylesheet_directory() . '/subscribe-by-email/';
 
 		if ( ! $echo )
 			ob_start();
@@ -967,6 +971,12 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 
 		if ( ! $echo )
 			return ob_get_clean();
+	}
+
+	public function render_subscribe_email_section() {
+		?>
+		<p><?php _e( 'Subscribe email is sent whenever a new user is subscribed', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+		<?php
 	}
 
 	/**
@@ -1342,10 +1352,20 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			$this->settings['header_text_color'] = $default_settings['header_text_color'];
 			$this->settings['featured_image'] = $default_settings['featured_image'];
 			$this->settings['send_full_post'] = $default_settings['send_full_post'];
+			$this->settings['header_text'] = $default_settings['header_text'];
+			$this->settings['footer_text'] = $default_settings['footer_text'];
+			$this->settings['show_blog_name'] = $default_settings['show_blog_name'];
+			$this->settings['logo_width'] = $default_settings['logo_width'];
 
 			incsub_sbe_update_settings( $this->settings );
 
-			wp_redirect( $this->get_permalink() );
+			wp_redirect( add_query_arg( 
+				array(
+					'tab' => 'template',
+					'updated' => 'true'
+				),
+				$this->get_permalink() 
+			) );
 		}
 	}
 
