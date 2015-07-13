@@ -171,6 +171,7 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-subscribers-page.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-add-subscribers-page.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/pages/admin-sent-emails-page.php' );
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'admin/meta-boxes/do-not-send-meta-box.php' );
 
 		// Settings handler
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/settings.php' );
@@ -606,7 +607,8 @@ class Incsub_Subscribe_By_Email {
 		// Check if the post has been already sent
 		foreach ( $posts_ids as $post_id ) {
 			$is_sent = get_post_meta( $post_id, 'sbe_sent', true );
-			if ( ! $is_sent )
+			$do_not_send = get_post_meta( $post_id, '_sbe_do_not_send', true );
+			if ( ! $is_sent && ! $do_not_send )
 				$args['posts_ids'][] = $post_id;
 		}
 

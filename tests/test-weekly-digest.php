@@ -32,7 +32,11 @@ class SBE_Weekly_Digest_Tests extends SBE_UnitTestCase {
 		$post_id_6_days_ago = $this->factory->post->create_object( $args );
 
 		$args['post_date'] = date( 'Y-m-d H:i:s', strtotime( '-8 day', current_time( 'timestamp' ) ) );
-		$post_id_dont_send = $this->factory->post->create_object( $args );
+		$post_id_dont_send_1 = $this->factory->post->create_object( $args );
+
+		$args['post_date'] = date( 'Y-m-d H:i:s', strtotime( '-1 day', current_time( 'timestamp' ) ) );
+		$post_id_dont_send_2 = $this->factory->post->create_object( $args );
+		update_post_meta( $post_id_dont_send_2, '_sbe_do_not_send', true );
 
 		$campaigns = incsub_sbe_get_campaigns();
 		$this->assertEquals( 0, $campaigns['count'] );
@@ -47,7 +51,8 @@ class SBE_Weekly_Digest_Tests extends SBE_UnitTestCase {
 		$campaign = $campaigns['items'][0];
 		$this->assertContains( $post_id_now, $campaign->mail_settings['posts_ids'] );
 		$this->assertContains( $post_id_6_days_ago, $campaign->mail_settings['posts_ids'] );
-		$this->assertNotContains( $post_id_dont_send, $campaign->mail_settings['posts_ids'] );
+		$this->assertNotContains( $post_id_dont_send_1, $campaign->mail_settings['posts_ids'] );
+		$this->assertNotContains( $post_id_dont_send_2, $campaign->mail_settings['posts_ids'] );
 
 		$all_queue = $campaign->get_campaign_all_queue();
 		$this->assertCount( 3, $all_queue );
@@ -65,7 +70,8 @@ class SBE_Weekly_Digest_Tests extends SBE_UnitTestCase {
 
 		$this->assertEquals( '1', get_post_meta( $post_id_now, 'sbe_sent', true ) );
 		$this->assertEquals( '1', get_post_meta( $post_id_6_days_ago, 'sbe_sent', true ) );
-		$this->assertEmpty( get_post_meta( $post_id_dont_send, 'sbe_sent', true ) );
+		$this->assertEmpty( get_post_meta( $post_id_dont_send_1, 'sbe_sent', true ) );
+		$this->assertEmpty( get_post_meta( $post_id_dont_send_2, 'sbe_sent', true ) );
 	}
 
 	function test_enqueue_emails_with_empty_subscribers() {
@@ -81,7 +87,7 @@ class SBE_Weekly_Digest_Tests extends SBE_UnitTestCase {
 		$post_id_6_days_ago = $this->factory->post->create_object( $args );
 
 		$args['post_date'] = date( 'Y-m-d H:i:s', strtotime( '-8 day', current_time( 'timestamp' ) ) );
-		$post_id_dont_send = $this->factory->post->create_object( $args );
+		$post_id_dont_send_1 = $this->factory->post->create_object( $args );
 
 		$campaigns = incsub_sbe_get_campaigns();
 		$this->assertEquals( 0, $campaigns['count'] );
@@ -110,6 +116,10 @@ class SBE_Weekly_Digest_Tests extends SBE_UnitTestCase {
 
 		$args['post_date'] = date( 'Y-m-d H:i:s', strtotime( '-8 day', current_time( 'timestamp' ) ) );
 		$post_id_dont_send = $this->factory->post->create_object( $args );
+
+		$args['post_date'] = date( 'Y-m-d H:i:s', strtotime( '-1 day', current_time( 'timestamp' ) ) );
+		$post_id_dont_send_2 = $this->factory->post->create_object( $args );
+		update_post_meta( $post_id_dont_send_2, '_sbe_do_not_send', true );
 
 		update_option( 'next_week_scheduled', current_time( 'timestamp' ) - 5 );
 		subscribe_by_email()->process_scheduled_subscriptions();
