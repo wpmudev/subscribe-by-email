@@ -222,7 +222,7 @@ once you confirm below, you will receive an email when posts are published.
 To activate, click confirm below. If you believe this is an error, ignore this message
 and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 
-		return array(
+		$defaults = array(
 			'auto-subscribe' => false,
 			'subscribe_new_users' => false,
 			'from_sender' => get_bloginfo( 'name' ),
@@ -255,6 +255,8 @@ and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
 
 			'extra_fields' => array()
 		);
+
+		return apply_filters( 'sbe_blog_default_settings', $defaults );
 	}
 
 	function sanitize_template_settings( $new_settings ) {

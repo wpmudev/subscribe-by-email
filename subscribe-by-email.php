@@ -654,11 +654,12 @@ class Incsub_Subscribe_By_Email {
 				unset( $args['posts_ids'][ $key ] );
 		}
 
+		$args = apply_filters( 'sbe_enqueue_emails_campaign_args', $args );
+
 		if ( empty( $args['posts_ids'] ) )
 			return;
 
 		$campaign_id = incsub_sbe_insert_campaign( '', $args );
-		$campaign = incsub_sbe_get_campaign( $campaign_id );
 
 		$result = incsub_sbe_insert_queue_items( $campaign_id );
 		if ( ! $result )

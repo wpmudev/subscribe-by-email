@@ -83,8 +83,6 @@ abstract class Incsub_Subscribe_By_Email_Admin_Page {
 		?>
 			<div class="wrap">
 				
-				<?php screen_icon( 'sbe' ); ?>
-
 				<h2><?php echo $this->page_title; ?></h2>
 
 				<?php $this->render_content(); ?>
