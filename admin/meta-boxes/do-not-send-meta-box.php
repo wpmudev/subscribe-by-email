@@ -16,7 +16,8 @@ class SBE_Do_Not_Send_Meta_Box {
 				__( 'Subscribe By Email', INCSUB_SBE_LANG_DOMAIN ),
 				array( $this, 'render' ),
 				$screen,
-				'side'
+				'side',
+				'default'
 			);
 
 		}

@@ -2,11 +2,15 @@ Plugin Name: Subscribe by Email
 Author: WPMU DEV
 Requires at least: 3.5
 Tested up to: 4.2.1
-Stable tag: 3.3
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+3.4 2015/07/15
+----------------------------------------------------------------------
+- New: Added meta box to avoid sending single posts
+- Enhanced: Added custom capability
 
 3.3 2015/07/07
 ----------------------------------------------------------------------
