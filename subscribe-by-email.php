@@ -608,6 +608,9 @@ class Incsub_Subscribe_By_Email {
 		foreach ( $posts_ids as $post_id ) {
 			$is_sent = get_post_meta( $post_id, 'sbe_sent', true );
 			$do_not_send = get_post_meta( $post_id, '_sbe_do_not_send', true );
+
+			if ( ! $do_not_send && is_admin() && isset( $_POST['sbe-do-not-send'] ) )
+				$do_not_send = true;
 			if ( ! $is_sent && ! $do_not_send )
 				$args['posts_ids'][] = $post_id;
 		}

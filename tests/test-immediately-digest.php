@@ -112,6 +112,25 @@ class SBE_Immediately_Digest_Tests extends SBE_UnitTestCase {
 
 	}
 
+	function test_do_not_send_post() {
+		set_current_screen( 'edit.php' );
+		$_POST['sbe-do-not-send'] = true;
+
+		$this->insert_subscribers();
+
+		$settings = incsub_sbe_get_settings();
+		$settings['frequency'] = 'inmediately';
+		$settings['mails_batch_size'] = 1;
+		$settings['post_types'] = array( 'post' );
+
+		$post_id = $this->factory->post->create_object(
+			$this->factory->post->generate_args()
+		);
+
+		$campaigns = incsub_sbe_get_campaigns();
+		$this->assertEmpty( $campaigns['items'] );
+	}
+
 	
 }
 
