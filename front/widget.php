@@ -10,7 +10,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	/**
 	 * Widget setup.
 	 */
-	function Incsub_Subscribe_By_Email_Widget() {
+	function __construct() {
 
 		$this->errors = array();
 		$this->success = false;
@@ -22,7 +22,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		);
 
 		/* Create the widget. */
-		parent::WP_Widget( 'subscribe-by-email' , __( 'Subscribe by Email', INCSUB_SBE_LANG_DOMAIN ), $widget_ops );
+		parent::__construct( 'subscribe-by-email' , __( 'Subscribe by Email', INCSUB_SBE_LANG_DOMAIN ), $widget_ops );
 
 		add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( &$this, 'enqueue_styles' ) );
