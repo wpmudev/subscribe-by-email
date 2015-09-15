@@ -193,5 +193,22 @@ class Incsub_Subscribe_By_Email_Model {
         $wpdb->query( $wpdb->prepare( "DELETE FROM $this->subscriptions_queue_table WHERE id = %d", $id ) );
     }
 
+   public function get_email_list() {
+        global $wpdb;
+
+        $query = "SELECT subscription_ID, subscription_email FROM $this->subscriptions_table WHERE confirmation_flag = 1 ORDER BY subscription_ID";
+        $subscriptions = $wpdb->get_results( $query, ARRAY_A );
+
+        $emails = array();
+        foreach ( $subscriptions as $subscription ) {
+            $emails[] = array(
+                'id' => $subscription['subscription_ID'],
+                'email' => $subscription['subscription_email']
+            );
+        }
+
+        return $emails;
+    }
+
 
 }
