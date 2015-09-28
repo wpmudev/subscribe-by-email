@@ -279,8 +279,18 @@ function incsub_sbe_send_confirmation_email( $subscription_id, $force = false ) 
 		return;
 
 	require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/mail-templates/confirmation-mail-template.php' );
-	$confirmation_mail = new Incsub_Subscribe_By_Email_Confirmation_Template( $settings, $subscriber->subscription_email );
-	$confirmation_mail->send_mail();
+	$class_name = apply_filters( 'sbe_confirmation_mail_template_class', 'Incsub_Subscribe_By_Email_Confirmation_Template' );
+
+	if ( class_exists( $class_name ) ) {
+		$subscription_email = $subscriber->subscription_email;
+		$variables = compact( 'settings', 'subscription_email' );
+		if ( class_exists( $class_name ) ) {
+			$r = new ReflectionClass( $class_name );
+			$confirmation_mail = $r->newInstanceArgs( $variables );
+			$confirmation_mail->send_mail();
+		}
+
+	}
 }
 
 
