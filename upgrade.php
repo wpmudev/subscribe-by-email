@@ -317,3 +317,8 @@ if ( version_compare( $current_version, '3.4', '<' ) ) {
     subscribe_by_email()->add_capabilities();
 }
 
+if ( version_compare( $current_version, '3.5', '<' ) ) {
+    $model = incsub_sbe_get_model();
+    $model->create_squema();
+}
+
