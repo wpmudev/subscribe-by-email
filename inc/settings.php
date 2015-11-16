@@ -212,15 +212,12 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 
 	public function get_default_blog_settings() {
 
-		global $current_site;			
+		global $current_site;
 
-		$subscribe_email_content = __( 'Howdy.
-
-You recently signed up to be notified of new posts on my blog. This means
-once you confirm below, you will receive an email when posts are published.
-
-To activate, click confirm below. If you believe this is an error, ignore this message
-and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN );
+		$subscribe_email_content = _x( 'Howdy.', 'Confirmation email sent to subscribers.', INCSUB_SBE_LANG_DOMAIN ) . "\r\n\r\n";
+		$subscribe_email_content .= __( 'You recently signed up to be notified of new posts on my blog. This means', INCSUB_SBE_LANG_DOMAIN ) . "\r\n";
+		$subscribe_email_content .= __( 'once you confirm below, you will receive an email when posts are published.', INCSUB_SBE_LANG_DOMAIN ) . "\r\n";
+		$subscribe_email_content .= __( 'To activate, click confirm below. If you believe this is an error, ignore this message and nothing more will happen.', INCSUB_SBE_LANG_DOMAIN ) . "\r\n";
 
 		$defaults = array(
 			'auto-subscribe' => false,

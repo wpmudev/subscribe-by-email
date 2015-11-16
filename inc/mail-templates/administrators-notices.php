@@ -29,27 +29,19 @@ abstract class Incsub_Subscribe_By_Email_Administrators_Notice_Template {
 class Incsub_Subscribe_By_Email_Administrators_Subscribed_Notice_Template extends Incsub_Subscribe_By_Email_Administrators_Notice_Template  {
 	public function send_email() {
 		$subject = sprintf( __( '[%s] New Subscriber', INCSUB_SBE_LANG_DOMAIN ), get_option( 'blogname' ) );
-
-		$content = __( 'Dear user,
-
-A new user (###SUBSCRIBER_EMAIL###) has confirmed his subscription to your subscribers list.
-
-Click this link to manage your subscribers:
-###SBE_SUBSCRIBERS_URL###
-
-Regards,
-###BLOGNAME###', INCSUB_SBE_LANG_DOMAIN );
-		
 		$subscribers_link = Incsub_Subscribe_By_Email::$admin_subscribers_page->get_permalink();
 
-		$content = str_replace( '###SBE_SUBSCRIBERS_URL###', esc_url( $subscribers_link ), $content );
-		$content = str_replace( '###BLOGNAME###', get_option( 'blogname' ), $content );
-		$content = str_replace( '###SUBSCRIBER_EMAIL###', $this->subscriber_email, $content );
+		$message  = _x( 'Dear user,', 'Administrator notice sent when a new user is subscribed', INCSUB_SBE_LANG_DOMAIN ) . "\r\n\r\n";
+		$message  .= sprintf ( __( 'A new user (%s) has confirmed his subscription to your subscribers list.', INCSUB_SBE_LANG_DOMAIN ), $this->subscriber_email ) . "\r\n\r\n";
+		$message  .= __( 'Click this link to manage your subscribers:', INCSUB_SBE_LANG_DOMAIN ) . "\r\n";
+		$message  .= $subscribers_link . "\r\n\r\n";
+		$message  .= _x( 'Regards,', 'Administrator notice sent when a new user is subscribed', INCSUB_SBE_LANG_DOMAIN ) . "\r\n";
+		$message  .= get_option( 'blogname' );
 
 		$admin_emails = $this->get_administrators_emails();
 
 		foreach ( $admin_emails as $email )
-			wp_mail( $email, $subject, $content );
+			wp_mail( $email, $subject, $message );
 
 	}
 }
@@ -59,27 +51,19 @@ Regards,
 class Incsub_Subscribe_By_Email_Administrators_Unsubscribed_Notice_Template extends Incsub_Subscribe_By_Email_Administrators_Notice_Template  {
 	public function send_email() {
 		$subject = sprintf( __( '[%s] Subscriber removed', INCSUB_SBE_LANG_DOMAIN ), get_option( 'blogname' ) );
-
-		$content = __( 'Dear user,
-
-A user (###SUBSCRIBER_EMAIL###) has removed from your subcribers list.
-
-Click this link to manage your subscribers:
-###SBE_SUBSCRIBERS_URL###
-
-Regards,
-###BLOGNAME###', INCSUB_SBE_LANG_DOMAIN );
-		
 		$subscribers_link = Incsub_Subscribe_By_Email::$admin_subscribers_page->get_permalink();
 
-		$content = str_replace( '###SBE_SUBSCRIBERS_URL###', esc_url( $subscribers_link ), $content );
-		$content = str_replace( '###BLOGNAME###', get_option( 'blogname' ), $content );
-		$content = str_replace( '###SUBSCRIBER_EMAIL###', $this->subscriber_email, $content );
+		$message  = _x( 'Dear user,', 'Administrator notice sent when a new user is unsubscribed', INCSUB_SBE_LANG_DOMAIN ) . "\r\n\r\n";
+		$message  .= sprintf ( __( 'A new user (%s) has removed from your subcribers list.', INCSUB_SBE_LANG_DOMAIN ), $this->subscriber_email ) . "\r\n\r\n";
+		$message  .= __( 'Click this link to manage your subscribers:', INCSUB_SBE_LANG_DOMAIN ) . "\r\n";
+		$message  .= $subscribers_link . "\r\n\r\n";
+		$message  .= _x( 'Regards,', 'Administrator notice sent when a new user is unsubscribed', INCSUB_SBE_LANG_DOMAIN ) . "\r\n";
+		$message  .= get_option( 'blogname' );
 
 		$admin_emails = $this->get_administrators_emails();
 
 		foreach ( $admin_emails as $email )
-			wp_mail( $email, $subject, $content );
+			wp_mail( $email, $subject, $message );
 
 	}
 }
