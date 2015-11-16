@@ -67,7 +67,9 @@ class Incsub_Subscribe_By_Email_Model {
               mail_date bigint(20) NOT NULL,
               mail_settings text,
               max_email_ID bigint(20) NOT NULL,
-              PRIMARY KEY  (id)
+              campaign_hash varchar(50) NOT NULL default '',
+              PRIMARY KEY  (id),
+              KEY campaign_hash (campaign_hash)
             )  ENGINE=MyISAM $db_charset_collate;";
        
         dbDelta($sql);

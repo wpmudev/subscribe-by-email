@@ -18,6 +18,10 @@ class SBE_Campaign_Tests extends SBE_UnitTestCase {
 		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test0@email.com', false );
 
 		$campaign_id = incsub_sbe_insert_campaign( 'The subject' );
+		//No posts to send, campaign should be false
+		$this->assertFalse( $campaign_id );
+
+		$campaign_id = incsub_sbe_insert_campaign( 'The subject', array( 'posts_ids' => array( 1 ) ) );
 		$campaign = incsub_sbe_get_campaign( $campaign_id );
 
 		$this->assertEquals( 3, $campaign->get_total_emails_count() );
@@ -38,8 +42,8 @@ class SBE_Campaign_Tests extends SBE_UnitTestCase {
 		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test4@email.com', false );
 		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test0@email.com', false );
 
-		$campaign_id_1 = incsub_sbe_insert_campaign( 'The subject' );
-		$campaign_id_2 = incsub_sbe_insert_campaign( 'The subject' );
+		$campaign_id_1 = incsub_sbe_insert_campaign( 'The subject', array( 'posts_ids' => array( 1 ) ) );
+		$campaign_id_2 = incsub_sbe_insert_campaign( 'The subject', array( 'posts_ids' => array( 2 ) ) );
 
 		$campaigns = incsub_sbe_get_campaigns();
 
@@ -54,7 +58,7 @@ class SBE_Campaign_Tests extends SBE_UnitTestCase {
 		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test4@email.com', false );
 		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test0@email.com', false );
 
-		$campaign_id_1 = incsub_sbe_insert_campaign( 'The subject' );
+		$campaign_id_1 = incsub_sbe_insert_campaign( 'The subject', array( 'posts_ids' => array( 1 ) ) );
 		incsub_sbe_delete_campaign( $campaign_id_1 );
 		$campaign = incsub_sbe_get_campaign( $campaign_id_1 );
 
@@ -72,7 +76,7 @@ class SBE_Campaign_Tests extends SBE_UnitTestCase {
 		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test4@email.com', false );
 		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test0@email.com', false );
 
-		$campaign_id = incsub_sbe_insert_campaign( 'The subject' );
+		$campaign_id = incsub_sbe_insert_campaign( 'The subject', array( 'posts_ids' => array( 1 ) ) );
 		$campaign = incsub_sbe_get_campaign( $campaign_id );
 		
 		$this->assertEquals( 0, $campaign->mail_recipients );
@@ -89,8 +93,8 @@ class SBE_Campaign_Tests extends SBE_UnitTestCase {
 		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test4@email.com', false );
 		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test0@email.com', false );
 
-		$campaign_id_1 = incsub_sbe_insert_campaign( 'The subject' );
-		$campaign_id_2 = incsub_sbe_insert_campaign( 'The subject' );
+		$campaign_id_1 = incsub_sbe_insert_campaign( 'The subject', array( 'posts_ids' => array( 1 ) ) );
+		$campaign_id_2 = incsub_sbe_insert_campaign( 'The subject', array( 'posts_ids' => array( 2 ) ) );
 
 		$campaigns = incsub_sbe_get_campaigns();
 
@@ -105,13 +109,35 @@ class SBE_Campaign_Tests extends SBE_UnitTestCase {
 		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test4@email.com', false );
 		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test0@email.com', false );
 
-		$campaign_id = incsub_sbe_insert_campaign( 'The subject' );
+		$campaign_id = incsub_sbe_insert_campaign( 'The subject', array( 'posts_ids' => array( 1 ) ) );
 		$campaign = incsub_sbe_get_campaign( $campaign_id );
 		$this->assertCount( 3,  $campaign->get_subscribers_list() );
 
 		foreach ( $campaign->get_subscribers_list() as $subscriber ) {
 			$this->assertTrue( $subscriber->is_confirmed() );
 		}
+
+	}
+
+	function test_campaign_hashes() {
+		$confirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test1@email.com', true );
+		$confirmed_subscriber_id_2 = incsub_sbe_insert_subscriber( 'test5@email.com', true );
+		$confirmed_subscriber_id_4 = incsub_sbe_insert_subscriber( 'test3@email.com', true );
+		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test4@email.com', false );
+		$unconfirmed_subscriber_id_1 = incsub_sbe_insert_subscriber( 'test0@email.com', false );
+
+		$campaign_id_1 = incsub_sbe_insert_campaign( 'The subject', array( 'posts_ids' => array( 1 ) ) );
+
+		// This should not be inserted
+		$campaign_id_2 = incsub_sbe_insert_campaign( 'The subject', array( 'posts_ids' => array( 1 ) ) );
+
+		$campaign_id_3 = incsub_sbe_insert_campaign( 'The subject', array( 'posts_ids' => array( 3 ) ) );
+
+
+		$this->assertFalse( $campaign_id_2 );
+
+		$this->assertTrue( is_integer( $campaign_id_1 ) );
+		$this->assertTrue( is_integer( $campaign_id_3 ) );
 
 	}
 	

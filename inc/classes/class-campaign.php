@@ -15,6 +15,8 @@ class SBE_Campaign {
 
 	public $max_email_ID = 0;
 
+	public $campaign_hash = '';
+
 	public static function get_instance( $campaign_item ) {
 		global $wpdb;
 
@@ -173,35 +175,62 @@ function incsub_sbe_get_campaign( $campaign_item ) {
  * 
  * @param  String $subject Campaign Subject
  * @param  array  $args    Campaign Settings
+ * @param Boolean $force It will insert the campaign even if there's another one with the same hash
  * 
  * @return mixed          New camapign ID/False
  */
-function incsub_sbe_insert_campaign( $subject, $args = array() ) {
+function incsub_sbe_insert_campaign( $subject, $args = array(), $force = false ) {
     global $wpdb;
 
     $table = subscribe_by_email()->model->subscriptions_log_table;
 
     $max_id = $wpdb->get_var( "SELECT MAX(ID) max_id FROM $wpdb->posts WHERE post_type = 'subscriber' AND post_status = 'publish'" );
 
-    if ( ! $max_id )
-    	return false;
+	if ( ! $max_id )
+		return false;
 
-    $wpdb->insert( 
+	// Sanitize args
+	$defaults = apply_filters( 'sbe_campaign_default_args', array(
+		'posts_ids' => array()
+	) );
+
+	$args = wp_parse_args( $args, $defaults );
+
+	if ( empty( $args['posts_ids'] ) )
+		return false;
+
+	// Sort the arguments so we can produce better hashes
+	ksort( $args );
+
+	//also sort the post_ids
+	sort( $args['posts_ids'] );
+
+	$hash = md5( maybe_serialize( $args ) );
+
+	if ( ! $force ) {
+		// Check if the hash already exists
+		$campaign_exists = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE campaign_hash = %s", $hash ) );
+		if ( $campaign_exists )
+			return false;
+	}
+
+	$wpdb->insert(
         $table,
         array( 
             'mail_subject' => $subject,
             'mail_recipients' => 0,
             'mail_date' => current_time( 'timestamp' ),
             'mail_settings' => maybe_serialize( $args ),
-            'max_email_ID' => $max_id
+            'max_email_ID' => $max_id,
+	        'campaign_hash' => $hash
         ),
         array(
             '%s',
             '%d',
             '%d',
             '%s',
-            '%s',
-            '%d'
+            '%d',
+            '%s'
         )
     );
 

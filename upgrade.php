@@ -116,13 +116,13 @@ if ( version_compare( $current_version, '2.4.9', '<' ) ) {
     		$log_id = $log->id;
     		$mails_list = maybe_unserialize( $log->mails_list );
     		if ( is_array( $mails_list ) ) {
-    			$logger = new Subscribe_By_Email_Logger( $log_id );
+    			//$logger = new Subscribe_By_Email_Logger( $log_id );
     			$max_email_id = 0;
     			foreach ( $mails_list as $item ) {
     				$max_email_id = max( $max_email_id, absint( $item['id'] ) );
     				$email = $item['email'];
     				$status = $item['status'] === true ? __( 'Sent', INCSUB_SBE_LANG_DOMAIN ) : $item['status'];
-    				$logger->write( $email, $status );
+    				//$logger->write( $email, $status );
     			}
     			$wpdb->update(
 					$subscriptions_log_table,
@@ -134,7 +134,7 @@ if ( version_compare( $current_version, '2.4.9', '<' ) ) {
     		}
     		else {
     			$errors++;
-                $logger = new Subscribe_By_Email_Logger( $log_id );
+                //$logger = new Subscribe_By_Email_Logger( $log_id );
                 $subscriptions_table = $wpdb->prefix . 'subscriptions';
                 $max_email_id = $wpdb->get_var( "SELECT MAX(subscription_ID) max_email_id FROM $subscriptions_table" );
                 $wpdb->update(
@@ -144,7 +144,7 @@ if ( version_compare( $current_version, '2.4.9', '<' ) ) {
                     array( '%s' ),
                     array( '%d' )
                 );
-                $logger->touch();
+                //$logger->touch();
     		}
     		
     	}
@@ -315,5 +315,10 @@ if ( version_compare( $current_version, '2.9', '<' ) ) {
 
 if ( version_compare( $current_version, '3.4', '<' ) ) {
     subscribe_by_email()->add_capabilities();
+}
+
+if ( version_compare( $current_version, '3.5', '<' ) ) {
+    $model = incsub_sbe_get_model();
+    $model->create_squema();
 }
 

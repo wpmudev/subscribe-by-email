@@ -4,7 +4,7 @@ Plugin Name: Subscribe by Email
 Plugin URI: http://premium.wpmudev.org/project/subscribe-by-email
 Description: This plugin allows you and your users to offer subscriptions to email notification of new posts
 Author: WPMU DEV
-Version: 3.4.4
+Version: 3.5
 Author URI: http://premium.wpmudev.org
 WDP ID: 127
 Text Domain: subscribe-by-email
@@ -141,7 +141,7 @@ class Incsub_Subscribe_By_Email {
 	 */
 	private function set_globals() {
 		if ( ! defined( 'INCSUB_SBE_VERSION' ) )
-			define( 'INCSUB_SBE_VERSION', '3.4.4' );
+			define( 'INCSUB_SBE_VERSION', '3.5' );
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_URL' ) )
 			define( 'INCSUB_SBE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 		if ( ! defined( 'INCSUB_SBE_PLUGIN_DIR' ) )
@@ -204,7 +204,6 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/extra-fields-helpers.php' );
 
 		// Log class
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/logger.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/debugger.php' );
 
 		// Subscriber class
@@ -343,7 +342,7 @@ class Incsub_Subscribe_By_Email {
 		    $model = incsub_sbe_get_model();
 		    $model->create_network_squema();
 		}
-		
+
 		update_site_option( 'incsub_sbe_network_version', INCSUB_SBE_VERSION );
 	}
 
@@ -841,10 +840,7 @@ class Incsub_Subscribe_By_Email {
 			if ( ! empty( $old_campaigns ) ) {
 				foreach ( $old_campaigns as $campaign )
 					incsub_sbe_delete_campaign( $campaign->id );
-			
-				foreach ( $old_campaigns as $campaign ) {
-					Subscribe_By_Email_Logger::delete_log( $campaign->id );
-				}
+
 			}
 			set_transient( 'incsub_sbe_check_logs', true, 86400 ); // We'll check every day
 		}

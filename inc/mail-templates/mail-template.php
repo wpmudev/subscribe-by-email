@@ -14,8 +14,6 @@ class Incsub_Subscribe_By_Email_Template {
 
 	private $content_generator;
 
-	private $logger = null;
-
 	public function __construct( $settings, $dummy = false ) {
 		$this->settings = $settings;
 		$this->dummy = $dummy;

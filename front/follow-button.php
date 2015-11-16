@@ -103,7 +103,7 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 								<p><?php _e( 'Get every new post delivered right to your inbox.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
 							<?php elseif ( 'weekly' == $this->settings['frequency'] ): ?>
 								<p><?php _e( 'Get a weekly email of all new posts.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
-							<?php elseif ( 'weekly' == $this->settings['frequency'] ): ?>
+							<?php elseif ( 'daily' == $this->settings['frequency'] ): ?>
 								<p><?php _e( 'Get a daily email of all new posts.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
 							<?php endif; ?>
 							
