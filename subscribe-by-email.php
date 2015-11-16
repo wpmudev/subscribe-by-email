@@ -204,7 +204,6 @@ class Incsub_Subscribe_By_Email {
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/helpers/extra-fields-helpers.php' );
 
 		// Log class
-		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/logger.php' );
 		require_once( INCSUB_SBE_PLUGIN_DIR . 'inc/debugger.php' );
 
 		// Subscriber class
@@ -841,10 +840,7 @@ class Incsub_Subscribe_By_Email {
 			if ( ! empty( $old_campaigns ) ) {
 				foreach ( $old_campaigns as $campaign )
 					incsub_sbe_delete_campaign( $campaign->id );
-			
-				foreach ( $old_campaigns as $campaign ) {
-					Subscribe_By_Email_Logger::delete_log( $campaign->id );
-				}
+
 			}
 			set_transient( 'incsub_sbe_check_logs', true, 86400 ); // We'll check every day
 		}
