@@ -96,7 +96,7 @@ class Incsub_Subscribe_By_Email_Model {
               campaign_settings text,
               sent int(12) DEFAULT 0,
               sent_status TINYINT(1) DEFAULT 0,
-              error_msg text DEFAULT '',
+              error_msg text,
               PRIMARY KEY  (id),
               UNIQUE KEY campaign (blog_id,campaign_id,subscriber_email)
             )  ENGINE=MyISAM $db_charset_collate;";
