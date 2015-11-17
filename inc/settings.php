@@ -308,7 +308,7 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 		elseif ( is_multisite() && ! is_subdomain_install() ) {
 			$current_site = get_current_site();
 			$blog_details = get_blog_details( $current_site->blog_id );
-			$base_domain = $blog_details->path;
+			$base_domain = $blog_details->domain;
 			$base_domain = preg_replace( '/^\//', '', $base_domain );
 			$base_domain = preg_replace( '/\/$/', '', $base_domain );
 			$base_domain = str_replace( '/', '.', $base_domain );
