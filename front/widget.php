@@ -62,8 +62,20 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			$doing_ajax = defined( 'DOING_AJAX' ) && DOING_AJAX;
 			$instance = $this->get_settings();
 
-			if ( ! array_key_exists( $this->number, $instance ) )
+			if ( ! array_key_exists( $this->number, $instance ) ) {
+				$instance = false;
+			}
+			else {
+				$instance = $instance[ $this->number ];
+			}
+
+			$instance = apply_filters( 'sbe_validate_widget_instance', $instance, $this );
+
+			if ( ! $instance ) {
 				return false;
+			}
+
+			$instance = wp_parse_args( $instance, $this->get_default_settings() );
 
 			if ( ! $doing_ajax ) {
 				$nonce = isset( $input['sbe_subscribe_nonce'] ) ? $input['sbe_subscribe_nonce'] : '';
@@ -109,7 +121,6 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 
 			if ( empty( $this->errors ) ) {
 
-    			$instance = $instance[ $this->number ];
 				$autopt = $instance['autopt'];
 
 				$sid = Incsub_Subscribe_By_Email::subscribe_user( $email, __( 'User subscribed', INCSUB_SBE_LANG_DOMAIN ), 'Instant', $autopt, $fields_to_save );
