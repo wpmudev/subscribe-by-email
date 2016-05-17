@@ -1,6 +1,6 @@
 {
   "name": "subscribe-by-email",
-  "version": "3.5.2",
+  "version": "3.5.3",
   "main": "subscribe-by-email.php",
   "projectEditUrl": "https://premium.wpmudev.org/wp-admin/edit.php?post_type=project&page=projects-manage&manage_files=127",
   "description": "",
