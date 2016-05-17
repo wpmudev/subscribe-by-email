@@ -222,8 +222,8 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 		$defaults = array(
 			'auto-subscribe' => false,
 			'subscribe_new_users' => false,
-			'from_sender' => get_bloginfo( 'name' ),
-			'subject' => get_bloginfo( 'name' ) . __( ': New post' ),
+			'from_sender' => html_entity_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
+			'subject' => html_entity_decode( get_bloginfo( 'name' ) . __( ': New post' ), ENT_QUOTES ),
 			'frequency' => 'inmediately',
 			'time' => 0,
 			'day_of_week' => 0,
