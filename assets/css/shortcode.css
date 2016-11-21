@@ -1,13 +1,3 @@
-.sbe-shortcode-subscribe-form {
-	padding:15px;
-	color:<?php echo $textcolor; ?>;
-	background-color:<?php echo $bgcolor; ?>;
-	box-sizing:border-box;
-	width:<?php echo $width; ?>;
-	<?php if ( $center == 'true' ): ?>
-		margin:0 auto;
-	<?php endif; ?>
-}
 .sbe-shortcode-subscribe-form input[type="text"],
 .sbe-shortcode-subscribe-form input[type="email"] {
 	width:100%;

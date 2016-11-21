@@ -186,6 +186,18 @@ class Subscribe_By_Email_Shortcode {
 
 					<?php do_action( 'sbe_shortcode_after_fields' ); ?>
 		        </form>
+                        <style>
+                                .sbe-shortcode-subscribe-form {
+                                        padding:15px;
+                                        color:<?php echo $textcolor; ?>;
+                                        background-color:<?php echo $bgcolor; ?>;
+                                        box-sizing:border-box;
+                                        width:<?php echo $width; ?>;
+                                        <?php if ( $center == 'true' ): ?>
+                                                margin:0 auto;
+                                        <?php endif; ?>
+                                }
+                        </style>
 
 			<?php
 		}
