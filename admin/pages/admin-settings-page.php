@@ -22,7 +22,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			'general' => __( 'General Settings', INCSUB_SBE_LANG_DOMAIN ),
 			'content' => __( 'Contents', INCSUB_SBE_LANG_DOMAIN ),
 			'template' => __( 'Mail template', INCSUB_SBE_LANG_DOMAIN ),
-			'extra-fields' => __( 'Custom Fields', INCSUB_SBE_LANG_DOMAIN )
+			'extra-fields' => __( 'Custom Fields', INCSUB_SBE_LANG_DOMAIN ),
+			'recaptcha' => __( 'ReCaptcha', INCSUB_SBE_LANG_DOMAIN )
 		);
 
 		$args = array(
@@ -212,6 +213,17 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 		elseif ( $this->get_current_tab() == 'extra-fields' ) {
 			add_settings_section( 'custom-fields', __( 'Custom Fields', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_extra_fields_section' ), $this->get_menu_slug() );
 			add_settings_field( 'custom-fields-meta', __( 'Subscribers custom fields', INCSUB_SBE_LANG_DOMAIN ), array( &$this, 'render_subscribers_extra_fields_field' ), $this->get_menu_slug(), 'custom-fields' ); 
+		}
+		elseif ( $this->get_current_tab() == 'recaptcha' ) {
+
+			add_settings_section( 'recaptcha', __( 'reCAPTCHA', INCSUB_SBE_LANG_DOMAIN ), array( $this, 'render_recaptcha_section' ), $this->get_menu_slug() );
+			
+			add_settings_field( 'recaptcha-type', __( 'reCaptcha type', INCSUB_SBE_LANG_DOMAIN ), array( $this, 'render_recaptcha_type_field' ), $this->get_menu_slug(), 'recaptcha' );
+
+			add_settings_field( 'recaptcha-public', __( 'Public key', INCSUB_SBE_LANG_DOMAIN ), array( $this, 'render_recaptcha_public_field' ), $this->get_menu_slug(), 'recaptcha' );
+
+			add_settings_field( 'recaptcha-secret', __( 'Secret key', INCSUB_SBE_LANG_DOMAIN ), array( $this, 'render_recaptcha_secret_field' ), $this->get_menu_slug(), 'recaptcha' );
+
 		}
 
 		do_action( 'sbe_register_settings', $this->get_current_tab(), $this->settings_group, $this->settings_name, $this->get_menu_slug() );
@@ -1113,6 +1125,68 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	}
 
 
+	public function render_recaptcha_section(){
+		?>			
+			<h4>
+			<?php 
+				_e( 'Enable reCAPTCHA to avoid spam subscribers', INCSUB_SBE_LANG_DOMAIN ); 
+			?>
+			</h4>
+
+			<p>
+			<?php 
+				_e( 'You can choose between default (v2) and invisible types of reCAPTCHA.', INCSUB_SBE_LANG_DOMAIN ); 
+			?>
+			</p>
+
+			<p>
+			<?php 
+				_e( 'To start using reCAPTCHA, you need to <a href="https://www.google.com/recaptcha/admin#list">sign up for an API key pair</a> for your site. The key pair consists of a site key and secret key. The site key is used to invoke reCAPTCHA service on your site or mobile application.', INCSUB_SBE_LANG_DOMAIN ); 
+			?>
+			</p>
+		<?php
+	}
+
+	public function render_recaptcha_type_field(){
+		?>
+
+		<label for="auto_subscribe_no">
+			<input id="auto_subscribe_no" type="radio" name="<?php echo $this->settings_name; ?>[recaptcha_type]" value="no" <?php checked( $this->settings['recaptcha_type'], false ); ?>>
+			<?php _e( 'Disabled', INCSUB_SBE_LANG_DOMAIN ); ?>
+		</label><br/>
+
+		<label for="recaptcha_type_v2">
+			<input id="recaptcha_type_v2" type="radio" name="<?php echo $this->settings_name; ?>[recaptcha_type]" value="v2" <?php checked( $this->settings['recaptcha_type'], 'v2' ); ?>>
+			<?php _e( 'Default', INCSUB_SBE_LANG_DOMAIN ); ?>
+		</label><br/>
+
+		<label for="recaptcha_type_invisible">
+			<input id="recaptcha_type_invisible" type="radio" name="<?php echo $this->settings_name; ?>[recaptcha_type]" value="invisible" <?php checked( $this->settings['recaptcha_type'], 'invisible' ); ?>>
+			<?php _e( 'Invisible', INCSUB_SBE_LANG_DOMAIN ); ?>
+		</label><br/>
+		
+		<span class="description"><?php _e( 'Choose the type of reCAPTCHA.', INCSUB_SBE_LANG_DOMAIN ); ?></span>  
+		<?php
+	}
+
+	public function render_recaptcha_public_field(){
+
+		?>
+		<input type="text" name="<?php echo $this->settings_name; ?>[recaptcha_public_key]" class="regular-text" value="<?php echo esc_attr( $this->settings['recaptcha_public_key'] ); ?>" />
+		<?php
+
+	}
+
+
+	public function render_recaptcha_secret_field(){
+
+		?>
+		<input type="text" name="<?php echo $this->settings_name; ?>[recaptcha_secret_key]" class="regular-text" value="<?php echo esc_attr( $this->settings['recaptcha_secret_key'] ); ?>" />
+		<?php
+
+	}
+
+
 	/**
 	 * Sanitizes the settings and return the values to be saved
 	 * 
@@ -1319,6 +1393,14 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 				}
 			}
 							
+		}
+
+		if( isset( $input['submit_settings_recaptcha'] ) ){
+
+			$new_settings['recaptcha_type'] = sanitize_text_field( $input['recaptcha_type'] );
+			$new_settings['recaptcha_public_key'] = sanitize_text_field( $input['recaptcha_public_key'] );
+			$new_settings['recaptcha_secret_key'] = sanitize_text_field( $input['recaptcha_secret_key'] );
+
 		}
 
 		$new_settings = apply_filters( 'sbe_sanitize_settings', $new_settings, $input, $this->settings_name );

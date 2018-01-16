@@ -105,6 +105,7 @@ class Incsub_Subscribe_By_Email {
 		}
 
 		$this->init_follow_button();
+		$this->init_recaptcha();
 
 		new Subscribe_By_Email_Shortcode();
 	}
@@ -119,6 +120,17 @@ class Incsub_Subscribe_By_Email {
 			require_once( INCSUB_SBE_PLUGIN_DIR . 'front/follow-button.php' );
 			new Incsub_Subscribe_By_Email_Follow_Button( $settings );
 		}
+	}
+
+	public function init_recaptcha() {
+
+		if( is_admin() && ! wp_doing_ajax() ){
+			return;
+		}
+
+		require_once( INCSUB_SBE_PLUGIN_DIR . 'front/recaptcha.php' );
+		Incsub_Subscribe_By_Email_Recaptcha::get_instance();
+
 	}
 
 
