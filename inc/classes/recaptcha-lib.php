@@ -83,6 +83,8 @@ class SBE_ReCaptcha
             ) 
         );
 
+        $recaptchaResponse = new SBE_ReCaptchaResponse();
+
         if ( is_wp_error( $response ) ) {
 
             $error_message = $response->get_error_message();
@@ -95,8 +97,6 @@ class SBE_ReCaptcha
 
         $response_code = wp_remote_retrieve_response_code( $response );
         $response_body = json_decode( wp_remote_retrieve_body( $response ), true );
-
-        $recaptchaResponse = new SBE_ReCaptchaResponse();
 
         if ( 200 == $response_code && isset( $response_body['success'] ) && trim( $response_body['success'] ) == true ) {
             $recaptchaResponse->success = true;
