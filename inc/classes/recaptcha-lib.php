@@ -1,13 +1,17 @@
 <?php
 
 /**
-From: https://github.com/google/recaptcha/blob/1.0.0/php/example-captcha.php
- */
+* From: https://github.com/google/recaptcha/blob/1.0.0/php/example-captcha.php
+*/
+
+
 class SBE_ReCaptchaResponse
 {
     public $success;
     public $errorCodes;
 }
+
+
 class SBE_ReCaptcha
 {
     private static $_signupUrl = "https://www.google.com/recaptcha/admin";
@@ -44,20 +48,7 @@ class SBE_ReCaptcha
         $req=substr($req, 0, strlen($req)-1);
         return $req;
     }
-    /**
-     * Submits an HTTP GET to a reCAPTCHA server.
-     *
-     * @param string $path url path to recaptcha server.
-     * @param array  $data array of parameters to be sent.
-     *
-     * @return array response
-     */
-    private function _submitHTTPGet($path, $data)
-    {
-        $req = $this->_encodeQS($data);
-        $response = file_get_contents($path . $req);
-        return $response;
-    }
+ 
     /**
      * Calls the reCAPTCHA siteverify API to verify whether the user passes
      * CAPTCHA test.
@@ -67,34 +58,51 @@ class SBE_ReCaptcha
      *
      * @return ReCaptchaResponse
      */
-    public function verifyResponse($remoteIp, $response)
+    public function verifyResponse( $remoteIp, $response )
     {
         // Discard empty solution submissions
-        if ($response == null || strlen($response) == 0) {
+        if ( $response == null || strlen( $response ) == 0 ) {
+
             $recaptchaResponse = new SBE_ReCaptchaResponse();
             $recaptchaResponse->success = false;
             $recaptchaResponse->errorCodes = 'missing-input';
+
             return $recaptchaResponse;
+            
         }
 
-        $getResponse = $this->_submitHttpGet(
-            self::$_siteVerifyUrl,
-            array (
-                'secret' => $this->_secret,
-                'remoteip' => $remoteIp,
-                'v' => self::$_version,
-                'response' => $response
-            )
+        $response = wp_remote_post( 
+            self::$_siteVerifyUrl, 
+            array( 
+                'body' => array (
+                    'secret' => $this->_secret,
+                    'remoteip' => $remoteIp,
+                    'v' => self::$_version,
+                    'response' => $response
+                )
+            ) 
         );
 
-        $answers = json_decode($getResponse, true);
+        if ( is_wp_error( $response ) ) {
+
+            $error_message = $response->get_error_message();
+            $recaptchaResponse->success = false;
+            $recaptchaResponse->errorCodes = $error_message;
+
+            return $recaptchaResponse;
+
+        }
+
+        $response_code = wp_remote_retrieve_response_code( $response );
+        $response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+
         $recaptchaResponse = new SBE_ReCaptchaResponse();
 
-        if (trim($answers ['success']) == true) {
+        if ( 200 == $response_code && isset( $response_body['success'] ) && trim( $response_body['success'] ) == true ) {
             $recaptchaResponse->success = true;
         } else {
             $recaptchaResponse->success = false;
-            $recaptchaResponse->errorCodes = $answers [error-codes];
+            $recaptchaResponse->errorCodes = isset( $response_body['error-codes'] ) ? $response_body['error-codes'] : 'Invalid response code';
         }
 
         return $recaptchaResponse;
