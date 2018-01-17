@@ -241,6 +241,9 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 			<p class="sbe-widget-updated"><?php echo $message; ?></p>
     	<?php endif;
 		echo $after_widget;
+
+		do_action( 'sbe_widget_loaded', $this, $instance );
+		
 	}
 
 	/**

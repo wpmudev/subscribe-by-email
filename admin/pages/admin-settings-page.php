@@ -1150,8 +1150,8 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	public function render_recaptcha_type_field(){
 		?>
 
-		<label for="auto_subscribe_no">
-			<input id="auto_subscribe_no" type="radio" name="<?php echo $this->settings_name; ?>[recaptcha_type]" value="no" <?php checked( $this->settings['recaptcha_type'], false ); ?>>
+		<label for="recaptcha_type_no">
+			<input id="recaptcha_type_no" type="radio" name="<?php echo $this->settings_name; ?>[recaptcha_type]" value="no" <?php checked( $this->settings['recaptcha_type'], 'no' ); ?>>
 			<?php _e( 'Disabled', INCSUB_SBE_LANG_DOMAIN ); ?>
 		</label><br/>
 
