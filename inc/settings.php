@@ -250,7 +250,11 @@ class Incsub_Subscribe_By_Email_Settings_Handler {
 			'send_full_post' => false,
 			'subscribe_email_content' => $subscribe_email_content,
 
-			'extra_fields' => array()
+			'extra_fields' => array(),
+
+			'recaptcha_type' => 'no',
+			'recaptcha_public_key' => '',
+			'recaptcha_secret_key' => ''
 		);
 
 		return apply_filters( 'sbe_blog_default_settings', $defaults );
