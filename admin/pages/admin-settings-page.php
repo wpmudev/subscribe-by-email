@@ -220,7 +220,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 			
 			add_settings_field( 'recaptcha-type', __( 'reCaptcha type', INCSUB_SBE_LANG_DOMAIN ), array( $this, 'render_recaptcha_type_field' ), $this->get_menu_slug(), 'recaptcha' );
 
-			add_settings_field( 'recaptcha-public', __( 'Public key', INCSUB_SBE_LANG_DOMAIN ), array( $this, 'render_recaptcha_public_field' ), $this->get_menu_slug(), 'recaptcha' );
+			add_settings_field( 'recaptcha-public', __( 'Site key', INCSUB_SBE_LANG_DOMAIN ), array( $this, 'render_recaptcha_public_field' ), $this->get_menu_slug(), 'recaptcha' );
 
 			add_settings_field( 'recaptcha-secret', __( 'Secret key', INCSUB_SBE_LANG_DOMAIN ), array( $this, 'render_recaptcha_secret_field' ), $this->get_menu_slug(), 'recaptcha' );
 
