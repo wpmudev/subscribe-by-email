@@ -92,7 +92,7 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 						<form action="" class="sbe-follow-subscribe-form" id="sbe-follow-subscribe-form" method="post">
 
 							<?php if ( count( $this->errors ) > 0 ): ?>
-				        		<ul class="sbe-follow-error">
+				        		<ul tabindex="-1" class="sbe-follow-error">
 									<?php foreach ( $this->errors as $error ): ?>
 										<li><?php echo $error; ?></li>
 									<?php endforeach; ?>

@@ -97,4 +97,7 @@ jQuery(document).ready(function($) {
 	if($('.sbe-follow-updated').length) {
 		$('.sbe-follow-updated').attr('aria-live', 'assertive').focus();
 	}
+	if($('.sbe-follow-error').length) {
+		$('.sbe-follow-error').attr('aria-live', 'assertive').focus();
+	}
 });
