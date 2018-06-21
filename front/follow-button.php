@@ -83,7 +83,7 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 
 					<?php if ( isset( $_GET['sbe-followsubs'] ) && 'true' == $_GET['sbe-followsubs'] ): ?>
 
-						<p class="sbe-follow-updated"><?php _e( 'Thank you! A confirmation email is on the way...', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+						<p tabindex="-1" class="sbe-follow-updated"><?php _e( 'Thank you! A confirmation email is on the way...', INCSUB_SBE_LANG_DOMAIN ); ?></p>
 
 					<?php else: ?>
 

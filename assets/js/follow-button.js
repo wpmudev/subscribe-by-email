@@ -92,3 +92,9 @@ jQuery.fn.animateRotate = function(angle, duration, easing, complete) {
     });
 };
 	
+
+jQuery(document).ready(function($) {
+	if($('.sbe-follow-updated').length) {
+		$('.sbe-follow-updated').attr('aria-live', 'assertive').focus();
+	}
+});
