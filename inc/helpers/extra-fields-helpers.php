@@ -19,7 +19,8 @@ function incsub_sbe_render_extra_field( $type, $slug, $title, $value, $atts = ar
 		'name' => 'sbe_extra_field_' . $slug,
 		'placeholder' => esc_attr( $title ),
 		'id' => 'sbe_extra_field_' . $slug,
-		'show_label' => true
+		'show_label' => true,
+		'required' => false
 	);
 
 	$atts = wp_parse_args( $atts, $default_atts );

@@ -124,6 +124,7 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 											'placeholder' => '',
 											'name' => 'sbe_extra_field_' . $value['slug'],
 											'class' => 'sbe-follow-form-field sbe-follow-' . $value['slug'] . '-field',
+											'required' => ( $value['required'] ) ? true : false
 										);
 									?>
 
