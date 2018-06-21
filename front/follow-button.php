@@ -19,8 +19,8 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 		$follow_stylesheet = apply_filters( 'sbe_follow_button_stylesheet_uri', INCSUB_SBE_ASSETS_URL . '/css/follow-button/follow-button-' . $schema . '.css' );
 		$deps = apply_filters( 'sbe_follow_button_stylesheet_dependants', array() );
 
-		wp_enqueue_style( 'follow-button-styles', $follow_stylesheet, $deps, '20131128' );
-		wp_enqueue_style( 'follow-button-general-styles', INCSUB_SBE_ASSETS_URL . '/css/follow-button/follow-button.css', array(), '20131128' );
+		wp_enqueue_style( 'follow-button-styles', $follow_stylesheet, $deps, '20131129' );
+		wp_enqueue_style( 'follow-button-general-styles', INCSUB_SBE_ASSETS_URL . '/css/follow-button/follow-button.css', array(), '20131129' );
 		wp_enqueue_script( 'follow-button-scripts', INCSUB_SBE_ASSETS_URL . '/js/follow-button.js', array( 'jquery' ) );
 	}
 
@@ -78,7 +78,7 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 	    $extra_fields = empty( $settings['extra_fields'] ) ? array() : $settings['extra_fields'];
 		?>
 			<div id="sbe-follow" <?php echo $style; ?> class="<?php echo $is_opened ? 'sbe-follow-opened' : ''; ?>">
-				<a class="sbe-follow-link" href="#sbe-follow-wrap"> <span><?php _e( 'Follow', INCSUB_SBE_LANG_DOMAIN ); ?></span></a>
+				<a aria-hidden="true" class="sbe-follow-link" href="#sbe-follow-wrap"> <span><?php _e( 'Follow', INCSUB_SBE_LANG_DOMAIN ); ?></span></a>
 				<div id="sbe-follow-wrap">
 
 					<?php if ( isset( $_GET['sbe-followsubs'] ) && 'true' == $_GET['sbe-followsubs'] ): ?>
@@ -108,8 +108,8 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 							<?php endif; ?>
 							
 							<?php $email = isset( $_POST['subscription-email'] ) ? $_POST['subscription-email'] : ''; ?>
-							<div class="sbe-follow-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div>
-	        				<input type="email" class="sbe-follow-form-field sbe-follow-email-field" name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo $email; ?>"><br/>
+							<div aria-hidden="true" class="sbe-follow-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div><label class="sbe-follow-screen-reader-text" for="sbe-follow-screen-reader-label"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+	        				<input type="email" id="sbe-follow-screen-reader-label" class="sbe-follow-form-field sbe-follow-email-field" name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo $email; ?>" required><br/>
 							
 							<?php if ( ! empty( $extra_fields ) ): ?>
 				        		<?php foreach ( $extra_fields as $key => $value ): ?>

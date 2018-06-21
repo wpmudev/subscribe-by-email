@@ -41,3 +41,14 @@
 	border-color: #60B854;
 	color:black;
 }
+.sbe-shortcode-screen-reader-text {
+	position: absolute;
+	margin: -1px;
+	padding: 0;
+	height: 1px;
+	width: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	border: 0;
+	word-wrap: normal !important;
+}
