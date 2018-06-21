@@ -108,7 +108,7 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 							<?php endif; ?>
 							
 							<?php $email = isset( $_POST['subscription-email'] ) ? $_POST['subscription-email'] : ''; ?>
-							<div aria-hidden="true" class="sbe-follow-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div><label class="sbe-follow-screen-reader-text" for="sbe-follow-screen-reader-label"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+							<div aria-hidden="true" class="sbe-follow-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div><label class="sbe-screen-reader-text" for="sbe-follow-screen-reader-label"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></label>
 	        				<input type="email" aria-describedby="sbe-follow-desc" id="sbe-follow-screen-reader-label" class="sbe-follow-form-field sbe-follow-email-field" name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo $email; ?>" required><br/>
 							
 							<?php if ( ! empty( $extra_fields ) ): ?>
