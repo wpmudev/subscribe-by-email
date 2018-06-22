@@ -97,7 +97,10 @@ jQuery(document).ready(function($) {
 	if($('.sbe-follow-updated').length) {
 		$('.sbe-follow-updated').attr('aria-live', 'assertive').focus();
 	}
-	if($('.sbe-follow-error').length) {
-		$('.sbe-follow-error').attr('aria-live', 'assertive').focus();
+	if($('.sbe-follow-single-error').length) {
+		setTimeout(function() {
+			$('.sbe-follow-error').attr('aria-live', 'assertive');
+			$('.sbe-follow-single-error').first().attr('tabindex', '-1').focus();
+		}, 500);
 	}
 });
