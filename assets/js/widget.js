@@ -34,16 +34,16 @@ jQuery(document).ready(function($) {
 				$('.sbe-widget-error').hide();
 				if ( return_data.success ) {
 					the_form.html( '' );
-					message_container = $('<p class="sbe-widget-updated"></p>').text(return_data.data.message).hide();
+					message_container = $('<p tabindex="-1" class="sbe-widget-updated"></p>').text(return_data.data.message).hide();
 				}
 				else {
 					message_container = $('<ul class="sbe-widget-error"></ul>').hide();
 					for ( var i = 0; i < return_data.data.length; i++ ) {
-						message_container.append( '<li>' + return_data.data[i] + '</li>' );
+						message_container.append( '<li class="sbe-widget-single-error">' + return_data.data[i] + '</li>' );
 					}
 					
 				}
-				$('#' + form_id).prepend(message_container);
+				$('#' + form_id).prepend(message_container).attr('aria-live', 'assertive').focus();
 				message_container.slideDown();
 
 				spinner.css( 'visibility', 'hidden' );
