@@ -128,10 +128,10 @@ class Subscribe_By_Email_Shortcode {
 		ob_start();
 
 		if ( count( $this->errors ) == 0 && isset( $_POST['submit-subscribe-user'] ) && ! $autopt ) {
-			echo '<div id="sbe-shortcode-updated" class="sbe-shortcode-updated"><p>' . $success_text . '</p></div>';
+			echo '<div id="sbe-shortcode-updated" class="sbe-shortcode-updated"><p tabindex="-1">' . $success_text . '</p></div>';
 		}
 		elseif ( count( $this->errors ) == 0 && isset( $_POST['submit-subscribe-user'] ) && $autopt ) {
-			echo '<div id="sbe-shortcode-updated" class="sbe-shortcode-updated"><p>' . $success_autopt_text . '</p></div>';
+			echo '<div tabindex="-1" id="sbe-shortcode-updated" class="sbe-shortcode-updated"><p tabindex="-1">' . $success_autopt_text . '</p></div>';
 		}
 		else {
 			?>
@@ -139,7 +139,7 @@ class Subscribe_By_Email_Shortcode {
 		        	<?php if ( count( $this->errors ) ): ?>
 		        		<ul class="sbe-shortcode-error">
 							<?php foreach ( $this->errors as $error ): ?>
-								<li><?php echo $error; ?></li>
+								<li class="sbe-shortcode-single-error"><?php echo $error; ?></li>
 							<?php endforeach; ?>
 		        		</ul>
 		        	<?php endif; ?>
@@ -147,14 +147,14 @@ class Subscribe_By_Email_Shortcode {
 		        	<?php do_action( 'sbe_shortcode_before_fields' ); ?>
 	        		
 	        		<?php $email = isset( $_POST['subscription-email'] ) ? $_POST['subscription-email'] : ''; ?>
-	        		<div class="sbe-shortcode-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div>
-		        	<input type="email" class="sbe-shortcode-form-field sbe-shortcode-email-field sbe-form-field"  name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo esc_attr( $email ); ?>"><br/>
+	        		<div aria-hidden="true" class="sbe-shortcode-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div><label class="sbe-screen-reader-text" for="sbe-widget-label"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+		        	<input type="email" class="sbe-shortcode-form-field sbe-shortcode-email-field sbe-form-field" name="subscription-email" id="sbe-widget-label" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo esc_attr( $email ); ?>" required><br/>
 
 		        	<?php if ( ! empty( $extra_fields ) ): ?>
 		        		<?php foreach ( $extra_fields as $key => $value ): ?>
 
 		        			<?php if ( 'checkbox' !== $value['type'] ): ?>
-								<div class="sbe-shortcode-form-field-title"><?php echo $value['title']; ?> <?php echo $value['required'] ? '<span class="sbe-shortcode-required">(*)</span>' : ''; ?></div>
+								<div aria-hidden="true" class="sbe-shortcode-form-field-title"><?php echo $value['title']; ?> <?php echo $value['required'] ? '<span class="sbe-shortcode-required">(*)</span>' : ''; ?></div>
 							<?php endif; ?>
 
 		        			<?php 
@@ -163,12 +163,13 @@ class Subscribe_By_Email_Shortcode {
 									'placeholder' => '',
 									'name' => 'sbe_extra_field_' . $value['slug'],
 									'class' => 'sbe-shortcode-form-field sbe-shortcode-' . $value['slug'] . '-field',
+									'required' => ( $value['required'] ) ? true : false
 								);
 							?>
 
 							<?php incsub_sbe_render_extra_field( $value['type'], $value['slug'], $value['title'], $current_value, $atts ); ?>
 							<?php if ( 'checkbox' === $value['type'] ): ?>
-								<?php echo $value['required'] ? '<span class="sbe-shortcode-required">(*)</span>' : ''; ?>
+								<?php echo $value['required'] ? '<span aria-hidden="true" class="sbe-shortcode-required">(*)</span>' : ''; ?>
 							<?php endif; ?>
 							<br/>
 
@@ -180,7 +181,7 @@ class Subscribe_By_Email_Shortcode {
 			        <?php wp_nonce_field( 'sbe_shortcode_subscribe', 'sbe_subscribe_nonce' ); ?>
 		        	<input type="hidden" class="sbe-shortcode-form-field sbe-form-field" name="action" value="sbe_shortcode_subscribe_user">
 		        	<div class="sbe-shortcode-form-submit-container">
-		        		<span class="sbe-spinner"></span>
+		        		<span aria-hidden="true" class="sbe-spinner"></span>
 		        		<input type="submit" class="sbe-shortcode-form-submit" name="submit-subscribe-user" value="<?php echo apply_filters( 'sbe_shortcode_button_text', __( 'Subscribe', INCSUB_SBE_LANG_DOMAIN ) ); ?>">
 		        	</div>
 

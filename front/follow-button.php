@@ -19,8 +19,8 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 		$follow_stylesheet = apply_filters( 'sbe_follow_button_stylesheet_uri', INCSUB_SBE_ASSETS_URL . '/css/follow-button/follow-button-' . $schema . '.css' );
 		$deps = apply_filters( 'sbe_follow_button_stylesheet_dependants', array() );
 
-		wp_enqueue_style( 'follow-button-styles', $follow_stylesheet, $deps, '20131128' );
-		wp_enqueue_style( 'follow-button-general-styles', INCSUB_SBE_ASSETS_URL . '/css/follow-button/follow-button.css', array(), '20131128' );
+		wp_enqueue_style( 'follow-button-styles', $follow_stylesheet, $deps, '20131129' );
+		wp_enqueue_style( 'follow-button-general-styles', INCSUB_SBE_ASSETS_URL . '/css/follow-button/follow-button.css', array(), '20131129' );
 		wp_enqueue_script( 'follow-button-scripts', INCSUB_SBE_ASSETS_URL . '/js/follow-button.js', array( 'jquery' ) );
 	}
 
@@ -78,12 +78,12 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 	    $extra_fields = empty( $settings['extra_fields'] ) ? array() : $settings['extra_fields'];
 		?>
 			<div id="sbe-follow" <?php echo $style; ?> class="<?php echo $is_opened ? 'sbe-follow-opened' : ''; ?>">
-				<a class="sbe-follow-link" href="#sbe-follow-wrap"> <span><?php _e( 'Follow', INCSUB_SBE_LANG_DOMAIN ); ?></span></a>
+				<a aria-hidden="true" class="sbe-follow-link" href="#sbe-follow-wrap"> <span><?php _e( 'Follow', INCSUB_SBE_LANG_DOMAIN ); ?></span></a>
 				<div id="sbe-follow-wrap">
 
 					<?php if ( isset( $_GET['sbe-followsubs'] ) && 'true' == $_GET['sbe-followsubs'] ): ?>
 
-						<p class="sbe-follow-updated"><?php _e( 'Thank you! A confirmation email is on the way...', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+						<p tabindex="-1" class="sbe-follow-updated"><?php _e( 'Thank you! A confirmation email is on the way...', INCSUB_SBE_LANG_DOMAIN ); ?></p>
 
 					<?php else: ?>
 
@@ -94,28 +94,28 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 							<?php if ( count( $this->errors ) > 0 ): ?>
 				        		<ul class="sbe-follow-error">
 									<?php foreach ( $this->errors as $error ): ?>
-										<li><?php echo $error; ?></li>
+										<li class="sbe-follow-single-error"><?php echo $error; ?></li>
 									<?php endforeach; ?>
 				        		</ul>
 				        	<?php endif; ?>
 							
 							<?php if ( 'inmediately' == $this->settings['frequency'] ): ?>
-								<p><?php _e( 'Get every new post delivered right to your inbox.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+								<p id="sbe-follow-desc"><?php _e( 'Get every new post delivered right to your inbox.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
 							<?php elseif ( 'weekly' == $this->settings['frequency'] ): ?>
-								<p><?php _e( 'Get a weekly email of all new posts.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+								<p sbe-follow-desc"><?php _e( 'Get a weekly email of all new posts.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
 							<?php elseif ( 'daily' == $this->settings['frequency'] ): ?>
-								<p><?php _e( 'Get a daily email of all new posts.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
+								<p id="sbe-follow-desc"><?php _e( 'Get a daily email of all new posts.', INCSUB_SBE_LANG_DOMAIN ); ?></p>
 							<?php endif; ?>
 							
 							<?php $email = isset( $_POST['subscription-email'] ) ? $_POST['subscription-email'] : ''; ?>
-							<div class="sbe-follow-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div>
-	        				<input type="email" class="sbe-follow-form-field sbe-follow-email-field" name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo $email; ?>"><br/>
+							<div aria-hidden="true" class="sbe-follow-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div><label class="sbe-screen-reader-text" for="sbe-follow-screen-reader-label"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+	        				<input type="email" aria-describedby="sbe-follow-desc" id="sbe-follow-screen-reader-label" class="sbe-follow-form-field sbe-follow-email-field" name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo $email; ?>" required><br/>
 							
 							<?php if ( ! empty( $extra_fields ) ): ?>
 				        		<?php foreach ( $extra_fields as $key => $value ): ?>
 
 				        			<?php if ( 'checkbox' !== $value['type'] ): ?>
-										<div class="sbe-follow-form-field-title"><?php echo $value['title']; ?> <?php echo $value['required'] ? '<span class="sbe-follow-required">(*)</span>' : ''; ?></div>
+										<div aria-hidden="true" class="sbe-follow-form-field-title"><?php echo $value['title']; ?> <?php echo $value['required'] ? '<span class="sbe-follow-required">(*)</span>' : ''; ?></div>
 									<?php endif; ?>
 
 				        			<?php 
@@ -124,12 +124,13 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 											'placeholder' => '',
 											'name' => 'sbe_extra_field_' . $value['slug'],
 											'class' => 'sbe-follow-form-field sbe-follow-' . $value['slug'] . '-field',
+											'required' => ( $value['required'] ) ? true : false
 										);
 									?>
 
 									<?php incsub_sbe_render_extra_field( $value['type'], $value['slug'], $value['title'], $current_value, $atts ); ?>
 									<?php if ( 'checkbox' === $value['type'] ): ?>
-										<?php echo $value['required'] ? '<span class="sbe-follow-required">(*)</span>' : ''; ?>
+										<?php echo $value['required'] ? '<span aria-hidden="true" class="sbe-follow-required">(*)</span>' : ''; ?>
 									<?php endif; ?>
 									<br/>
 

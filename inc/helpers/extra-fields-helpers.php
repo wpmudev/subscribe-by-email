@@ -18,24 +18,29 @@ function incsub_sbe_render_extra_field( $type, $slug, $title, $value, $atts = ar
 		'class' => 'sbe-extra-field',
 		'name' => 'sbe_extra_field_' . $slug,
 		'placeholder' => esc_attr( $title ),
-		'id' => '',
-		'show_label' => true
+		'id' => 'sbe_extra_field_' . $slug,
+		'show_label' => true,
+		'required' => false
 	);
 
 	$atts = wp_parse_args( $atts, $default_atts );
 
 	switch ( $type ) {
 		case 'text': {
-			?>
-				<input type="text" id="<?php echo esc_attr( $atts['id'] ); ?>" class="<?php echo $atts['class']; ?> sbe-form-field" name="<?php echo $atts['name']; ?>" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php echo $atts['placeholder']; ?>">
+			if ( true == $atts['show_label'] ) { ?>
+				<label for="<?php echo esc_attr( $atts['id'] ); ?>"><?php echo esc_html( $title ); ?></label>
+			<?php } else { ?>
+				<label class="sbe-screen-reader-text" for="<?php echo esc_attr( $atts['id'] ); ?>"><?php echo esc_html( $title ); ?></label>
+			<?php } ?>
+				<input type="text" id="<?php echo esc_attr( $atts['id'] ); ?>" class="<?php echo $atts['class']; ?> sbe-form-field" name="<?php echo $atts['name']; ?>" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php echo $atts['placeholder']; ?>"<?php echo ( true == $atts['required'] ) ? ' required' : ''; ?>>
 			<?php
 			break;
 		}
 		case 'checkbox': {
 			?>
 				<label>
-					<input type="checkbox" class="sbe-form-field" name="<?php echo $atts['name']; ?>" <?php checked( ! empty( $value ) ); ?>>
-					<?php echo $atts ['show_label'] ? $title : ''; ?>
+					<input type="checkbox" class="sbe-form-field" name="<?php echo $atts['name']; ?>" <?php checked( ! empty( $value ) ); ?><?php echo ( true == $atts['required'] ) ? ' required' : ''; ?>>
+					<?php echo ( true == $atts['show_label'] ) ? esc_html( $title ) : esc_html( '<span class="sbe-screen-reader-text">' . $title . '</span>' ); ?>
 				</label>
 			<?php
 			break;

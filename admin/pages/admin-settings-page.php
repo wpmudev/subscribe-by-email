@@ -340,7 +340,7 @@ class Incsub_Subscribe_By_Email_Admin_Settings_Page extends Incsub_Subscribe_By_
 	public function render_subject_field() {
 		?>
 			<input type="text" name="<?php echo $this->settings_name; ?>[subject]" class="regular-text" value="<?php echo esc_attr( $this->settings['subject'] ); ?>"><br/>
-			<span><?php _e( 'You can use the <strong>%title%</strong> wildcard to show the latest post title/s, they will be shortened to no more than 50 charactes', INCSUB_SBE_LANG_DOMAIN ); ?></span>
+			<span><?php _e( 'You can use the <strong>%title%</strong> wildcard to show the latest post title/s, they will be shortened to no more than 50 characters', INCSUB_SBE_LANG_DOMAIN ); ?></span>
 		<?php
 	}
 

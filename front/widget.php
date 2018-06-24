@@ -176,25 +176,25 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 	        	<?php if ( count( $this->errors ) > 0 ): ?>
 	        		<ul class="sbe-widget-error">
 						<?php foreach ( $this->errors as $error ): ?>
-							<li><?php echo $error; ?></li>
+							<li class="sbe-widget-single-error"><?php echo $error; ?></li>
 						<?php endforeach; ?>
 	        		</ul>
 	        	<?php endif; ?>
 	        	<?php if ( ! empty( $text ) ) : ?>
-	        		<p class="sbe-widget-top-text">
+	        		<p id="sbe-widget-top-text-desc" class="sbe-widget-top-text">
 	        			<?php echo $text; ?>
 	        		</p>
 	        	<?php endif; ?>
 
         		<?php $email = isset( $_POST['subscription-email'] ) ? $_POST['subscription-email'] : ''; ?>
-        		<div class="sbe-widget-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div>
-	        	<input type="email" class="sbe-widget-form-field sbe-widget-email-field sbe-form-field"  name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo esc_attr( $email ); ?>">
+        		<div aria-hidden="true" class="sbe-widget-form-field-title"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></div><label class="sbe-screen-reader-text" for="sbe-widget-label"><?php _e( 'Email address', INCSUB_SBE_LANG_DOMAIN ); ?></label>
+	        	<input type="email" aria-describedby="sbe-widget-top-text-desc" class="sbe-widget-form-field sbe-widget-email-field sbe-form-field" id="sbe-widget-label" name="subscription-email" placeholder="<?php _e( 'ex: someone@mydomain.com', INCSUB_SBE_LANG_DOMAIN ); ?>" value="<?php echo esc_attr( $email ); ?>" required>
 
 	        	<?php if ( ! empty( $extra_fields ) ): ?>
 	        		<?php foreach ( $extra_fields as $key => $value ): ?>
 
 	        			<?php if ( 'checkbox' !== $value['type'] ): ?>
-							<div class="sbe-widget-form-field-title"><?php echo $value['title']; ?> <?php echo $value['required'] ? '<span class="sbe-widget-required">(*)</span>' : ''; ?></div>
+							<div aria-hidden="true" class="sbe-widget-form-field-title"><?php echo $value['title']; ?> <?php echo $value['required'] ? '<span class="sbe-widget-required">(*)</span>' : ''; ?></div>
 						<?php endif; ?>
 
 	        			<?php
@@ -203,12 +203,13 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 								'placeholder' => '',
 								'name' => 'sbe_extra_field_' . $value['slug'],
 								'class' => 'sbe-widget-form-field sbe-widget-' . $value['slug'] . '-field',
+								'required' => ( $value['required'] ) ? true: false
 							);
 						?>
 
 						<?php incsub_sbe_render_extra_field( $value['type'], $value['slug'], $value['title'], $current_value, $atts ); ?>
 						<?php if ( 'checkbox' === $value['type'] ): ?>
-							<?php echo $value['required'] ? '<span class="sbe-widget-required">(*)</span>' : ''; ?>
+							<?php echo $value['required'] ? '<span aria-hidden="true" class="sbe-widget-required">(*)</span>' : ''; ?>
 						<?php endif; ?>
 
 	        		<?php endforeach; ?>
@@ -219,7 +220,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 		        <?php wp_nonce_field( 'sbe_widget_subscribe', 'sbe_subscribe_nonce' ); ?>
 	        	<input type="hidden" class="sbe-widget-form-field sbe-form-field" name="action" value="sbe_widget_subscribe_user">
 	        	<div class="sbe-widget-form-submit-container">
-	        		<span class="sbe-spinner"></span>
+	        		<span aria-hidden="true" class="sbe-spinner"></span>
 	        		<input type="submit" class="sbe-widget-form-submit" name="submit-subscribe-user" value="<?php echo $button_text; ?>">
 	        	</div>
 
@@ -238,7 +239,7 @@ class Incsub_Subscribe_By_Email_Widget extends WP_Widget {
 
 
         <?php else: ?>
-			<p class="sbe-widget-updated"><?php echo $message; ?></p>
+			<p tabindex="-1" class="sbe-widget-updated"><?php echo $message; ?></p>
     	<?php endif;
 		echo $after_widget;
 
