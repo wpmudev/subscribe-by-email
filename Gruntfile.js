@@ -30,7 +30,6 @@ module.exports = function(grunt) {
                     '!node_modules/**', // Exclude node_modules/
                     '!tests/**', // Exclude tests/
                     '!admin/assets/shared-ui/**', // Exclude WPMU DEV Shared UI
-                    '!includes/external/**',
                     '!externals/**'
                 ],
                 expand: true
@@ -51,7 +50,7 @@ module.exports = function(grunt) {
                     '!.gitignore',
                     '!.gitmodules',
                     '!sourceMap.map',
-                    '!phpunit.xml',
+                    '!phpunit.xml.dist',
                     '!travis.yml',
                     '!tests/**',
                     '!**/Gruntfile.js',
@@ -61,6 +60,7 @@ module.exports = function(grunt) {
                     '!composer.json',
                     '!vendor/**',
                     '!tmp/**',
+                    '!phpunit.xml',
                     '!**/*~'
                 ],
                 dest: 'build/<%= pkg.name %>/'
@@ -148,16 +148,6 @@ module.exports = function(grunt) {
     grunt.registerTask('version-compare', [ 'search' ] );
 
     grunt.registerTask('build', [
-        'version-compare',
-        'clean',
-        'checktextdomain',
-        'makepot',
-        'copy',
-        'compress',
-        'open'
-    ]);
-
-    grunt.registerTask('build:beta', [
         'version-compare',
         'clean',
         'checktextdomain',

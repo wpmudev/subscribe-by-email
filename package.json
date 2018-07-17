@@ -1,7 +1,10 @@
 {
   "name": "subscribe-by-email",
-  "version": "3.5.4",
+  "version": "3.6.0",
   "main": "subscribe-by-email.php",
+  "scripts": {
+    "build": "grunt build"
+  },
   "projectEditUrl": "https://premium.wpmudev.org/wp-admin/edit.php?post_type=project&page=projects-manage&manage_files=127",
   "description": "",
   "dependencies": {},
