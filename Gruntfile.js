@@ -71,7 +71,7 @@ module.exports = function(grunt) {
         makepot: {
             options: {
                 type: 'wp-plugin',
-                domainPath: 'lang',
+                domainPath: 'languages',
                 potHeaders: {
                     'report-msgid-bugs-to': 'https://wpmudev.org',
                     'language-team': 'LANGUAGE <EMAIL@ADDRESS>'
@@ -79,7 +79,7 @@ module.exports = function(grunt) {
             },
             dist: {
                 options: {
-                    potFilename: 'affiliate-default.pot',
+                    potFilename: 'subscribe-by-email.pot',
                     exclude: [
                         'tests/.*',
                         'node_modules/.*',
