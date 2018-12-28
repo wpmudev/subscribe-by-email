@@ -47,9 +47,11 @@ class Incsub_Subscribe_By_Email_Recaptcha {
 
 		add_action( 'sbe_widget_form_fields', array( $this, 'load_recaptcha' ), 10 );
 		add_action( 'sbe_shortcode_form_fields', array( $this, 'load_recaptcha' ), 10 );
-		
+		add_action( 'sbe_follow_button_form_fields', array( $this, 'load_recaptcha' ), 10 );
+
 		add_action( 'sbe_widget_validate_form', array( $this, 'validate_recaptcha' ), 10 );
 		add_action( 'sbe_shortcode_validate_form', array( $this, 'validate_recaptcha' ), 10 );
+		add_action( 'sbe_follow_button_validate_form', array( $this, 'validate_recaptcha' ), 10 );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ), 10 );
 		add_filter('script_loader_tag', array( $this, 'script_attributes' ), 10, 2);
@@ -146,22 +148,22 @@ class Incsub_Subscribe_By_Email_Recaptcha {
 
 	}
 
-	public function can_enqueue(){
-		
+	public function can_enqueue() {
+		$settings = incsub_sbe_get_settings();
 		global $post;
 
-		if( has_shortcode( $post->post_content, 'subscribe-by-email-form' ) ){
+		if ( true === $settings['follow_button'] || has_shortcode( $post->post_content, 'subscribe-by-email-form' ) ) {
 			self::$can_enqueue_scripts = true;
 		}
 
 	}
 
-	public function allow_widget_script(){
-
-		if( self::$can_enqueue_scripts ){
+	public function allow_widget_script() {
+		if( self::$can_enqueue_scripts ) {
 			// Return, as scripts already enqueued
 			return;
 		}
+
 		self::$can_enqueue_scripts = true;
 		$this->enqueue_scripts();
 	}
