@@ -172,7 +172,22 @@ class Incsub_Subscribe_By_Email_Follow_Button {
 						margin-right:0;
 					<?php endif; ?>
 				}
-				<?php if ( $settings['follow_button_position'] == 'left' ): ?>
+				<?php if ( ! empty( $settings['recaptcha_type'] ) && 'v2' === $settings['recaptcha_type'] && 'left' === $settings['follow_button_position'] ): ?>
+					#sbe-follow .sbe-follow-link {
+						float: right;
+						top: 65px;
+						left: 182px;
+					}
+				<?php elseif ( ! empty( $settings['recaptcha_type'] ) && 'v2' === $settings['recaptcha_type'] && 'right' === $settings['follow_button_position'] ): ?>
+					#sbe-follow .sbe-follow-link {
+						float: left;
+						top: 65px;
+						right: 182px;
+					}
+					#sbe-follow-wrap {
+						float:right;
+					}
+				<?php elseif ( $settings['follow_button_position'] == 'left' ): ?>
 					#sbe-follow .sbe-follow-link {
 						float: right;
 						top: 65px;
