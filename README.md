@@ -47,11 +47,11 @@ Start by reading the [Installing Plugins](https://premium.wpmudev.org/manuals/wp
 
 ### Configuring the Settings
 
-Once installed and activated, you will see a new Subscriptions menu item in your site's dashboard. Go ahead and click on the Settings sub-menu now. [
+Once installed and activated, you will see a new Subscriptions menu item in your site's dashboard. Go ahead and click on the Settings sub-menu now. 
 
 ![subscribe-by-email-2300-menu](https://premium.wpmudev.org/wp-content/uploads/2010/04/subscribe-by-email-2300-menu.png)
 
-](https://premium.wpmudev.org/wp-content/uploads/2010/04/subscribe-by-email-2300-menu.png)
+
 
  Under the _General Settings_ tab, you can enter your basic information, control how emails are sent and for which post types, as well as set a page for user subscription management. 
 
@@ -145,11 +145,9 @@ With the "_Display a follow button?_" setting enabled, users will see a Follow b
 
 ##### Manually adding subscribers
 
-You can also manually add subscribers, simply click _Add Subscribers_ in your Subscriptions menu. [
+You can also manually add subscribers, simply click _Add Subscribers_ in your Subscriptions menu. 
 
 ![Add new user](https://premium.wpmudev.org/wp-content/uploads/2010/04/add_new_user.jpg)
-
-](https://premium.wpmudev.org/wp-content/uploads/2010/04/add_new_user.jpg)
 
  You can add subscribers one at a time simply by entering an email address and clicking the _Subscribe_ button. Or you can import a CSV file of email address to add them in bulk. Your CSV file should contain only email addresses with no header, so it would look something like this: 
 
